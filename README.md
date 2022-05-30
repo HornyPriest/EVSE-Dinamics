@@ -63,7 +63,7 @@ Last version is in folder ESP32_dinamika_V10_TaskWiFiLoop_Events
 
 ## About
 
-Collaboration of [OpenEnegyMonitor](http://openenergymonitor.org) and [OpenEVSE](https://openevse.com).
+Project made by Implera d.o.o. based on [OpenEnegyMonitor](http://openenergymonitor.org) and [OpenEVSE](https://openevse.com) projects.
 
 Contributions by:
 
