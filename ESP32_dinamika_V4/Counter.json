@@ -1,0 +1,7 @@
+{
+    "type": "Counter",
+    "version": 2,
+    "host": "lockit.pro",
+    "port": 80,
+    "bin": "/ota/Counter/CounterV2.bin"
+}

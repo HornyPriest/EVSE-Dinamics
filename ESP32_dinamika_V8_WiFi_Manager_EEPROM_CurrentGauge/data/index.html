@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Implera Web Server http://%MDNSNAME%.local </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" sizes="192x192" href="Electra_192x192.png">
+    <script src="//cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="//cdn.amcharts.com/lib/5/xy.js"></script>
+    <script src="//cdn.amcharts.com/lib/5/radar.js"></script>
+    <script src="//cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+    <!--  font use is very slow == turned off
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  -->
+  </head>
+
+  <body>
+    <div class="topnav">
+      <h1><img src="logo.png" width="223" height="100"></h1>
+    </div>
+    <h1>SETTINGS</h1>
+    <div class="content">
+      <div class="card-grid">
+        <div class="card">
+          <p class="card-title">
+            <!--  font use is very slow turned off <i class="fas fa-lightbulb"></i> -->
+            <h2>http://%MDNSNAME%.local</h2><br>
+          </p>
+          <p>
+            <a href="on"><button class="button-on">ON</button></a>
+            <a href="off"><button class="button-off">OFF</button></a>
+
+          </p>
+          <p class="state" >State: <span id="klemen001" > UNKNOWN  </span>  </p>
+          <p> <img id="slika" src="http://lockit.pro/ota/Dinamics/OFF.png" width="110" height="100"></p>
+	  <p>Current1: <span id="tok1" > 0.0  </span>  </p>
+	  <p>Current2: <span id="tok2" > 0.0  </span>  </p>
+	  <p>Current3: <span id="tok3" > 0.0  </span>  </p>
+	  <div id="chart_div_C1"></div>
+	  <div id="chart_div_C2"></div>
+	  <div id="chart_div_C3"></div>
+          <script>
+
+	  function getData() {
+		console.log("getData");
+  		var xhttp = new XMLHttpRequest();
+  		xhttp.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+      		 if (this.responseText == 2){
+			document.getElementById("slika").src = "http://lockit.pro/ota/Dinamics/ON.png";
+                	document.getElementById("klemen001").innerHTML = "ON";
+	      	 }
+	      	 if (this.responseText == 3){
+			document.getElementById("slika").src = "http://lockit.pro/ota/Dinamics/OFF.png";
+                	document.getElementById("klemen001").innerHTML = "OFF";
+	      	 }
+    		}
+  	  };
+  	  xhttp.open("GET", "/status", true);
+  	  xhttp.send();
+	  }
+
+	  function getData1() {
+		console.log("getData1");
+  		var xhttp = new XMLHttpRequest();
+  		xhttp.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+      		     document.getElementById("tok1").innerHTML = this.responseText;
+		         handDataItem1.animate({
+    		     key: "value",
+    		     to: Math.round(this.responseText),
+    		     duration: 800,
+    		     easing: am5.ease.out(am5.ease.cubic)
+    		   });
+			}
+  	    };
+  	  xhttp.open("GET", "/status1", true);
+  	  xhttp.send();
+	  }
+
+	  function getData2() {
+		console.log("getData2");
+  		var xhttp = new XMLHttpRequest();
+  		xhttp.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+      		     document.getElementById("tok2").innerHTML = this.responseText;
+				 handDataItem2.animate({
+    		     key: "value",
+    		     to: Math.round(this.responseText),
+    		     duration: 800,
+    		     easing: am5.ease.out(am5.ease.cubic)
+    		   });
+    		}
+  	  };
+  	  xhttp.open("GET", "/status2", true);
+  	  xhttp.send();
+	  }
+
+	  function getData3() {
+		console.log("getData3");
+  		var xhttp = new XMLHttpRequest();
+  		xhttp.onreadystatechange = function() {
+    		if (this.readyState == 4 && this.status == 200) {
+      		     document.getElementById("tok3").innerHTML = this.responseText;
+				 handDataItem3.animate({
+    		     key: "value",
+    		     to: Math.round(this.responseText),
+    		     duration: 800,
+    		     easing: am5.ease.out(am5.ease.cubic)
+    		   });
+    		}
+  	  };
+  	  xhttp.open("GET", "/status3", true);
+  	  xhttp.send();
+	  }
+
+//-------------------------------------------------------------------------------------------------------------
+		var root1 = am5.Root.new("chart_div_C1");
+
+		root1.setThemes([
+  		  am5themes_Animated.new(root1)
+		]);
+
+		var chart1 = root1.container.children.push(
+  		am5radar.RadarChart.new(root1, {
+    		  panX: false,
+    		  panY: false,
+    		  startAngle: -180,
+    		  endAngle: 0,
+    		  innerRadius: -26
+  		  })
+		);
+
+		var axisRenderer1 = am5radar.AxisRendererCircular.new(root1, {
+  		  strokeOpacity: 0.1,
+  		  minGridDistance: 30
+		});
+
+		axisRenderer1.ticks.template.setAll({
+  		  visible: true,
+  		  strokeOpacity: 0.5
+		});
+
+		axisRenderer1.grid.template.setAll({
+  		  visible: false
+		});
+
+		var axis1 = chart1.xAxes.push(
+  		am5xy.ValueAxis.new(root1, {
+    		  maxDeviation: 0,
+    		  min: 0,
+    		  max: 25,
+    		  strictMinMax: true,
+    		  renderer: axisRenderer1
+  		  })
+		);
+
+		function createRange1(start, end, color, label) {
+  
+  		  var rangeDataItem1 = axis1.makeDataItem({
+    		    value: start,
+    		    endValue: end
+  		  });
+
+  		  var range1 = axis1.createAxisRange(rangeDataItem1);
+  
+  		  rangeDataItem1.get("axisFill").setAll({
+    		    visible: true,
+    		    fill: color,
+    		    fillOpacity: 0.8
+  		  });
+  
+  		  rangeDataItem1.get("tick").setAll({
+    		    visible: false
+  		  });
+  
+  		  rangeDataItem1.get("label").setAll({
+    		    text: label,
+    		    inside: true,
+    		    radius: 8,
+    		    fontSize: "0.9em",
+    		    fill: am5.color(0xffffff)
+  		  });
+
+		}
+
+		createRange1(0, 18, am5.color(0x297373), "Safe");
+		createRange1(18, 23, am5.color(0x946B49), "Warning");
+		createRange1(23, 25, am5.color(0xff621f), "Danger");
+
+		// Add clock hand
+		var handDataItem1 = axis1.makeDataItem({
+  		  value: 0
+		});
+
+		var hand1 = handDataItem1.set("bullet", am5xy.AxisBullet.new(root1, {
+  		  sprite: am5radar.ClockHand.new(root1, {
+    		    radius: am5.percent(99)
+  		  })
+		}));
+
+		axis1.createAxisRange(handDataItem1);
+
+		handDataItem1.get("grid").set("visible", false);
+		handDataItem1.get("tick").set("visible", false);
+//-------------------------------------------------------------------------------------------------------------
+var root2 = am5.Root.new("chart_div_C2");
+
+root2.setThemes([
+	am5themes_Animated.new(root2)
+]);
+
+var chart2 = root2.container.children.push(
+  am5radar.RadarChart.new(root2, {
+	  panX: false,
+	  panY: false,
+	  startAngle: -180,
+	  endAngle: 0,
+	  innerRadius: -26
+	})
+);
+
+var axisRenderer2 = am5radar.AxisRendererCircular.new(root2, {
+	strokeOpacity: 0.1,
+	minGridDistance: 30
+});
+
+axisRenderer2.ticks.template.setAll({
+	visible: true,
+	strokeOpacity: 0.5
+});
+
+axisRenderer2.grid.template.setAll({
+	visible: false
+});
+
+var axis2 = chart2.xAxes.push(
+  am5xy.ValueAxis.new(root2, {
+	  maxDeviation: 0,
+	  min: 0,
+	  max: 25,
+	  strictMinMax: true,
+	  renderer: axisRenderer2
+	})
+);
+
+function createRange2(start, end, color, label) {
+
+	var rangeDataItem2 = axis2.makeDataItem({
+		value: start,
+		endValue: end
+	});
+
+	var range2 = axis2.createAxisRange(rangeDataItem2);
+
+	rangeDataItem2.get("axisFill").setAll({
+		visible: true,
+		fill: color,
+		fillOpacity: 0.8
+	});
+
+	rangeDataItem2.get("tick").setAll({
+		visible: false
+	});
+
+	rangeDataItem2.get("label").setAll({
+		text: label,
+		inside: true,
+		radius: 8,
+		fontSize: "0.9em",
+		fill: am5.color(0xffffff)
+	});
+
+}
+
+createRange2(0, 18, am5.color(0x297373), "Safe");
+createRange2(18, 23, am5.color(0x946B49), "Warning");
+createRange2(23, 25, am5.color(0xff621f), "Danger");
+
+// Add clock hand
+var handDataItem2 = axis2.makeDataItem({
+	value: 0
+});
+
+var hand2 = handDataItem2.set("bullet", am5xy.AxisBullet.new(root2, {
+	sprite: am5radar.ClockHand.new(root2, {
+		radius: am5.percent(99)
+	})
+}));
+
+axis2.createAxisRange(handDataItem2);
+
+handDataItem2.get("grid").set("visible", false);
+handDataItem2.get("tick").set("visible", false);
+//-------------------------------------------------------------------------------------------------------------
+
+var root3 = am5.Root.new("chart_div_C3");
+
+root3.setThemes([
+	am5themes_Animated.new(root3)
+]);
+
+var chart3 = root3.container.children.push(
+  am5radar.RadarChart.new(root3, {
+	  panX: false,
+	  panY: false,
+	  startAngle: -180,
+	  endAngle: 0,
+	  innerRadius: -26
+	})
+);
+
+var axisRenderer3 = am5radar.AxisRendererCircular.new(root3, {
+	strokeOpacity: 0.1,
+	minGridDistance: 30
+});
+
+axisRenderer3.ticks.template.setAll({
+	visible: true,
+	strokeOpacity: 0.5
+});
+
+axisRenderer3.grid.template.setAll({
+	visible: false
+});
+
+var axis3 = chart3.xAxes.push(
+  am5xy.ValueAxis.new(root3, {
+	  maxDeviation: 0,
+	  min: 0,
+	  max: 25,
+	  strictMinMax: true,
+	  renderer: axisRenderer3
+	})
+);
+
+function createRange3(start, end, color, label) {
+
+	var rangeDataItem3 = axis3.makeDataItem({
+		value: start,
+		endValue: end
+	});
+
+	var range3 = axis3.createAxisRange(rangeDataItem3);
+
+	rangeDataItem3.get("axisFill").setAll({
+		visible: true,
+		fill: color,
+		fillOpacity: 0.8
+	});
+
+	rangeDataItem3.get("tick").setAll({
+		visible: false
+	});
+
+	rangeDataItem3.get("label").setAll({
+		text: label,
+		inside: true,
+		radius: 8,
+		fontSize: "0.9em",
+		fill: am5.color(0xffffff)
+	});
+
+}
+
+createRange3(0, 18, am5.color(0x297373), "Safe");
+createRange3(18, 23, am5.color(0x946B49), "Warning");
+createRange3(23, 25, am5.color(0xff621f), "Danger");
+
+// Add clock hand
+var handDataItem3 = axis3.makeDataItem({
+	value: 0
+});
+
+var hand3 = handDataItem3.set("bullet", am5xy.AxisBullet.new(root3, {
+	sprite: am5radar.ClockHand.new(root3, {
+		radius: am5.percent(99)
+	})
+}));
+
+axis3.createAxisRange(handDataItem3);
+
+handDataItem3.get("grid").set("visible", false);
+handDataItem3.get("tick").set("visible", false);
+//-------------------------------------------------------------------------------------------------------------
+
+
+	  setInterval(function ( ) {
+	    console.log("blabla");
+        getData();
+	    getData1();
+  	    getData2();
+	    getData3();
+      }, 5000);
+	</script>
+
+
+        </div>
+      </div>
+    </div>
+    <br>
+    Delete ssid.txt and pass.txt <br>
+    Restart to AP AccessPoint to reconfigure WiFi<br>
+    <input type="checkbox" id="check" onclick='document.getElementById("resettoap").disabled=!document.getElementById("check").checked;' onUnSelect='document.getElementById("resettoap").disabled=!document.getElementById("check").checked;'>Enable <input type="button" id="resettoap" onclick="window.location.href='/resetwifitoap';" value="/resetwifitoap" width="200px" disabled=true>
+    <br><br>
+    <hr>
+      Implera Dinamics version 0.6<br>
+
+
+      <!-- Copyright Implera -->
+  </body>
+
+</html>

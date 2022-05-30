@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Implera Wi-Fi Manager</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+
+  <body>
+    <div class="topnav">
+      <h1><img src="logo.png" width="223" height="100"></h1>
+    </div>
+    <h1>WELCOME TO DINAMICS</h1>
+    <div class="content">
+      <div class="card-grid">
+        <div class="card">
+          <form action="/" method="POST">
+            <p>
+              <label for="ssid">SSID</label><br>
+              <input type="text" id="ssid" name="ssid" autocapitalize="none"><br>
+              <label for="pass">Password</label><br>
+              <input type="text" id="pass" name="pass" autocapitalize="none"><br>
+
+              <hr>
+
+
+
+              <input type="checkbox" id="dhcp" name="dhcp" onclick="myFunction()" checked> <label for="dhch">Use DHCP</label><br>
+	      <br>
+              
+              <label for="ip">IP Address</label><br>
+              <input type="number" id="ip" name="ip" value="%WM_IP%"><br>
+
+
+
+              <label for="gateway">Gateway IP</label><br>
+              <input type="number" id="gateway" name="gateway" value="%WM_GW%" title="find windows=ipconfig, linux=netstat -r">
+	      <br>
+
+              <label for="subnet">SubnetMask</label><br>
+              <input type="number" id="subnet" name="subnet" value="%WM_SN%">
+              <br>
+              <script>
+                myFunction();
+
+                function myFunction() {
+                  // Get the checkbox
+                  var checkBox = document.getElementById("dhcp");
+
+
+                  // If the checkbox is checked
+                  if (checkBox.checked == true) {
+                    document.getElementById("ip").type = "text";
+                    document.getElementById("gateway").type = "text";
+                    document.getElementById("subnet").type = "text";
+
+                    document.getElementById("ip").value = "auto";
+                    document.getElementById("gateway").value = "auto";
+                    document.getElementById("subnet").value = "auto";
+
+                    document.getElementById("ip").disabled = true;
+                    document.getElementById("gateway").disabled = true;
+                    document.getElementById("subnet").disabled = true;
+
+                   
+                  } else {
+                    document.getElementById("ip").type = "text"; // would like to use number so that a number keyboard comes up on phone but that doe not allow multiple points  192.168 and then i cannot enter a point
+                    // type text and ip shows a keyboard on phone 
+                    document.getElementById("gateway").type = "text";
+                    document.getElementById("subnet").type = "text";
+
+                    document.getElementById("ip").disabled = false;
+                    document.getElementById("gateway").disabled = false;
+                    document.getElementById("subnet").disabled = false;
+
+                    document.getElementById("ip").value = "";
+                    document.getElementById("gateway").value = "";
+                    document.getElementById("subnet").value = "";
+
+                    
+                  }
+                }
+
+              </script>
+
+              <script>
+                // this also works on touch screen
+                function charremove() {
+                  var textt = document.getElementById("mdns").value; // read the inputfield
+
+                  //document.getElementById("url").value="http://"++".local
+                  let result = textt.replace(/[^a-zA-Z0-9-]/g, ""); // not replace a-z A-Z 0-9 and - for nothing "" replace everything else for nothing ""
+
+                  document.getElementById("mdns").value = result; // return to inputfield cleaned up
+                  document.getElementById("url").value = "http://" + result + ".local"; // return to url field
+                }
+
+              </script>
+
+              <hr>
+              <br>
+
+              <label for="mmdns" border="0">mDNS URL </label>
+              <script>
+                function focusInput() {
+                  document.getElementById("mdns").focus();
+                }
+
+              </script>
+              <input type="button" id="url" style="color: green" onclick="focusInput()"></label><br>
+              <font color="red"><b>
+                  <small>Allowed Characters a-z A-Z 0-9 and -<br></small>
+                </b></font>
+              <label for="mdns">http://</label>
+              <input type="text" oninput="charremove()" id="mdns" name="mdns" autocapitalize="none" value="dinamika">.local<br>
+              <!--  
+                 <label for="mdns">http://</label>
+              <input type="text" id="mdns" name="mdns" autocapitalize="none" value="living" oninput='document.getElementById("url").value="http://"+document.getElementById("mdns").value+".local";' onkeypress="return (event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 45">.local<br>
+            
+              -->
+
+
+
+              <script>
+                document.getElementById("url").value = "http://" + document.getElementById("mdns").value + ".local";
+
+              </script>
+              <hr>
+
+              <input type="submit" value="Save">
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>
+

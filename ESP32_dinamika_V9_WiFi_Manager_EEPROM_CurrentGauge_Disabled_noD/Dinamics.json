@@ -1,0 +1,7 @@
+{
+    "type": "Dinamics",
+    "version": 4,
+    "host": "lockit.pro",
+    "port": 80,
+    "bin": "/ota/Dinamics/DinamicsV4.bin"
+}

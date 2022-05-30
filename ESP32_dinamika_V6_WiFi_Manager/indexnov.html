@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Implera Web Server http://%MDNSNAME%.local </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" sizes="192x192" href="Electra_192x192.png">
+    <!--  font use is very slow == turned off
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  -->
+  </head>
+
+  <body>
+    <div class="topnav">
+      <h1><img src="logo.png" width="223" height="100"></h1>
+    </div>
+    <h1>SETTINGS</h1>
+    <div class="content">
+      <div class="card-grid">
+        <div class="card">
+          <p class="card-title">
+            <!--  font use is very slow turned off <i class="fas fa-lightbulb"></i> -->
+            <h2>http://%MDNSNAME%.local</h2><br>
+          </p>
+          <p>
+            <a href="on"><button class="button-on">ON</button></a>
+            <a href="off"><button class="button-off">OFF</button></a>
+
+          </p>
+          <p class="state">State: %STATE%</p>
+          <script>
+            if ("%STATE%" == "ON") {
+              document.write('<a href="/off"><img src="%STATE%.png" width="110" height="100"></a>');
+            }
+            if ("%STATE%" == "OFF") {
+              document.write('<a href="/on"><img src="%STATE%.png" width="110" height="100"></a>');
+            }
+
+
+	  setInterval(function ( ) {
+	    var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+            
+
+          document.getElementsByClassName("state")[0].innerHTML = '<a href="/off"><img src="%STATE%.png" width="110" height="100"></a>';
+         };
+         xhttp.open("GET", "/%STATE%", true);
+         xhttp.send();
+	    console.log("%STATE%");
+/*            if ("%STATE%" == "ON") {
+              document.getElementsByClassName("state")[0].innerHTML = '<a href="/off"><img src="%STATE%.png" width="110" height="100"></a>';
+            }
+            if ("%STATE%" == "OFF") {
+              document.getElementsByClassName("state")[0].innerHTML = '<a href="/off"><img src="%STATE%.png" width="110" height="100"></a>';
+            }*/
+          }, 1000);
+
+          </script>
+
+        </div>
+      </div>
+    </div>
+    <br>
+    Delete ssid.txt and pass.txt <br>
+    Restart to AP AccessPoint to reconfigure WiFi<br>
+    <input type="checkbox" id="check" onclick='document.getElementById("resettoap").disabled=!document.getElementById("check").checked;' onUnSelect='document.getElementById("resettoap").disabled=!document.getElementById("check").checked;'>Enable <input type="button" id="resettoap" onclick="window.location.href='/resetwifitoap';" value="/resetwifitoap" width="200px" disabled=true>
+    <br><br>
+    <hr>
+      Implera Dinamics version 0.6<br>
+
+
+      <!-- Copyright 2021...2022 Implera -->
+  </body>
+
+</html>
