@@ -52,11 +52,11 @@ Last version is in folder ESP32_dinamika_V10_TaskWiFiLoop_Events
 
 ## Requirements
 
-### OpenEVSE by Implera d.o.o. charging station
+### EVSE by Implera d.o.o. charging station
 
 - Purchase via www.implera.com
 - OpenEVSE FW [V7.1.3+ recommended](https://github.com/OpenEVSE/open_evse/releases)
-- All new OpenEVSE units are shipped with V7.1.3 pre-loaded (April 2021 onwards)
+- All new EVSE units are shipped with V7.1.3 pre-loaded (April 2021 onwards)
 
 ### Dinamics by Implera d.o.o. smart dynamic management device based on ESP32
 - Purchase via www.implera.com
