@@ -3207,6 +3207,8 @@ void CatchStateChange(){
     int index = ATMessage.indexOf(" ");
     ATMessage.remove(0, index+1);
     ATMessage.remove(index+4);
+    Serial.print("Catch state izrez je : ");
+    Serial.println(ATMessage);
     if(ATMessage != "03 03"){
       TurnSleep();
     }
