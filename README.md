@@ -10,7 +10,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 <!-- toc -->
 - [Versions](#versions)
 - [Changes](#changes)
-- [Known Issues](#known issues)
+- [Issues](#issues)
 - [Features](#features)
 - [Requirements](#requirements)
 - [About](#about)
@@ -28,7 +28,7 @@ Last version is in folder ESP32_dinamika_V10_TaskWiFiLoop_Events
 
 - Semi ported to Event based software
 
-## Known Issues
+## Issues
 
 - Web UI on server over AP does not work on last version, somewhat works on previous version ESP32_dinamika_V10_TaskWiFi
 
