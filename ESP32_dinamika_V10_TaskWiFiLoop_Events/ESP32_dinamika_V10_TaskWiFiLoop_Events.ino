@@ -106,9 +106,6 @@ long now11;
 // Second Core Settings//
 TaskHandle_t Task1;
 
-// Second Core Settings//
-TaskHandle_t Task2;
-
 long lastInfo = 0;
 long lastInfo1 = 0;
 long lastInfo2 = 0;
@@ -990,16 +987,6 @@ void setup() {
                   &Task1,      /* Task handle to keep track of created task */
                   0);          /* pin task to core 0 */
 
-
-  xTaskCreatePinnedToCore(
-                  Task2code,   /* Task function. */
-                  "Task2",     /* name of task. */
-                  100000,       /* Stack size of task */
-                  NULL,        /* parameter of the task */
-                  9,           /* priority of the task */
-                  &Task2,      /* Task handle to keep track of created task */
-                  1);          /* pin task to core 0 */
-
   analogReadResolution(ADC_BITS);
   analogSetAttenuation(ADC_6db);
   pinMode(S1, INPUT_PULLDOWN);
@@ -1197,6 +1184,238 @@ void setup() {
   digitalWrite(ledPin, LOW);
 
 
+
+      if (initWiFi()) {
+      Serial.println("InitWiFi = HIGH");
+    // Route for root / web page
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
+      request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    });
+    server.serveStatic("/", SPIFFS, "/");
+
+    // Route to set GPIO state to HIGH
+    server.on("/on", HTTP_GET, [](AsyncWebServerRequest * request) {
+      SetChargeFlag = HIGH;
+      tmp = 2;
+      request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    });
+
+    // Route to set GPIO state to LOW
+    server.on("/off", HTTP_GET, [](AsyncWebServerRequest * request) {
+      SetChargeFlag = HIGH;
+      tmp = 3;
+      request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    });
+
+    //  /status returns text 0 ro 1 for remote monitoring
+    server.on("/status", HTTP_GET, [](AsyncWebServerRequest * request) {
+      int readval = tmp;
+      request->send(200, "text/txt", String(readval));
+    });
+
+    //  /status returns text 0 ro 1 for remote monitoring
+    server.on("/status1", HTTP_GET, [](AsyncWebServerRequest * request) {
+      float readval1 = average1;
+      request->send(200, "text/txt", String(readval1, 1));
+    });
+
+    //  /status returns text 0 ro 1 for remote monitoring
+    server.on("/status2", HTTP_GET, [](AsyncWebServerRequest * request) {
+      float readval2 = average2;
+      request->send(200, "text/txt", String(readval2, 1));
+    });
+
+    //  /status returns text 0 ro 1 for remote monitoring
+    server.on("/status3", HTTP_GET, [](AsyncWebServerRequest * request) {
+      float readval3 = average3;
+      request->send(200, "text/txt", String(readval3, 1));
+    });
+
+    //  /status returns text 0 ro 1 for remote monitoring
+    server.on("/status4", HTTP_GET, [](AsyncWebServerRequest * request) {
+      int readval4 = breaker;
+      request->send(200, "text/txt", String(readval4));
+    });
+
+
+    //  /resetwifitoap
+    server.on("/resetwifitoap", HTTP_GET, [](AsyncWebServerRequest * request) {
+      SPIFFS.remove("/ssid.txt");
+      SPIFFS.remove("/pass.txt");
+      DeleteWiFiCredentials();
+      request->send(200, "text/html", "<h1>deleted wifi credentials ssid.txt and pass.txt<br>Done.<br>ESP restart,<br>connect to AP access point ESP WIFI MANAGER <br>to configure wifi settings again<br><a href=\"http://192.168.4.1\">http://192.168.4.1</a></h1>");
+      delay(5000);
+      ESP.restart();
+    });
+
+    //  /reboot
+    server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest * request) {
+      request->send(200, "text/html", "<h1>Huh, Reboot Electra, Restart ESP32<br><a href=\"http://" + WiFi.localIP().toString()  + "\">http://" + WiFi.localIP().toString() + "</a></h1>");
+      delay(5000);
+      ESP.restart();
+    });
+
+    server.on("/timer", HTTP_POST, [](AsyncWebServerRequest * request) {
+      int params = request->params();
+      for (int i = 0; i < params; i++) {
+        AsyncWebParameter* p = request->getParam(i);
+//        if (p->isPost()) {
+//          // HTTP POST ssid value
+//          const char* PARAM_INPUT_20 = "off";                  // Search for parameter in HTTP POST request
+//          if (p->name() == PARAM_INPUT_20) {
+//            offdelay = p->value().toInt();
+//            Serial.print("offdelay set to: ");
+//            Serial.println(offdelay);
+//            // Write file to save value
+//            writeFile(SPIFFS, offdelayPath, offdelay.c_str());
+//            offdelayint = offdelay.toInt();
+//            Serial.println(offdelayint);
+//          }
+//        }
+      }
+      request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    });
+
+
+    server.on("/list", HTTP_GET, [](AsyncWebServerRequest * request) {    // /list files in spiffs on webpage
+      if (!SPIFFS.begin(true)) {
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        debug += "$";
+        debug += "An Error has occurred while mounting SPIFFS";
+        debug += "$";
+        return;
+      }
+
+      File root = SPIFFS.open("/");
+      File file = root.openNextFile();
+      String str = "";
+      while (file) {
+        str += " / ";
+        str += file.name();
+        str += "\r\n";
+        file = root.openNextFile();
+      }
+      str += "\r\n";
+      str += "\r\n";
+      str += "totalBytes   ";
+      str += SPIFFS.totalBytes();
+      str += "\r\n";
+      str += "usedBytes    ";
+      str += SPIFFS.usedBytes();
+      str += "\r\n";
+      str += "freeBytes??? ";
+      str += SPIFFS.totalBytes()-SPIFFS.usedBytes();
+      str += "\r\n";
+      request->send(200, "text/txt", str);
+    });
+
+    server.begin();
+  }
+  else {
+    // Connect to Wi-Fi network with SSID and password == setup an AP AccessPoint for wifi direct connect
+    Serial.println("Setting AP (Access Point)");
+    // NULL sets an open Access Point
+    String broadcastintheair = String("Dinamics-") + charid;  // want a unique broadcast id for each device
+    WiFi.softAP(broadcastintheair.c_str(), NULL);                                        // i do not know, strings and chars thing drive me nuts
+                                                                                         // i have seen all errors possible, getting this working ;-)
+
+    IPAddress IP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(IP);
+    debug += "$";
+    debug += "IP address=";
+    debug += IP;
+    debug += "$";
+    
+
+    // Web Server Root URL
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
+      request->send(SPIFFS, "/wifimanager.html", "text/html");
+    });
+
+    server.serveStatic("/", SPIFFS, "/");
+
+    server.on("/", HTTP_POST, [](AsyncWebServerRequest * request) {
+      int params = request->params();
+      for (int i = 0; i < params; i++) {
+        AsyncWebParameter* p = request->getParam(i);
+        if (p->isPost()) {
+          // HTTP POST ssid value
+          const char* PARAM_INPUT_1 = "ssid";                  // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_1) {
+            ssid = p->value().c_str();
+            Serial.print("SSID set to: ");
+            Serial.println(ssid);
+            // Write file to save value
+//            writeFile(SPIFFS, ssidPath, ssid.c_str());
+          }
+          // HTTP POST pass value
+          const char* PARAM_INPUT_2 = "pass";                 // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_2) {
+            pass = p->value().c_str();
+            Serial.print("Password set to: ");
+            Serial.println(pass);
+            // Write file to save value
+//            writeFile(SPIFFS, passPath, pass.c_str());
+          }
+          // HTTP POST ip value
+          const char* PARAM_INPUT_3 = "ip";                   // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_3) {
+            dhcpcheck = "off";
+            writeFile(SPIFFS, dhcpcheckPath, "off");          //dhcp unchecked . if we recieve post with ip set dhcpcheck.txt file to off
+            ip = p->value().c_str();
+            Serial.print("IP Address set to: ");
+            Serial.println(ip);
+//            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
+          }
+          // HTTP POST gateway value
+          const char* PARAM_INPUT_4 = "gateway";              // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_4) {
+            gateway = p->value().c_str();
+            Serial.print("gateway Address set to: ");
+            Serial.println(gateway);
+//            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
+          }
+
+          // HTTP POST subnet value
+          const char* PARAM_INPUT_5 = "subnet";               // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_5) {
+            subnet = p->value().c_str();
+            Serial.print("subnet Address set to: ");
+            Serial.println(subnet);
+//            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
+          }
+          // HTTP POST mdns value
+          const char* PARAM_INPUT_6 = "mdns";                 // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_6) {
+            mdnsdotlocalurl = p->value().c_str();
+            Serial.print("mdnsdotlocalurl Address set to: ");
+            Serial.println(mdnsdotlocalurl);
+//            writeFile(SPIFFS, mdnsPath, mdnsdotlocalurl.c_str());            // Write file to save value
+          }
+          // HTTP POST dhcp value on
+          const char* PARAM_INPUT_7 = "dhcp";                // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_7) {
+            dhcpcheck = p->value().c_str();
+            Serial.print("dhcpcheck set to: ");
+            Serial.println(dhcpcheck);
+//            writeFile(SPIFFS, dhcpcheckPath, dhcpcheck.c_str());            // Write file to save value
+          }
+          //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+        }
+      }
+      if (dhcpcheck == "on") {
+        ip = "dhcp ip adress";
+      }
+      SetWiFiCredentials();
+      request->send(200, "text/html", "<h1>Done. ESP restart,<br> connect router <br>go to: <a href=\"http://" + ip + "\">" + ip + "</a><br><a href=\"http://" + mdnsdotlocalurl + ".lan\">http://" + mdnsdotlocalurl + ".lan</a></h1>");
+      delay(5000);
+      ESP.restart();
+    });
+    server.begin();
+  }
+
+
   
   delay(200);
   client.setServer(mqtt_server, 31883);
@@ -1233,6 +1452,20 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   SENDFWversion();
+
+
+  if (!client.connected()) {
+      digitalWrite(LED_RED, HIGH);
+      digitalWrite(LED_GREEN, LOW);
+      if (!WiFi.status() == WL_CONNECTED){      
+        WiFiReconnect();
+  //        ESP.restart();  // test, da mi ne zginjajo
+      }else{
+        reconnect();
+      }
+  }else{
+      digitalWrite(LED_RED, LOW);
+  }
 
   
   if(UpdateStart == HIGH){
@@ -2331,11 +2564,11 @@ void TurnOn(){
     }
     t1 = 0;
     
-    int index = ATMessage.indexOf("$AT");
+/*    int index = ATMessage.indexOf("$AT");
     if(index > 1){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
-    }
+    }*/
     if (client.connected()){
       topica = "";
       dynamicTopic = "";
@@ -2353,7 +2586,7 @@ void TurnOn(){
       client.publish(topica, TempValueChar);
 //      delay(20);
     }
-    if(index > 1){
+/*    if(index > 1){
       if (client.connected()){
         topica = "";
         dynamicTopic = "";
@@ -2371,7 +2604,7 @@ void TurnOn(){
         client.publish(topica, TempValueChar);
   //      delay(20);
       }
-    }
+    }*/
   }
 }
 void TurnOff(){
@@ -2439,11 +2672,11 @@ void TurnOff(){
     }
     t1 = 0;
 
-    int index = ATMessage.indexOf("$AT");
+/*    int index = ATMessage.indexOf("$AT");
     if(index > 1){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
-    }
+    }*/
     
     if (client.connected()){
       topica = "";
@@ -2462,7 +2695,7 @@ void TurnOff(){
       client.publish(topica, TempValueChar);
 //      delay(20);
     }
-    if(index > 1){
+ /*   if(index > 1){
       if (client.connected()){
         topica = "";
         dynamicTopic = "";
@@ -2480,7 +2713,7 @@ void TurnOff(){
         client.publish(topica, TempValueChar);
   //      delay(20);
       }
-    }
+    }*/
   }
 }
 void TurnSleep(){
@@ -2550,11 +2783,11 @@ void TurnSleep(){
     }
     t1 = 0;
 
-    int index = ATMessage.indexOf("$AT");
+/*    int index = ATMessage.indexOf("$AT");
     if(index > 1){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
-    }
+    }*/
     if (client.connected()){
       topica = "";
       dynamicTopic = "";
@@ -2572,7 +2805,7 @@ void TurnSleep(){
       client.publish(topica, TempValueChar);
 //      delay(20);
     }
-    if(index > 1){
+ /*   if(index > 1){
       if (client.connected()){
         topica = "";
         dynamicTopic = "";
@@ -2590,7 +2823,7 @@ void TurnSleep(){
         client.publish(topica, TempValueChar);
   //      delay(20);
       }
-    }
+    }*/
   }
 }
 
@@ -2673,11 +2906,11 @@ void SetMQTTCurrent(){
           ConnectionTimeoutFlag = LOW;
           t1 = 0;
           
-          int index = ATMessage.indexOf("$AT");
+/*          int index = ATMessage.indexOf("$AT");
           if(index > 1){
             ATMessage.remove(0, index);
             ResponseMessage.remove(index);
-          }
+          }*/
           if (client.connected()){
             topica = "";
             dynamicTopic = "";
@@ -2695,7 +2928,7 @@ void SetMQTTCurrent(){
             client.publish(topica, TempValueChar);
   //          delay(20);
           }
-          if(index > 1){
+ /*         if(index > 1){
             if (client.connected()){
               topica = "";
               dynamicTopic = "";
@@ -2713,7 +2946,7 @@ void SetMQTTCurrent(){
               client.publish(topica, TempValueChar);
         //      delay(20);
             }
-          }
+          }*/
           SetMQTTCurrentFlag = LOW;
           SENDBreakerAlt();
         }
@@ -2780,11 +3013,11 @@ void SetCurrent(){
         ConnectionTimeoutFlag = LOW;
         t1 = 0;
 
-        int index = ATMessage.indexOf("$AT");
+/*        int index = ATMessage.indexOf("$AT");
         if(index > 1){
           ATMessage.remove(0, index);
           ResponseMessage.remove(index);
-        }
+        }*/
         if (client.connected()){
           topica = "";
           dynamicTopic = "";
@@ -2802,7 +3035,7 @@ void SetCurrent(){
           client.publish(topica, TempValueChar);
 //          delay(20);
         }
-        if(index > 1){
+ /*       if(index > 1){
           if (client.connected()){
               topica = "";
               dynamicTopic = "";
@@ -2820,7 +3053,7 @@ void SetCurrent(){
               client.publish(topica, TempValueChar);
         //      delay(20);
             }
-        }
+        }*/
         SetCurrentFlag = LOW;
         set_current = max_current;
       }
@@ -3209,8 +3442,10 @@ void CatchStateChange(){
     ATMessage.remove(index+4);
     Serial.print("Catch state izrez je : ");
     Serial.println(ATMessage);
-    if(ATMessage != "03 03"){
-      TurnSleep();
+    if(ChargeSetState == HIGH && PAndC == LOW){
+      if(ATMessage != "03 03"){
+        TurnSleep();
+      }
     }
   }
 }
@@ -3292,258 +3527,4 @@ void Task1code( void * pvParameters ){
     Irms_3 = emon3.calcIrms(1480);
     vTaskDelay(20);
   } 
-}
-
-
-void Task2code( void * pvParameters ){
-
-
-    vTaskDelay(50000);
-    
-    if (initWiFi()) {
-    // Route for root / web page
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
-    });
-    server.serveStatic("/", SPIFFS, "/");
-
-    // Route to set GPIO state to HIGH
-    server.on("/on", HTTP_GET, [](AsyncWebServerRequest * request) {
-      SetChargeFlag = HIGH;
-      tmp = 2;
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
-    });
-
-    // Route to set GPIO state to LOW
-    server.on("/off", HTTP_GET, [](AsyncWebServerRequest * request) {
-      SetChargeFlag = HIGH;
-      tmp = 3;
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
-    });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status", HTTP_GET, [](AsyncWebServerRequest * request) {
-      int readval = tmp;
-      request->send(200, "text/txt", String(readval));
-    });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status1", HTTP_GET, [](AsyncWebServerRequest * request) {
-      float readval1 = average1;
-      request->send(200, "text/txt", String(readval1, 1));
-    });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status2", HTTP_GET, [](AsyncWebServerRequest * request) {
-      float readval2 = average2;
-      request->send(200, "text/txt", String(readval2, 1));
-    });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status3", HTTP_GET, [](AsyncWebServerRequest * request) {
-      float readval3 = average3;
-      request->send(200, "text/txt", String(readval3, 1));
-    });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status4", HTTP_GET, [](AsyncWebServerRequest * request) {
-      int readval4 = breaker;
-      request->send(200, "text/txt", String(readval4));
-    });
-
-
-    //  /resetwifitoap
-    server.on("/resetwifitoap", HTTP_GET, [](AsyncWebServerRequest * request) {
-      SPIFFS.remove("/ssid.txt");
-      SPIFFS.remove("/pass.txt");
-      DeleteWiFiCredentials();
-      request->send(200, "text/html", "<h1>deleted wifi credentials ssid.txt and pass.txt<br>Done.<br>ESP restart,<br>connect to AP access point ESP WIFI MANAGER <br>to configure wifi settings again<br><a href=\"http://192.168.4.1\">http://192.168.4.1</a></h1>");
-      delay(5000);
-      ESP.restart();
-    });
-
-    //  /reboot
-    server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(200, "text/html", "<h1>Huh, Reboot Electra, Restart ESP32<br><a href=\"http://" + WiFi.localIP().toString()  + "\">http://" + WiFi.localIP().toString() + "</a></h1>");
-      delay(5000);
-      ESP.restart();
-    });
-
-    server.on("/timer", HTTP_POST, [](AsyncWebServerRequest * request) {
-      int params = request->params();
-      for (int i = 0; i < params; i++) {
-        AsyncWebParameter* p = request->getParam(i);
-//        if (p->isPost()) {
-//          // HTTP POST ssid value
-//          const char* PARAM_INPUT_20 = "off";                  // Search for parameter in HTTP POST request
-//          if (p->name() == PARAM_INPUT_20) {
-//            offdelay = p->value().toInt();
-//            Serial.print("offdelay set to: ");
-//            Serial.println(offdelay);
-//            // Write file to save value
-//            writeFile(SPIFFS, offdelayPath, offdelay.c_str());
-//            offdelayint = offdelay.toInt();
-//            Serial.println(offdelayint);
-//          }
-//        }
-      }
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
-    });
-
-
-    server.on("/list", HTTP_GET, [](AsyncWebServerRequest * request) {    // /list files in spiffs on webpage
-      if (!SPIFFS.begin(true)) {
-        Serial.println("An Error has occurred while mounting SPIFFS");
-        debug += "$";
-        debug += "An Error has occurred while mounting SPIFFS";
-        debug += "$";
-        return;
-      }
-
-      File root = SPIFFS.open("/");
-      File file = root.openNextFile();
-      String str = "";
-      while (file) {
-        str += " / ";
-        str += file.name();
-        str += "\r\n";
-        file = root.openNextFile();
-      }
-      str += "\r\n";
-      str += "\r\n";
-      str += "totalBytes   ";
-      str += SPIFFS.totalBytes();
-      str += "\r\n";
-      str += "usedBytes    ";
-      str += SPIFFS.usedBytes();
-      str += "\r\n";
-      str += "freeBytes??? ";
-      str += SPIFFS.totalBytes()-SPIFFS.usedBytes();
-      str += "\r\n";
-      request->send(200, "text/txt", str);
-    });
-
-    server.begin();
-  }
-  else {
-    // Connect to Wi-Fi network with SSID and password == setup an AP AccessPoint for wifi direct connect
-    Serial.println("Setting AP (Access Point)");
-    // NULL sets an open Access Point
-    String broadcastintheair = String("Dinamics-") + charid;  // want a unique broadcast id for each device
-    WiFi.softAP(broadcastintheair.c_str(), NULL);                                        // i do not know, strings and chars thing drive me nuts
-                                                                                         // i have seen all errors possible, getting this working ;-)
-
-    IPAddress IP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(IP);
-    debug += "$";
-    debug += "IP address=";
-    debug += IP;
-    debug += "$";
-    
-
-    // Web Server Root URL
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/wifimanager.html", "text/html");
-    });
-
-    server.serveStatic("/", SPIFFS, "/");
-
-    server.on("/", HTTP_POST, [](AsyncWebServerRequest * request) {
-      int params = request->params();
-      for (int i = 0; i < params; i++) {
-        AsyncWebParameter* p = request->getParam(i);
-        if (p->isPost()) {
-          // HTTP POST ssid value
-          const char* PARAM_INPUT_1 = "ssid";                  // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_1) {
-            ssid = p->value().c_str();
-            Serial.print("SSID set to: ");
-            Serial.println(ssid);
-            // Write file to save value
-//            writeFile(SPIFFS, ssidPath, ssid.c_str());
-          }
-          // HTTP POST pass value
-          const char* PARAM_INPUT_2 = "pass";                 // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_2) {
-            pass = p->value().c_str();
-            Serial.print("Password set to: ");
-            Serial.println(pass);
-            // Write file to save value
-//            writeFile(SPIFFS, passPath, pass.c_str());
-          }
-          // HTTP POST ip value
-          const char* PARAM_INPUT_3 = "ip";                   // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_3) {
-            dhcpcheck = "off";
-            writeFile(SPIFFS, dhcpcheckPath, "off");          //dhcp unchecked . if we recieve post with ip set dhcpcheck.txt file to off
-            ip = p->value().c_str();
-            Serial.print("IP Address set to: ");
-            Serial.println(ip);
-//            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
-          }
-          // HTTP POST gateway value
-          const char* PARAM_INPUT_4 = "gateway";              // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_4) {
-            gateway = p->value().c_str();
-            Serial.print("gateway Address set to: ");
-            Serial.println(gateway);
-//            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
-          }
-
-          // HTTP POST subnet value
-          const char* PARAM_INPUT_5 = "subnet";               // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_5) {
-            subnet = p->value().c_str();
-            Serial.print("subnet Address set to: ");
-            Serial.println(subnet);
-//            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
-          }
-          // HTTP POST mdns value
-          const char* PARAM_INPUT_6 = "mdns";                 // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_6) {
-            mdnsdotlocalurl = p->value().c_str();
-            Serial.print("mdnsdotlocalurl Address set to: ");
-            Serial.println(mdnsdotlocalurl);
-//            writeFile(SPIFFS, mdnsPath, mdnsdotlocalurl.c_str());            // Write file to save value
-          }
-          // HTTP POST dhcp value on
-          const char* PARAM_INPUT_7 = "dhcp";                // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_7) {
-            dhcpcheck = p->value().c_str();
-            Serial.print("dhcpcheck set to: ");
-            Serial.println(dhcpcheck);
-//            writeFile(SPIFFS, dhcpcheckPath, dhcpcheck.c_str());            // Write file to save value
-          }
-          //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        }
-      }
-      if (dhcpcheck == "on") {
-        ip = "dhcp ip adress";
-      }
-      SetWiFiCredentials();
-      request->send(200, "text/html", "<h1>Done. ESP restart,<br> connect router <br>go to: <a href=\"http://" + ip + "\">" + ip + "</a><br><a href=\"http://" + mdnsdotlocalurl + ".lan\">http://" + mdnsdotlocalurl + ".lan</a></h1>");
-      delay(5000);
-      ESP.restart();
-    });
-    server.begin();
-  }
-
-  
-  for(;;){
-    if (!client.connected()) {
-      digitalWrite(LED_RED, HIGH);
-      digitalWrite(LED_GREEN, LOW);
-      if (!WiFi.status() == WL_CONNECTED){      
-        WiFiReconnect();
-  //        ESP.restart();  // test, da mi ne zginjajo
-      }else{
-        reconnect();
-      }
-    }else{
-      digitalWrite(LED_RED, LOW);
-      client.loop();
-    }
-    vTaskDelay(1000);
-  }
 }
