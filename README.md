@@ -117,6 +117,9 @@ Contributions by:
 
 - @HornyPriest
 - @MatejZ-zz
+- @bernardo2798
+- @buntalol
+- @Implera d.o.o.
 
 
 ## Licence
