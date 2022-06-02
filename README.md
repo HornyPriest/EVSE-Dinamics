@@ -2,7 +2,7 @@
 
 
 
-The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller via serial RAPI API. The web UI is served at napolni.me/app, data gets to napolni.me via MQTT.
+The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller via serial RAPI API. The online UI is served at napolni.me/app, data gets to napolni.me via MQTT. Local webUI is served at ip of device.
 
 
 ## Contents
