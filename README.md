@@ -32,6 +32,7 @@ Last version is in folder ESP32_dinamika_V10_TaskWiFiLoop_Events
 ## Settings
 
 At the moment settings can be changed only over MQTT. Use MQTT explorer, topic prefix is "Dinamics/[DeviceSerialNo.]/"
+
 Settings setable over MQTT:
 |       Topic       |                    Value                   |                                     Description                                      |
 | ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
