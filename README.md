@@ -28,6 +28,10 @@ Last version is in folder ESP32_dinamika_V11_getSettings
 
 ## Changes
 
+V11:
+- added requests for settings and wifi
+
+V10
 - Semi ported to Event based software
 
 ## Requests
