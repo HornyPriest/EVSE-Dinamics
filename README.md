@@ -80,7 +80,7 @@ Settings setable over MQTT:
   - Sensor calibration
   - Breakers value
   - Timers
-  - Plug&Charge or Controlled Start
+  - Plug&Charge or Controlled Start&Stop
 
 
 ## Requirements
