@@ -10,6 +10,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 <!-- toc -->
 - [Versions](#versions)
 - [Changes](#changes)
+- [Requests](#requests)
 - [Settings](#settings)
 - [Issues](#issues)
 - [Features](#features)
@@ -22,12 +23,23 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder ESP32_dinamika_V10_TaskWiFiLoop_Events
+Last version is in folder ESP32_dinamika_V11_getSettings
 
 
 ## Changes
 
 - Semi ported to Event based software
+
+## Requests
+
+Requests are done via MQTT. Use MQTT explorer, topic prefix is "Dinamics/[DeviceSerialNo.]/"
+
+Requests available over MQTT:
+|       Topic       | Value |          Description              |
+| ----------------- | ----- | --------------------------------- |
+| get_status        | 1     | request new currents status       |
+| get_settings      | 1     | request active settings           |
+| get_wifi          | 1     | request active wifi settings      |
 
 ## Settings
 
@@ -36,7 +48,7 @@ At the moment settings can be changed only over MQTT. Use MQTT explorer, topic p
 Settings setable over MQTT:
 |       Topic       |                    Value                   |                                          Description                                            |
 | ----------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| set_enable        | 1,2,3                                      | set enable status of charging station (1 = turn off, 2 = enable charging, 3 = sleep)             |
+| set_enable        | 1,2,3                                      | set enable status of charging station (1 = turn off, 2 = enable charging, 3 = sleep)            |
 | get_status        | 1                                          | ask for new currents status                                                                     |
 | set_breaker       | 6-100[A]                                   | set value of breakers in house in Amps                                                          |
 | set_update        | 1=start update of sketch / fota            | start fota from server, only update if new version available                                    |

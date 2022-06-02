@@ -182,6 +182,8 @@ String ConnectionTopic = "/connection";
 String DebugTopic = "/debug_log";
 String SyncTimeTopic = "/synctime";
 String StateChangeTopic = "/state_change";
+String SendSettingsTopic = "/settings";
+String SendWiFiTopic = "/wifi";
 
 
 const char * topica;
@@ -237,6 +239,10 @@ const char * charDeleteSettings;
 String sub_DeleteSettingsTopic;
 const char * charPlugAndCharge;
 String sub_PlugAndChargeTopic;
+const char * charGetSettings;
+String sub_GetSettingsTopic;
+const char * charGetWiFi;
+String sub_GetWiFiTopic;
 
 
 float calibration = 27.7;
@@ -245,12 +251,6 @@ boolean SS1;
 boolean SS2;
 boolean SS3;
 boolean SS4;
-
-boolean UpdateStart;
-boolean UpdateSpiffs;
-boolean ResponseStatus;
-boolean SetupComplete = LOW;
-boolean FWSentFlag = LOW;
 
 float charge_current;
 int16_t max_current;
@@ -292,6 +292,13 @@ boolean SetTimerFlag;
 boolean SetEnergyLimitFlag;
 boolean PhaseInfo;
 boolean PAndC;
+boolean SendSettings = LOW;
+boolean SendWiFi = LOW;
+boolean UpdateStart = LOW;
+boolean UpdateSpiffs = LOW;
+boolean ResponseStatus;
+boolean SetupComplete = LOW;
+boolean FWSentFlag = LOW;
 
 
 uint8_t tmp;
@@ -793,6 +800,22 @@ void callback(char* topic, byte* message, unsigned int length) {
       SetPAC();
     }
   }
+
+  if (String(topic) == sub_GetSettingsTopic) {
+    Serial.print("Request settings received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    SendSettings = HIGH;
+    SendSettingsF();
+  }
+
+  if (String(topic) == sub_GetWiFiTopic) {
+    Serial.print("Request WiFi credentials received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    SendWiFi = HIGH;
+    SendWiFiF();
+  }
 }
 
 void reconnect() {
@@ -833,6 +856,8 @@ void reconnect() {
       client.subscribe(charTimer11);
       client.subscribe(charTimer12);
       client.subscribe(charPlugAndCharge);
+      client.subscribe(charGetSettings);
+      client.subscribe(charGetWiFi);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -992,6 +1017,124 @@ void DeleteSettings(){
   ESP.restart();
 }
 
+void SendSettingsF(){
+  if(SendSettings == HIGH){
+    TempValue = "$";
+    TempValue += "breaker=";
+    TempValue += breaker;
+    TempValue += "$$";
+    TempValue += "calibration=";
+    TempValue += calibration;
+    TempValue += "$$";
+    TempValue += "timer=";
+    TempValue += timer;
+    TempValue += "$$";
+    TempValue += "timer1=";
+    TempValue += timer1;
+    TempValue += "$$";
+    TempValue += "timer2=";
+    TempValue += timer2;
+    TempValue += "$$";
+    TempValue += "timer3=";
+    TempValue += timer3;
+    TempValue += "$$";
+    TempValue += "timer4=";
+    TempValue += timer4;
+    TempValue += "$$";
+    TempValue += "timer5=";
+    TempValue += timer5;
+    TempValue += "$$";
+    TempValue += "timer6=";
+    TempValue += timer6;
+    TempValue += "$$";
+    TempValue += "timer7=";
+    TempValue += timer7;
+    TempValue += "$$";
+    TempValue += "timer8=";
+    TempValue += timer8;
+    TempValue += "$$";
+    TempValue += "timer9=";
+    TempValue += timer9;
+    TempValue += "$$";
+    TempValue += "timer10=";
+    TempValue += timer10;
+    TempValue += "$$";
+    TempValue += "timer11=";
+    TempValue += timer11;
+    TempValue += "$$";
+    TempValue += "timer12=";
+    TempValue += timer12;
+    TempValue += "$$";
+    TempValue += "P&C";
+    TempValue += PAndC;
+    TempValue += "$$";
+    TempValue += "max_current";
+    TempValue += MQTTmax_current;
+    TempValue += "$";
+    
+    topica = "";
+      dynamicTopic = "";
+    //  epochtimeTopic = getTime();
+      dynamicTopic += prefix;
+      dynamicTopic += idTopic;
+    //  dynamicTopic += "/";
+    //  dynamicTopic += epochtimeTopic;
+      fullTopic = dynamicTopic;
+      fullTopic += SendSettingsTopic;
+      topica = fullTopic.c_str();
+      TempValueChar = TempValue.c_str();
+      client.publish(topica, TempValueChar);
+  }
+  SendSettings = LOW;
+}
+
+void SendWiFiF(){
+  if(SendWiFi == HIGH){
+    TempValue = "$";
+    TempValue += "ssid=";
+    TempValue += ssid;
+    TempValue += "$$";
+    TempValue += "pass=";
+    TempValue += pass;
+    TempValue += "$$";
+    TempValue += "ssid1=";
+    TempValue += ssid1;
+    TempValue += "$$";
+    TempValue += "pass1=";
+    TempValue += pass1;
+    TempValue += "$$";
+    TempValue += "ip=";
+    TempValue += ip;
+    TempValue += "$$";
+    TempValue += "gateway=";
+    TempValue += gateway;
+    TempValue += "$$";
+    TempValue += "subnet=";
+    TempValue += subnet;
+    TempValue += "$$";
+    TempValue += "mdns=";
+    TempValue += mdns;
+    TempValue += "$$";
+    TempValue += "dhcpcheck=";
+    TempValue += dhcpcheck;
+    TempValue += "$";
+    
+    topica = "";
+      dynamicTopic = "";
+    //  epochtimeTopic = getTime();
+      dynamicTopic += prefix;
+      dynamicTopic += idTopic;
+    //  dynamicTopic += "/";
+    //  dynamicTopic += epochtimeTopic;
+      fullTopic = dynamicTopic;
+      fullTopic += SendWiFiTopic;
+      topica = fullTopic.c_str();
+      TempValueChar = TempValue.c_str();
+      client.publish(topica, TempValueChar);
+  }
+  SendWiFi = LOW;
+}
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -1135,6 +1278,14 @@ void setup() {
   sub_PlugAndChargeTopic += idTopic;
   sub_PlugAndChargeTopic += "/set_plugandcharge";
   charPlugAndCharge = sub_PlugAndChargeTopic.c_str();
+  sub_GetSettingsTopic += prefix;
+  sub_GetSettingsTopic += idTopic;
+  sub_GetSettingsTopic += "/get_settings";
+  charGetSettings = sub_GetSettingsTopic.c_str();
+  sub_GetWiFiTopic += prefix;
+  sub_GetWiFiTopic += idTopic;
+  sub_GetWiFiTopic += "/get_wifi";
+  charGetWiFi = sub_GetWiFiTopic.c_str();
 
 
 
@@ -1588,6 +1739,8 @@ void loop() {
 //  client.loop();
   StopCharge();
   SendDebug();
+  SendSettingsF();
+  SendWiFiF();
 
   CatchStateChange();
 
