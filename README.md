@@ -34,30 +34,32 @@ Last version is in folder ESP32_dinamika_V10_TaskWiFiLoop_Events
 At the moment settings can be changed only over MQTT. Use MQTT explorer, topic prefix is "Dinamics/[DeviceSerialNo.]/"
 
 Settings setable over MQTT:
-|       Topic       |                    Value                   |                                     Description                                      |
-| ----------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
-| set_breaker       | 6-100[A]                                   | set value of breakers in house in Amps                                               |
-| set_update        | 1=start update of sketch / fota            | start fota from server, only update if new version available                         |
-| set_update_spiffs | 1=start update of SPIFFS / fota            | start fota of SPIFFS from server, only update if new version available               |
-| set_t_limit       | 1-100 (1=15min)                            | set charging time limit, each count is 15min (4 means 1h)                            |
-| set_e_limit       | 1-100 (1=1-3kWh, depends on active phases) | set charging energy limit, (1P - 1 means 1kWh ; 1P - 1 means 3kWh)                   |
-| set_c_limit       | 6-32[A]                                    | set charging current limit in Amps                                                   |
-| set_calibration   | 277(50A,1V), 544(100A,1V)                  | set calibration value for CT sensors (depends on type of sensors)                    |
-| set_debug         | 1-5 (not defined yet)                      | set debug level (higher level means more debug messages on MQTT                      |
-| set_timer         | 1-500000 (default = 2000)                  | set time interval for sending Currents to MQTT                                       |
-| set_timer1        | 1-500000 (default = 50000)                 | set time interval for auto stop charging if charge current is < 0.5A                 |
-| set_timer2        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if cable state is not connected             |
-| set_timer3        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if charging current > max. allowed current  |
-| set_timer4        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if max. allowed current < 3A                |
-| set_timer5        | 1-500000 (default = 50000)                 | set time interval for checking set max. allowed current from openEVSE                |
-| set_timer6        | 1-500000 (default = 30000)                 | set time interval for checking cable state from openEVSE                             |
-| set_timer7        | 1-500000 (default = 10000)                 | set time interval for checking charging current from openEVSE                        |
-| set_timer8        | 1-500000 (default = 50000)                 | set time interval for checking charging status from openEVSE                         |
-| set_timer9        | 1-500000 (default = 100000)                | set time interval for checking energy usage from openEVSE                            |
-| set_timer10       | 1-500000 (default = 50000)                 | set time interval for checking Dinamics<->openEVSE connection status                 |
-| set_timer11       | 1-500000 (default = 50000)                 | set time interval for pause between WiFi recconnect attempts                         |
-| set_timer12       | 1-500000 (default = 100000)                | set time interval for sending timeSync to MQTT                                       |
-| set_plugandcharge | 0 or 1 (default = 0)                       | set Plug and Charge mode, (1 = P&C is active, 0 = station automatically stops charge |
+|       Topic       |                    Value                   |                                          Description                                            |
+| ----------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| set_enable        | 1,2,3                                      | set enable status of charging station (1 = turn off, 2 = enable charging, 3 = sleep)             |
+| get_status        | 1                                          | ask for new currents status                                                                     |
+| set_breaker       | 6-100[A]                                   | set value of breakers in house in Amps                                                          |
+| set_update        | 1=start update of sketch / fota            | start fota from server, only update if new version available                                    |
+| set_update_spiffs | 1=start update of SPIFFS / fota            | start fota of SPIFFS from server, only update if new version available                          |
+| set_t_limit       | 1-100 (1=15min)                            | set charging time limit, each count is 15min (4 means 1h) !only possible when charging          |
+| set_e_limit       | 1-100 (1=1-3kWh, depends on active phases) | set charging energy limit, (1P - 1 means 1kWh ; 1P - 1 means 3kWh) !only possible when charging |
+| set_c_limit       | 6-32[A]                                    | set charging current limit in Amps  !only possible when charging                                |
+| set_calibration   | 277(50A,1V), 544(100A,1V)                  | set calibration value for CT sensors (depends on type of sensors)                               |
+| set_debug         | 1-5 (not defined yet)                      | set debug level (higher level means more debug messages on MQTT                                 |
+| set_timer         | 1-500000 (default = 2000)                  | set time interval for sending Currents to MQTT                                                  |
+| set_timer1        | 1-500000 (default = 50000)                 | set time interval for auto stop charging if charge current is < 0.5A                            |
+| set_timer2        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if cable state is not connected                        |
+| set_timer3        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if charging current > max. allowed current             |
+| set_timer4        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if max. allowed current < 3A                           |
+| set_timer5        | 1-500000 (default = 50000)                 | set time interval for checking set max. allowed current from openEVSE                           |
+| set_timer6        | 1-500000 (default = 30000)                 | set time interval for checking cable state from openEVSE                                        |
+| set_timer7        | 1-500000 (default = 10000)                 | set time interval for checking charging current from openEVSE                                   |
+| set_timer8        | 1-500000 (default = 50000)                 | set time interval for checking charging status from openEVSE                                    |
+| set_timer9        | 1-500000 (default = 100000)                | set time interval for checking energy usage from openEVSE                                       |
+| set_timer10       | 1-500000 (default = 50000)                 | set time interval for checking Dinamics<->openEVSE connection status                            |
+| set_timer11       | 1-500000 (default = 50000)                 | set time interval for pause between WiFi recconnect attempts                                    |
+| set_timer12       | 1-500000 (default = 100000)                | set time interval for sending timeSync to MQTT                                                  |
+| set_plugandcharge | 0 or 1 (default = 0)                       | set Plug and Charge mode, (1 = P&C is active, 0 = station automatically stops charge)            |
 
 ## Issues
 
