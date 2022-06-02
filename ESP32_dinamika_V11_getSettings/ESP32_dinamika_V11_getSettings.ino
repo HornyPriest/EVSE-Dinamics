@@ -656,8 +656,8 @@ void callback(char* topic, byte* message, unsigned int length) {
     Serial.print("Current calibration value received ");
     Serial.println(messageTemp);
     temp_message = messageTemp;
-    int tempCalibration = temp_message.toInt();
-    calibration = tempCalibration/10;
+    calibration = temp_message.toInt();
+    calibration = calibration/10;
     SetCalibration();
   }
 
@@ -1018,7 +1018,9 @@ void DeleteSettings(){
 }
 
 void SendSettingsF(){
+  Serial.println("Send Settings function called");
   if(SendSettings == HIGH){
+    Serial.println("Sending Settings");
     TempValue = "$";
     TempValue += "breaker=";
     TempValue += breaker;
@@ -1026,43 +1028,31 @@ void SendSettingsF(){
     TempValue += "calibration=";
     TempValue += calibration;
     TempValue += "$$";
-    TempValue += "timer=";
+    TempValue += "timers=";
     TempValue += timer;
-    TempValue += "$$";
-    TempValue += "timer1=";
+    TempValue += ":";
     TempValue += timer1;
-    TempValue += "$$";
-    TempValue += "timer2=";
+    TempValue += ":";
     TempValue += timer2;
-    TempValue += "$$";
-    TempValue += "timer3=";
+    TempValue += ":";
     TempValue += timer3;
-    TempValue += "$$";
-    TempValue += "timer4=";
+    TempValue += ":";
     TempValue += timer4;
-    TempValue += "$$";
-    TempValue += "timer5=";
+    TempValue += ":";
     TempValue += timer5;
-    TempValue += "$$";
-    TempValue += "timer6=";
+    TempValue += ":";
     TempValue += timer6;
-    TempValue += "$$";
-    TempValue += "timer7=";
+    TempValue += ":";
     TempValue += timer7;
-    TempValue += "$$";
-    TempValue += "timer8=";
+    TempValue += ":";
     TempValue += timer8;
-    TempValue += "$$";
-    TempValue += "timer9=";
+    TempValue += ":";
     TempValue += timer9;
-    TempValue += "$$";
-    TempValue += "timer10=";
+    TempValue += ":";
     TempValue += timer10;
-    TempValue += "$$";
-    TempValue += "timer11=";
+    TempValue += ":";
     TempValue += timer11;
-    TempValue += "$$";
-    TempValue += "timer12=";
+    TempValue += ":";
     TempValue += timer12;
     TempValue += "$$";
     TempValue += "P&C";
@@ -1089,7 +1079,9 @@ void SendSettingsF(){
 }
 
 void SendWiFiF(){
+  Serial.println("Send WiFi function called");
   if(SendWiFi == HIGH){
+    Serial.println("Sending WiFi");
     TempValue = "$";
     TempValue += "ssid=";
     TempValue += ssid;
@@ -1739,8 +1731,6 @@ void loop() {
 //  client.loop();
   StopCharge();
   SendDebug();
-  SendSettingsF();
-  SendWiFiF();
 
   CatchStateChange();
 
