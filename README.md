@@ -49,7 +49,6 @@ Settings setable over MQTT:
 |       Topic       |                    Value                   |                                          Description                                            |
 | ----------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | set_enable        | 1,2,3                                      | set enable status of charging station (1 = turn off, 2 = enable charging, 3 = sleep)            |
-| get_status        | 1                                          | ask for new currents status                                                                     |
 | set_breaker       | 6-100[A]                                   | set value of breakers in house in Amps                                                          |
 | set_update        | 1=start update of sketch / fota            | start fota from server, only update if new version available                                    |
 | set_update_spiffs | 1=start update of SPIFFS / fota            | start fota of SPIFFS from server, only update if new version available                          |
