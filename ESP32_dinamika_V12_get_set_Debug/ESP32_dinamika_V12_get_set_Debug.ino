@@ -9,10 +9,14 @@
 #include "AsyncTCP.h"                     // https://github.com/me-no-dev/AsyncTCP
 // download zip from above->Arduino IDE->menu->tab->sketch->include library->add ZIP library
 #include "SPIFFS.h"
+//#include "LittleFS.h"
 #include "ESPmDNS.h"
 #include "HTTPClient.h"
 #include "ESP32httpUpdate.h"
 #include "Preferences.h"
+
+
+//#define SPIFFS LittleFS
  
 
 // Initiate Preferences to save WiFi credentials to EEPROM
@@ -84,20 +88,20 @@ long lastInfo10 = 0;
 long lastInfo11 = 0;
 long lastInfo12 = 0;
 
-long timer = 2000;
-long timer1 = 50000;
-long timer2 = 10000;
-long timer3 = 10000;
-long timer4 = 10000;
-long timer5 = 50000;
-long timer6 = 30000;
-long timer7 = 10000;
-long timer8 = 50000;
-long timer9 = 100000;
-long timer10 = 50000;
-long timer11 = 50000;
-long timer12 = 100000;
-long timer13 = 6000;
+long timer;
+long timer1;
+long timer2;
+long timer3;
+long timer4;
+long timer5;
+long timer6;
+long timer7;
+long timer8;
+long timer9;
+long timer10;
+long timer11;
+long timer12;
+long timer13;
 
 
 long now11;
@@ -185,6 +189,7 @@ String SyncTimeTopic = "/synctime";
 String StateChangeTopic = "/state_change";
 String SendSettingsTopic = "/settings";
 String SendWiFiTopic = "/wifi";
+String SendDebugTopic = "/debug";
 
 
 const char * topica;
@@ -204,10 +209,12 @@ const char * charEnergyLimit;
 String sub_EnergyLimitTopic;
 const char * charCurrentLimit;
 String sub_CurrentLimitTopic;
+const char * charCurrentMinLimit;
+String sub_CurrentMinLimitTopic;
 const char * charCurrentCalibration;
 String sub_CurrentCalibrationTopic;
-const char * charDebugLVL;
-String sub_DebugLVLTopic;
+const char * charDebug;
+String sub_DebugTopic;
 const char * charRAPI;
 String sub_RAPITopic;
 const char * charTimer;
@@ -246,6 +253,8 @@ const char * charGetSettings;
 String sub_GetSettingsTopic;
 const char * charGetWiFi;
 String sub_GetWiFiTopic;
+const char * charGetDebug;
+String sub_GetDebugTopic;
 
 
 float calibration = 27.7;
@@ -255,9 +264,51 @@ boolean SS2;
 boolean SS3;
 boolean SS4;
 
+boolean debug1;
+boolean debug1_MQTT;
+boolean debug2;
+boolean debug2_MQTT;
+boolean debug3;
+boolean debug3_MQTT;
+boolean debug4;
+boolean debug4_MQTT;
+boolean debug5;
+boolean debug5_MQTT;
+boolean debug6;
+boolean debug6_MQTT;
+boolean debug7;
+boolean debug7_MQTT;
+boolean debug8;
+boolean debug8_MQTT;
+boolean debug9;
+boolean debug9_MQTT;
+boolean debug10;
+boolean debug10_MQTT;
+boolean debug11;
+boolean debug11_MQTT;
+boolean debug12;
+boolean debug12_MQTT;
+boolean debug13;
+boolean debug13_MQTT;
+boolean debug14;
+boolean debug14_MQTT;
+boolean debug15;
+boolean debug15_MQTT;
+boolean debug16;
+boolean debug16_MQTT;
+boolean debug17;
+boolean debug17_MQTT;
+boolean debug18;
+boolean debug18_MQTT;
+boolean debug19;
+boolean debug19_MQTT;
+boolean debug20;
+boolean debug20_MQTT;
+
 float charge_current;
 int16_t max_current;
 int16_t MQTTmax_current;
+int8_t min_current;
 int16_t set_current;
 uint16_t breaker;
 uint8_t active_phases;
@@ -297,6 +348,8 @@ boolean PhaseInfo;
 boolean PAndC;
 boolean SendSettings = LOW;
 boolean SendWiFi = LOW;
+boolean SendDebug = LOW;
+boolean TranslateDebug = LOW;
 boolean UpdateStart = LOW;
 boolean UpdateSpiffs = LOW;
 boolean ResponseStatus;
@@ -308,7 +361,6 @@ uint8_t tmp;
 uint8_t MQTTBreaker;
 uint8_t EnergyLimit;
 uint8_t TimeLimit;
-uint8_t debug_level;
 
 
 
@@ -655,6 +707,14 @@ void callback(char* topic, byte* message, unsigned int length) {
     SetMaxMQTTCurrent();
   }
 
+  if (String(topic) == sub_CurrentMinLimitTopic) {
+    Serial.print("CurrentMinLimit received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    min_current = temp_message.toInt();
+    SetMinCurrent();
+  }
+
   if (String(topic) == sub_CurrentCalibrationTopic) {
     Serial.print("Current calibration value received ");
     Serial.println(messageTemp);
@@ -662,13 +722,6 @@ void callback(char* topic, byte* message, unsigned int length) {
     calibration = temp_message.toInt();
     calibration = calibration/10;
     SetCalibration();
-  }
-
-  if (String(topic) == sub_DebugLVLTopic) {
-    Serial.print("Debug level received ");
-    Serial.println(messageTemp);
-    temp_message = messageTemp;
-    debug_level = temp_message.toInt();
   }
 
   if (String(topic) == sub_RAPITopic) {
@@ -813,6 +866,15 @@ void callback(char* topic, byte* message, unsigned int length) {
     }
   }
 
+  if (String(topic) == sub_DebugTopic) {
+    Serial.print("Debug value received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    debug = temp_message;
+    TranslateDebug = HIGH;
+    TranslateDebugF();
+  }
+
   if (String(topic) == sub_GetSettingsTopic) {
     Serial.print("Request settings received ");
     Serial.println(messageTemp);
@@ -827,6 +889,14 @@ void callback(char* topic, byte* message, unsigned int length) {
     temp_message = messageTemp;
     SendWiFi = HIGH;
     SendWiFiF();
+  }
+
+  if (String(topic) == sub_GetDebugTopic) {
+    Serial.print("Request Debug settings received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    SendDebug = HIGH;
+    SendDebugF();
   }
 }
 
@@ -851,8 +921,9 @@ void reconnect() {
       client.subscribe(charChargeTimer);
       client.subscribe(charEnergyLimit);
       client.subscribe(charCurrentLimit);
+      client.subscribe(charCurrentMinLimit);
       client.subscribe(charCurrentCalibration);
-      client.subscribe(charDebugLVL);
+      client.subscribe(charDebug);
       client.subscribe(charRAPI);
       client.subscribe(charTimer);
       client.subscribe(charTimer1);
@@ -871,6 +942,7 @@ void reconnect() {
       client.subscribe(charPlugAndCharge);
       client.subscribe(charGetSettings);
       client.subscribe(charGetWiFi);
+      client.subscribe(charGetDebug);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -970,6 +1042,7 @@ void GetSettings(){
     timer13 = preferences.getLong("timer13", 6000);
     PAndC = preferences.getBool("pac", LOW);
     MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
+    min_current = preferences.getInt("min_current", 6);
     preferences.end();
     debug += "$read settings from preferences$";
   }
@@ -1017,6 +1090,13 @@ void SetMaxMQTTCurrent(){
   debug += "$saving MQTTmax_current settings to preferences$";
 }
 
+void SetMinCurrent(){
+  preferences.begin("Settings", false);
+  preferences.putInt("min_current", min_current);
+  preferences.end();
+  debug += "$saving min_current settings to preferences$";
+}
+
 void SetPAC(){
   preferences.begin("Settings", false);
   preferences.putBool("pac", PAndC);
@@ -1040,8 +1120,17 @@ void SendSettingsF(){
     TempValue += "breaker=";
     TempValue += breaker;
     TempValue += "$$";
+    TempValue += "max_current";
+    TempValue += MQTTmax_current;
+    TempValue += "$$";
+    TempValue += "min_current";
+    TempValue += min_current;
+    TempValue += "$$";
     TempValue += "calibration=";
     TempValue += calibration;
+    TempValue += "$$";
+    TempValue += "P&C";
+    TempValue += PAndC;
     TempValue += "$$";
     TempValue += "timers=";
     TempValue += timer;
@@ -1071,12 +1160,6 @@ void SendSettingsF(){
     TempValue += timer12;
     TempValue += ":";
     TempValue += timer13;
-    TempValue += "$$";
-    TempValue += "P&C";
-    TempValue += PAndC;
-    TempValue += "$$";
-    TempValue += "max_current";
-    TempValue += MQTTmax_current;
     TempValue += "$";
     
     topica = "";
@@ -1142,6 +1225,259 @@ void SendWiFiF(){
       client.publish(topica, TempValueChar);
   }
   SendWiFi = LOW;
+}
+
+void GetDebug(){
+    preferences.begin("Debug", true);
+    debug1 = preferences.getBool("debug1", 0);
+    debug1_MQTT = preferences.getBool("debug1_MQTT", 0);
+    debug2 = preferences.getBool("debug2", 0);
+    debug2_MQTT = preferences.getBool("debug2_MQTT", 0);
+    debug3 = preferences.getBool("debug3", 0);
+    debug3_MQTT = preferences.getBool("debug3_MQTT", 0);
+    debug4 = preferences.getBool("debug4", 0);
+    debug4_MQTT = preferences.getBool("debug4_MQTT", 0);
+    debug5 = preferences.getBool("debug5", 0);
+    debug5_MQTT = preferences.getBool("debug5_MQTT", 0);
+    debug6 = preferences.getBool("debug6", 0);
+    debug6_MQTT = preferences.getBool("debug6_MQTT", 0);
+    debug7 = preferences.getBool("debug7", 0);
+    debug7_MQTT = preferences.getBool("debug7_MQTT", 0);
+    debug8 = preferences.getBool("debug8", 0);
+    debug8_MQTT = preferences.getBool("debug8_MQTT", 0);
+    debug9 = preferences.getBool("debug9", 0);
+    debug9_MQTT = preferences.getBool("debug9_MQTT", 0);
+    debug10 = preferences.getBool("debug10", 0);
+    debug10_MQTT = preferences.getBool("debug10_MQTT", 0);
+    debug11 = preferences.getBool("debug11", 0);
+    debug11_MQTT = preferences.getBool("debug11_MQTT", 0);
+    debug12 = preferences.getBool("debug12", 0);
+    debug12_MQTT = preferences.getBool("debug12_MQTT", 0);
+    debug13 = preferences.getBool("debug13", 0);
+    debug13_MQTT = preferences.getBool("debug13_MQTT", 0);
+    debug14 = preferences.getBool("debug14", 0);
+    debug14_MQTT = preferences.getBool("debug14_MQTT", 0);
+    debug15 = preferences.getBool("debug15", 0);
+    debug15_MQTT = preferences.getBool("debug15_MQTT", 0);
+    debug16 = preferences.getBool("debug16", 0);
+    debug16_MQTT = preferences.getBool("debug16_MQTT", 0);
+    debug17 = preferences.getBool("debug17", 0);
+    debug17_MQTT = preferences.getBool("debug17_MQTT", 0);
+    debug18 = preferences.getBool("debug18", 0);
+    debug18_MQTT = preferences.getBool("debug18_MQTT", 0);
+    debug19 = preferences.getBool("debug19", 0);
+    debug19_MQTT = preferences.getBool("debug19_MQTT", 0);
+    debug20 = preferences.getBool("debug20", 0);
+    debug20_MQTT = preferences.getBool("debug20_MQTT", 0);
+    preferences.end();
+    debug += "$read debug settings from preferences$";
+}
+
+void SetDebug(){
+  preferences.begin("Debug", false);
+  preferences.putBool("debug1", debug1);
+  preferences.putBool("debug1_MQTT", debug1_MQTT);
+  preferences.putBool("debug2", debug2);
+  preferences.putBool("debug2_MQTT", debug2_MQTT);
+  preferences.putBool("debug3", debug3);
+  preferences.putBool("debug3_MQTT", debug3_MQTT);
+  preferences.putBool("debug4", debug4);
+  preferences.putBool("debug4_MQTT", debug4_MQTT);
+  preferences.putBool("debug5", debug5);
+  preferences.putBool("debug5_MQTT", debug5_MQTT);
+  preferences.putBool("debug6", debug6);
+  preferences.putBool("debug6_MQTT", debug6_MQTT);
+  preferences.putBool("debug7", debug7);
+  preferences.putBool("debug7_MQTT", debug7_MQTT);
+  preferences.putBool("debug8", debug8);
+  preferences.putBool("debug8_MQTT", debug8_MQTT);
+  preferences.putBool("debug9", debug9);
+  preferences.putBool("debug9_MQTT", debug9_MQTT);
+  preferences.putBool("debug10", debug10);
+  preferences.putBool("debug10_MQTT", debug10_MQTT);
+  preferences.putBool("debug11", debug11);
+  preferences.putBool("debug11_MQTT", debug11_MQTT);
+  preferences.putBool("debug12", debug12);
+  preferences.putBool("debug12_MQTT", debug12_MQTT);
+  preferences.putBool("debug13", debug13);
+  preferences.putBool("debug13_MQTT", debug13_MQTT);
+  preferences.putBool("debug14", debug14);
+  preferences.putBool("debug14_MQTT", debug14_MQTT);
+  preferences.putBool("debug15", debug15);
+  preferences.putBool("debug15_MQTT", debug15_MQTT);
+  preferences.putBool("debug16", debug16);
+  preferences.putBool("debug16_MQTT", debug16_MQTT);
+  preferences.putBool("debug17", debug17);
+  preferences.putBool("debug17_MQTT", debug17_MQTT);
+  preferences.putBool("debug18", debug18);
+  preferences.putBool("debug18_MQTT", debug18_MQTT);
+  preferences.putBool("debug19", debug19);
+  preferences.putBool("debug19_MQTT", debug19_MQTT);
+  preferences.putBool("debug20", debug20);
+  preferences.putBool("debug20_MQTT", debug20_MQTT);
+  preferences.end();
+  debug += "$saving debug seetings to preferences$";
+}
+
+void DeleteDebug(){
+  preferences.begin("Debug", false);
+  preferences.clear();
+  preferences.end();
+  debug += "$deleting debug settings from preferences$";
+  ESP.restart();
+}
+
+void SendDebugF(){
+  Serial.println("Send Debug Settings function called");
+  if(SendDebug == HIGH){
+    Serial.println("Sending Debug Settings");
+    TempValue = "$";
+    TempValue += "Debugs=";
+    TempValue += debug1;
+    TempValue += ":";
+    TempValue += debug1_MQTT;
+    TempValue += ":";
+    TempValue += debug2;
+    TempValue += ":";
+    TempValue += debug2_MQTT;
+    TempValue += ":";
+    TempValue += debug3;
+    TempValue += ":";
+    TempValue += debug3_MQTT;
+    TempValue += ":";
+    TempValue += debug4;
+    TempValue += ":";
+    TempValue += debug4_MQTT;
+    TempValue += ":";
+    TempValue += debug5;
+    TempValue += ":";
+    TempValue += debug5_MQTT;
+    TempValue += ":";
+    TempValue += debug6;
+    TempValue += ":";
+    TempValue += debug6_MQTT;
+    TempValue += ":";
+    TempValue += debug7;
+    TempValue += ":";
+    TempValue += debug7_MQTT;
+    TempValue += ":";
+    TempValue += debug8;
+    TempValue += ":";
+    TempValue += debug8_MQTT;
+    TempValue += ":";
+    TempValue += debug9;
+    TempValue += ":";
+    TempValue += debug9_MQTT;
+    TempValue += ":";
+    TempValue += debug10;
+    TempValue += ":";
+    TempValue += debug10_MQTT;
+    TempValue += ":";
+    TempValue += debug11;
+    TempValue += ":";
+    TempValue += debug11_MQTT;
+    TempValue += ":";
+    TempValue += debug12;
+    TempValue += ":";
+    TempValue += debug12_MQTT;
+    TempValue += ":";
+    TempValue += debug13;
+    TempValue += ":";
+    TempValue += debug13_MQTT;
+    TempValue += ":";
+    TempValue += debug14;
+    TempValue += ":";
+    TempValue += debug14_MQTT;
+    TempValue += ":";
+    TempValue += debug15;
+    TempValue += ":";
+    TempValue += debug15_MQTT;
+    TempValue += ":";
+    TempValue += debug16;
+    TempValue += ":";
+    TempValue += debug16_MQTT;
+    TempValue += ":";
+    TempValue += debug17;
+    TempValue += ":";
+    TempValue += debug17_MQTT;
+    TempValue += ":";
+    TempValue += debug18;
+    TempValue += ":";
+    TempValue += debug18_MQTT;
+    TempValue += ":";
+    TempValue += debug19;
+    TempValue += ":";
+    TempValue += debug19_MQTT;
+    TempValue += ":";
+    TempValue += debug20;
+    TempValue += ":";
+    TempValue += debug20_MQTT;
+    TempValue += "$";
+    
+    topica = "";
+      dynamicTopic = "";
+    //  epochtimeTopic = getTime();
+      dynamicTopic += prefix;
+      dynamicTopic += idTopic;
+    //  dynamicTopic += "/";
+    //  dynamicTopic += epochtimeTopic;
+      fullTopic = dynamicTopic;
+      fullTopic += SendDebugTopic;
+      topica = fullTopic.c_str();
+      TempValueChar = TempValue.c_str();
+      client.publish(topica, TempValueChar);
+  }
+  SendDebug = LOW;
+}
+
+void TranslateDebugF(){
+  if(TranslateDebug == HIGH){
+    int charNum = debug.length();
+    if(charNum == 40){
+      debug1 = debug.substring(0,1).toInt();
+      debug1_MQTT = debug.substring(1,2).toInt();
+      debug2 = debug.substring(2,3).toInt();
+      debug2_MQTT = debug.substring(3,4).toInt();
+      debug3 = debug.substring(4,5).toInt();
+      debug3_MQTT = debug.substring(5,6).toInt();
+      debug4 = debug.substring(6,7).toInt();
+      debug4_MQTT = debug.substring(7,8).toInt();
+      debug5 = debug.substring(8,9).toInt();
+      debug5_MQTT = debug.substring(9,10).toInt();
+      debug6 = debug.substring(10,11).toInt();
+      debug6_MQTT = debug.substring(11,12).toInt();
+      debug7 = debug.substring(12,13).toInt();
+      debug7_MQTT = debug.substring(13,14).toInt();
+      debug8 = debug.substring(14,15).toInt();
+      debug8_MQTT = debug.substring(15,16).toInt();
+      debug9 = debug.substring(16,17).toInt();
+      debug9_MQTT = debug.substring(17,18).toInt();
+      debug10 = debug.substring(18,19).toInt();
+      debug10_MQTT = debug.substring(19,20).toInt();
+      debug11 = debug.substring(20,21).toInt();
+      debug11_MQTT = debug.substring(21,22).toInt();
+      debug12 = debug.substring(22,23).toInt();
+      debug12_MQTT = debug.substring(23,24).toInt();
+      debug13 = debug.substring(24,25).toInt();
+      debug13_MQTT = debug.substring(25,26).toInt();
+      debug14 = debug.substring(26,27).toInt();
+      debug14_MQTT = debug.substring(27,28).toInt();
+      debug15 = debug.substring(28,29).toInt();
+      debug15_MQTT = debug.substring(29,30).toInt();
+      debug16 = debug.substring(30,31).toInt();
+      debug16_MQTT = debug.substring(31,32).toInt();
+      debug17 = debug.substring(32,33).toInt();
+      debug17_MQTT = debug.substring(33,34).toInt();
+      debug18 = debug.substring(34,35).toInt();
+      debug18_MQTT = debug.substring(35,36).toInt();
+      debug19 = debug.substring(36,37).toInt();
+      debug19_MQTT = debug.substring(37,38).toInt();
+      debug20 = debug.substring(38,39).toInt();
+      debug20_MQTT = debug.substring(39).toInt();
+      SetDebug();
+    }
+    TranslateDebug == LOW;
+  }
 }
 
 
@@ -1219,14 +1555,18 @@ void setup() {
   sub_CurrentLimitTopic += idTopic;
   sub_CurrentLimitTopic += "/set_c_limit";
   charCurrentLimit = sub_CurrentLimitTopic.c_str();
+  sub_CurrentMinLimitTopic += prefix;
+  sub_CurrentMinLimitTopic += idTopic;
+  sub_CurrentMinLimitTopic += "/set_c_min_limit";
+  charCurrentMinLimit = sub_CurrentMinLimitTopic.c_str();
   sub_CurrentCalibrationTopic += prefix;
   sub_CurrentCalibrationTopic += idTopic;
   sub_CurrentCalibrationTopic += "/set_calibration";
   charCurrentCalibration = sub_CurrentCalibrationTopic.c_str();
-  sub_DebugLVLTopic += prefix;
-  sub_DebugLVLTopic += idTopic;
-  sub_DebugLVLTopic += "/set_debug";
-  charDebugLVL = sub_DebugLVLTopic.c_str();
+  sub_DebugTopic += prefix;
+  sub_DebugTopic += idTopic;
+  sub_DebugTopic += "/set_debug";
+  charDebug = sub_DebugTopic.c_str();
   sub_RAPITopic += prefix;
   sub_RAPITopic += idTopic;
   sub_RAPITopic += "/set_rapi";
@@ -1299,6 +1639,10 @@ void setup() {
   sub_GetWiFiTopic += idTopic;
   sub_GetWiFiTopic += "/get_wifi";
   charGetWiFi = sub_GetWiFiTopic.c_str();
+  sub_GetDebugTopic += prefix;
+  sub_GetDebugTopic += idTopic;
+  sub_GetDebugTopic += "/get_debug";
+  charGetDebug = sub_GetDebugTopic.c_str();
 
 
 
@@ -1354,11 +1698,12 @@ void setup() {
   DIPswitchCalc();
   CheckSettings();
   GetSettings();
+  GetDebug();
 
 
-  WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
+/*  WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
   WiFi.onEvent(WiFiGotIP, SYSTEM_EVENT_STA_GOT_IP);
-  WiFi.onEvent(WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED);
+  WiFi.onEvent(WiFiStationDisconnected, SYSTEM_EVENT_STA_DISCONNECTED);*/
   
 
   // Set GPIO ledPin as an OUTPUT
@@ -1623,7 +1968,7 @@ void setup() {
 //  SENDBreaker();
 //  SENDFWversion();
 
-  SendDebug();
+  SendDebugF2();
 
   Serial.println(FW_version);
   
@@ -1645,7 +1990,8 @@ void loop() {
         reconnect();
       }
   }else{
-      digitalWrite(LED_RED, LOW);
+    client.loop();
+    digitalWrite(LED_RED, LOW);
   }
 
   
@@ -1662,6 +2008,7 @@ void loop() {
   }
 
   if((WiFi.status() == WL_CONNECTED)){
+    client.loop();
     if(UpdateSpiffs == HIGH) {
         Serial.println("Update SPIFFS...");
         debug += "$";
@@ -1749,7 +2096,7 @@ void loop() {
   SetMQTTCurrent();
   CurrentFlagSet();
   SetCurrent();
-//  client.loop();
+  client.loop();
   StopCharge();
   ConnectionAlert();
   
@@ -1803,7 +2150,7 @@ void loop() {
     if (now10 - lastInfo10 > timer10) {   //500
       digitalWrite(LED_GREEN, HIGH);
       lastInfo10 = now10;
-      SendDebug();
+      SendDebugF2();
       digitalWrite(LED_GREEN, LOW);
     }    
     long now12 = millis();
@@ -3078,7 +3425,7 @@ void SetMQTTCurrent(){
         while(Serial.available() > 0) {
           char t = Serial.read();
         }
-        if(MQTTmax_current >= 6){
+        if(MQTTmax_current >= min_current){
           ResponseMessage = "";
           TempValue = "";
           TempValue += SC;
@@ -3191,7 +3538,7 @@ void SetCurrent(){
       if(MQTTmax_current < max_current){
         max_current = MQTTmax_current;
       }
-      if(max_current >= 6){
+      if(max_current >= min_current){
           ResponseMessage = "";
           TempValue = "";
           TempValue += SC;
@@ -3616,7 +3963,7 @@ void StopCharge(){
       }
     }
     if(ChargeSetState == HIGH){
-      if(max_current >= 6){
+      if(max_current >= min_current){
         c4 = 0;
       }else{
         c4 = c4+1;
@@ -3628,7 +3975,7 @@ void StopCharge(){
           TurnSleep();
         }
       }
-    }else if(PAndC == HIGH && ChargeSetState == LOW && max_current >= 6){
+    }else if(PAndC == HIGH && ChargeSetState == LOW && max_current >= min_current){
       Serial.println("vklapljam polnilnico, dovolj toka + P&C");
       TurnOn();
     }
@@ -3636,7 +3983,7 @@ void StopCharge(){
 }
 
 
-void SendDebug(){
+void SendDebugF2(){
   if (client.connected()){
     if(debug.length() > 3){
       const char * DebugChar;
@@ -3693,7 +4040,7 @@ void CatchStateChange(){
   }
 }
 
-void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
+/*void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
   Serial.println("Connected to AP successfully!");
   debug += "$";
   debug += "Connected to AP successfully!";
@@ -3722,7 +4069,7 @@ void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
   debug += "Disconnected from WiFi access point,  WiFi lost connection. Reason: ";
   debug += info.disconnected.reason;
   debug += "$";
-}
+}*/
 
 void WiFiReconnect(){
   now11 = millis();
