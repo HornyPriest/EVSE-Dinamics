@@ -12,7 +12,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 - [Changes](#changes)
 - [Requests](#requests)
 - [Settings](#settings)
-- [Messages&Responses](#messages&responses)
+- [MessagesAndResponses](#messagesandresponses)
 - [Issues](#issues)
 - [Features](#features)
 - [Requirements](#requirements)
@@ -80,7 +80,7 @@ Settings setable over MQTT:
 | set_plugandcharge | 0 or 1 (default = 0)                       | set Plug and Charge mode, (1 = P&C is active, 0 = station automatically stops charge)           |
 | set_debug         | 40 digits with 0 or 1 (default = 40x0)     | set debug messages, (1 = debug is active, 0 = debug inactive), only valid if all 40 digits sent |
 
-## Messages&Responses
+## MessagesAndResponses
 
 Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[DeviceSerialNo.]/"
 
