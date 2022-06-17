@@ -40,12 +40,13 @@ V10
 Requests are done via MQTT. Use MQTT explorer, topic prefix is "Dinamics/[DeviceSerialNo.]/"
 
 Requests available over MQTT:
-|       Topic       | Value |          Description              |                                         Response Topic                                 |
-| ----------------- | ----- | --------------------------------- | -------------------------------------------------------------------------------------- |
-| get_status        | 1     | request new currents status       | current1, current2, current3, max_charging_current, charging current, active phases    |
-| get_settings      | 1     | request active settings           | settings                                                                               |
-| get_wifi          | 1     | request active wifi settings      | wifi                                                                                   |
-| get_debug         | 1     | request active debug settings     | debug                                                                                  |
+|       Topic       |              Value            |          Description              |                                                      Response Topic                                          |
+| ----------------- | ----------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| get_status        | 1                             | request new currents status       | current1, current2, current3, max_charging_current, charging current, active phases                          |
+| get_settings      | 1                             | request active settings           | settings                                                                                                     |
+| get_wifi          | 1                             | request active wifi settings      | wifi                                                                                                         |
+| get_debug         | 1                             | request active debug settings     | debug                                                                                                        |
+| rapi_request      | RAPI commands without "$"     | send direct RAPI command to EVSE  | rapi_response (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |                                                                                  |
 
 ## Settings
 
@@ -104,17 +105,18 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | settings             | String ($variable=value$...)               | string contain multiple individual settings each encapsuled in separators "$", each timer separated with ":"                                                 |
 | wifi                 | String ($variable=value$...)               | string contain multiple individual wifi settings and credentials each encapsuled in separators "$"                                                           |
 | debug                | String ($Debugs=debug1:...:debug40$)       | string contain multiple individual debug messages switch settings, each debug switch(0 or 1) separated with ":"                                              |
-| responseGC           | RAPI response from EVSE                    | EVSEs RAPI response for GC - get current capacity info (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)        |
-| responseG0           | RAPI response from EVSE                    | EVSEs RAPI response for G0 - get EV connect state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
-| responseGG           | RAPI response from EVSE                    | EVSEs RAPI response for GG - get charging current and voltage (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |
-| responseGS           | RAPI response from EVSE                    | EVSEs RAPI response for GS - get state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                        |
-| responseGU           | RAPI response from EVSE                    | EVSEs RAPI response for GU - get energy usage (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                 |
-| responseFD           | RAPI response from EVSE                    | EVSEs RAPI response for FD - disable EVSE (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                     |
-| responseFE           | RAPI response from EVSE                    | EVSEs RAPI response for FE - enable EVSE (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                      |
-| responseFS           | RAPI response from EVSE                    | EVSEs RAPI response for FS - sleep EVSE (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                       |
-| responseSC           | RAPI response from EVSE                    | EVSEs RAPI response for SC - set current capacity (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
-| responseST           | RAPI response from EVSE                    | EVSEs RAPI response for ST - set timer (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                        |
-| responseSH           | RAPI response from EVSE                    | EVSEs RAPI response for SH - set cHarge limit to kWh (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)          |
+| responseGC           | RAPI response from EVSE (String)           | EVSEs RAPI response for GC - get current capacity info (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)        |
+| responseG0           | RAPI response from EVSE (String)           | EVSEs RAPI response for G0 - get EV connect state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
+| responseGG           | RAPI response from EVSE (String)           | EVSEs RAPI response for GG - get charging current and voltage (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |
+| responseGS           | RAPI response from EVSE (String)           | EVSEs RAPI response for GS - get state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                        |
+| responseGU           | RAPI response from EVSE (String)           | EVSEs RAPI response for GU - get energy usage (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                 |
+| responseFD           | RAPI response from EVSE (String)           | EVSEs RAPI response for FD - disable EVSE (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                     |
+| responseFE           | RAPI response from EVSE (String)           | EVSEs RAPI response for FE - enable EVSE (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                      |
+| responseFS           | RAPI response from EVSE (String)           | EVSEs RAPI response for FS - sleep EVSE (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                       |
+| responseSC           | RAPI response from EVSE (String)           | EVSEs RAPI response for SC - set current capacity (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
+| responseST           | RAPI response from EVSE (String)           | EVSEs RAPI response for ST - set timer (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                        |
+| responseSH           | RAPI response from EVSE (String)           | EVSEs RAPI response for SH - set cHarge limit to kWh (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)          |
+| rapi_response        | RAPI response from EVSE (String)           | EVSEs RAPI response for rapi_request (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                          |
 
 ## Issues
 

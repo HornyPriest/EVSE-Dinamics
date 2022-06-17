@@ -190,6 +190,7 @@ String StateChangeTopic = "/state_change";
 String SendSettingsTopic = "/settings";
 String SendWiFiTopic = "/wifi";
 String SendDebugTopic = "/debug";
+String RapiTopic = "/rapi_response";
 
 
 const char * topica;
@@ -316,6 +317,7 @@ String temp_message;
 String TempValue;
 const char * TempValueChar;
 String debug;
+String RAPI;
 
 
 String GC = "$GC";
@@ -355,6 +357,7 @@ boolean UpdateSpiffs = LOW;
 boolean ResponseStatus;
 boolean SetupComplete = LOW;
 boolean FWSentFlag = LOW;
+boolean AskRAPI = LOW;
 
 
 uint8_t tmp;
@@ -727,7 +730,9 @@ void callback(char* topic, byte* message, unsigned int length) {
   if (String(topic) == sub_RAPITopic) {
     Serial.print("RAPI command received ");
     Serial.println(messageTemp);
-    temp_message = messageTemp;
+    RAPI = messageTemp;
+    AskRAPI = HIGH;
+    AskRAPIF(); 
   }
 
   if (String(topic) == sub_TimerTopic) {
@@ -1039,7 +1044,7 @@ void GetSettings(){
     timer10 = preferences.getLong("timer10", 50000);
     timer11 = preferences.getLong("timer11", 50000);
     timer12 = preferences.getLong("timer12", 100000);
-    timer13 = preferences.getLong("timer13", 6000);
+    timer13 = preferences.getLong("timer13", 8000);
     PAndC = preferences.getBool("pac", LOW);
     MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
     min_current = preferences.getInt("min_current", 6);
@@ -1120,10 +1125,10 @@ void SendSettingsF(){
     TempValue += "breaker=";
     TempValue += breaker;
     TempValue += "$$";
-    TempValue += "max_current";
+    TempValue += "max_current=";
     TempValue += MQTTmax_current;
     TempValue += "$$";
-    TempValue += "min_current";
+    TempValue += "min_current=";
     TempValue += min_current;
     TempValue += "$$";
     TempValue += "calibration=";
@@ -1569,7 +1574,7 @@ void setup() {
   charDebug = sub_DebugTopic.c_str();
   sub_RAPITopic += prefix;
   sub_RAPITopic += idTopic;
-  sub_RAPITopic += "/set_rapi";
+  sub_RAPITopic += "/rapi_request";
   charRAPI = sub_RAPITopic.c_str();
   sub_TimerTopic += prefix;
   sub_TimerTopic += idTopic;
@@ -3766,7 +3771,7 @@ void SetLimit(){
     //        dynamicTopic += "/";
     //        dynamicTopic += epochtimeTopic;
             fullTopic = dynamicTopic;
-            fullTopic += ResponseSHTopic;
+            fullTopic += TimeoutTopic;
             topica = fullTopic.c_str();
             TempValue = "";
             TempValue += t1;
@@ -3796,6 +3801,84 @@ void SetLimit(){
       //    dynamicTopic += epochtimeTopic;
           fullTopic = dynamicTopic;
           fullTopic += ResponseSHTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += ResponseMessage;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
+    }    
+  }
+}
+
+void AskRAPIF(){
+  if(ConnectionTimeoutFlag == LOW){
+    if(AskRAPI == HIGH){
+        Serial.println("asking RAPI");
+        debug += "$";
+        debug += "Sending RAPI command :";
+        debug += RAPI;
+        debug += "$";
+        ResponseStatus = LOW;
+        while(Serial.available() > 0) {
+          char t = Serial.read();
+        }
+        ResponseMessage = "";
+        TempValue = "";
+        TempValue += "$";
+        TempValue += RAPI;
+        Serial.println(TempValue);
+        Serial.flush();
+        t1 = 0;
+        while(ResponseStatus == LOW && t1 < timer13){
+          if(Serial.available()){
+            ResponseStatus = HIGH;
+            ResponseMessage = Serial.readString();
+          }
+          t1 = t1 + 1;
+          delayMicroseconds(50);
+        }
+        if(t1 > timer13/2){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+    //        epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+    //        dynamicTopic += "/";
+    //        dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += TimeoutTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += t1;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+  //          delay(20);
+          }
+        }
+        if(t1 > timer13 - 1){
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
+          ConnectionTimeoutFlag = HIGH;
+        }else{
+          Serial.print("timeout flag OFF, t1 = ");
+          Serial.println(t1);
+          ConnectionTimeoutFlag = LOW;
+          AskRAPI = LOW;
+        }
+        t1 = 0;
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+      //    epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+      //    dynamicTopic += "/";
+      //    dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += RapiTopic;
           topica = fullTopic.c_str();
           TempValue = "";
           TempValue += ResponseMessage;
