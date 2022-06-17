@@ -12,6 +12,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 - [Changes](#changes)
 - [Requests](#requests)
 - [Settings](#settings)
+- [Messages & Responses](#messages & responses)
 - [Issues](#issues)
 - [Features](#features)
 - [Requirements](#requirements)
