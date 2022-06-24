@@ -2678,58 +2678,68 @@ void CheckState(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
-      }
-    }
-    if(t1 > timer13 - 1){
-        Serial.print("timeout flag ON, t1 = ");
-        Serial.println(t1);
-        ConnectionTimeoutFlag = HIGH;
-        if (client.connected()){
-          fullTopic = dynamicTopic;
-          fullTopic += StateTopic;
-          topica = fullTopic.c_str();
-          TempValue = "";
-          TempValue += "2";
-          TempValueChar = TempValue.c_str();
-          client.publish(topica, TempValueChar);
-//          delay(20);
-        }
-      }else{
-        Serial.print("timeout flag OFF, t1 = ");
-        Serial.println(t1);
-        ConnectionTimeoutFlag = LOW;
+      if(debug1_MQTT == 1){
         if (client.connected()){
           topica = "";
           dynamicTopic = "";
-      //    epochtimeTopic = getTime();
+  //        epochtimeTopic = getTime();
           dynamicTopic += prefix;
           dynamicTopic += idTopic;
-      //    dynamicTopic += "/";
-      //    dynamicTopic += epochtimeTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
           fullTopic = dynamicTopic;
-          fullTopic += ResponseG0Topic;
+          fullTopic += TimeoutTopic;
           topica = fullTopic.c_str();
           TempValue = "";
-          TempValue += ResponseMessage;
+          TempValue += t1;
           TempValueChar = TempValue.c_str();
           client.publish(topica, TempValueChar);
-//          delay(20);
+  //        delay(20);
+        }
+      }
+    }
+    if(t1 > timer13 - 1){
+        if(debug1 == 1){
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
+        }
+        ConnectionTimeoutFlag = HIGH;
+        if(debug1_MQTT == 1){
+          if (client.connected()){
+            fullTopic = dynamicTopic;
+            fullTopic += StateTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += "2";
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+  //          delay(20);
+          }
+        }
+      }else{
+        if(debug1 == 1){
+          Serial.print("timeout flag OFF, t1 = ");
+          Serial.println(t1);
+        }
+        ConnectionTimeoutFlag = LOW;
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseG0Topic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+  //          delay(20);
+          }
         }
     
         int index = ResponseMessage.indexOf(" ");
@@ -2773,50 +2783,58 @@ void CheckStatus(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
       }
     }
     if(t1 > timer13 - 1){
-        Serial.print("timeout flag ON, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = HIGH;
       }else{
-        Serial.print("timeout flag OFF, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag OFF, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = LOW;
     }
     t1 = 0;
-    if (client.connected()){
-      topica = "";
-      dynamicTopic = "";
-  //    epochtimeTopic = getTime();
-      dynamicTopic += prefix;
-      dynamicTopic += idTopic;
-  //    dynamicTopic += "/";
-  //    dynamicTopic += epochtimeTopic;
-      fullTopic = dynamicTopic;
-      fullTopic += ResponseGSTopic;
-      topica = fullTopic.c_str();
-      TempValue = "";
-      TempValue += ResponseMessage;
-      TempValueChar = TempValue.c_str();
-      client.publish(topica, TempValueChar);
-//      delay(20);
+    if(debug2 == 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += ResponseGSTopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ResponseMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
     }
   }
 }
@@ -2843,50 +2861,58 @@ void CheckSetAmps(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
       }
     }
     if(t1 > timer13 - 1){
-        Serial.print("timeout flag ON, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = HIGH;
       }else{
-        Serial.print("timeout flag OFF, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag OFF, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = LOW;
     }
     t1 = 0;
-    if (client.connected()){
-      topica = "";
-      dynamicTopic = "";
-  //    epochtimeTopic = getTime();
-      dynamicTopic += prefix;
-      dynamicTopic += idTopic;
-  //    dynamicTopic += "/";
-  //    dynamicTopic += epochtimeTopic;
-      fullTopic = dynamicTopic;
-      fullTopic += ResponseGCTopic;
-      topica = fullTopic.c_str();
-      TempValue = "";
-      TempValue += ResponseMessage;
-      TempValueChar = TempValue.c_str();
-      client.publish(topica, TempValueChar);
-//      delay(20);
+    if(debug2 == 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += ResponseGCTopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ResponseMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
     }
   }
 }
@@ -2912,50 +2938,58 @@ void CheckCharge(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
       }
     }
     if(t1 > timer13 - 1){
-        Serial.print("timeout flag ON, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = HIGH;
       }else{
-        Serial.print("timeout flag OFF, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag OFF, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = LOW;
     }
     t1 = 0;
-    if (client.connected()){
-      topica = "";
-      dynamicTopic = "";
-  //    epochtimeTopic = getTime();
-      dynamicTopic += prefix;
-      dynamicTopic += idTopic;
-  //    dynamicTopic += "/";
-  //    dynamicTopic += epochtimeTopic;
-      fullTopic = dynamicTopic;
-      fullTopic += ResponseGGTopic;
-      topica = fullTopic.c_str();
-      TempValue = "";
-      TempValue += ResponseMessage;
-      TempValueChar = TempValue.c_str();
-      client.publish(topica, TempValueChar);
-//      delay(20);
+    if(debug2 == 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += ResponseGGTopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ResponseMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
     }
 
 
@@ -3005,50 +3039,58 @@ void CheckEnergy(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
       }
     }
     if(t1 > timer13 - 1){
-        Serial.print("timeout flag ON, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = HIGH;
       }else{
-        Serial.print("timeout flag OFF, t1 = ");
-        Serial.println(t1);
+        if(debug1 == 1){
+          Serial.print("timeout flag OFF, t1 = ");
+          Serial.println(t1);
+        }
         ConnectionTimeoutFlag = LOW;
     }
     t1 = 0;
-    if (client.connected()){
-      topica = "";
-      dynamicTopic = "";
-  //    epochtimeTopic = getTime();
-      dynamicTopic += prefix;
-      dynamicTopic += idTopic;
-  //    dynamicTopic += "/";
-  //    dynamicTopic += epochtimeTopic;
-      fullTopic = dynamicTopic;
-      fullTopic += ResponseGUTopic;
-      topica = fullTopic.c_str();
-      TempValue = "";
-      TempValue += ResponseMessage;
-      TempValueChar = TempValue.c_str();
-      client.publish(topica, TempValueChar);
-//      delay(20);
+    if(debug2 == 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += ResponseGUTopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ResponseMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
     }
   }
 }
@@ -3079,28 +3121,39 @@ void TurnOn(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
       }
     }
     if(t1 > timer13 - 1){
+        if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+        }
         ConnectionTimeoutFlag = HIGH;
     }else{
+        if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+        }
         ConnectionTimeoutFlag = LOW;
+        t1 = 0;
 //        tmp = 2;    PRESTAVIL GOR, RAZMISLI IN DAJ NAZAJ TU IN ZGORAJ ZBRIŠI
         if (client.connected()){
           topica = "";
@@ -3129,22 +3182,24 @@ void TurnOn(){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
     }*/
-    if (client.connected()){
-      topica = "";
-      dynamicTopic = "";
-  //    epochtimeTopic = getTime();
-      dynamicTopic += prefix;
-      dynamicTopic += idTopic;
-  //    dynamicTopic += "/";
-  //    dynamicTopic += epochtimeTopic;
-      fullTopic = dynamicTopic;
-      fullTopic += ResponseFETopic;
-      topica = fullTopic.c_str();
-      TempValue = "";
-      TempValue += ResponseMessage;
-      TempValueChar = TempValue.c_str();
-      client.publish(topica, TempValueChar);
-//      delay(20);
+    if(debug2 == 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += ResponseFETopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ResponseMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
     }
 /*    if(index > 1){
       if (client.connected()){
@@ -3191,28 +3246,39 @@ void TurnOff(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
       }
     }
     if(t1 > timer13 - 1){
+        if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+        }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+        }
         ConnectionTimeoutFlag = LOW;
+        t1 = 0;
         if (client.connected()){
           topica = "";
           dynamicTopic = "";
@@ -3239,23 +3305,24 @@ void TurnOff(){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
     }*/
-    
-    if (client.connected()){
-      topica = "";
-      dynamicTopic = "";
-  //    epochtimeTopic = getTime();
-      dynamicTopic += prefix;
-      dynamicTopic += idTopic;
-  //    dynamicTopic += "/";
-  //    dynamicTopic += epochtimeTopic;
-      fullTopic = dynamicTopic;
-      fullTopic += ResponseFDTopic;
-      topica = fullTopic.c_str();
-      TempValue = "";
-      TempValue += ResponseMessage;
-      TempValueChar = TempValue.c_str();
-      client.publish(topica, TempValueChar);
-//      delay(20);
+    if(debug2 == 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += ResponseFDTopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ResponseMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
     }
  /*   if(index > 1){
       if (client.connected()){
@@ -3302,28 +3369,39 @@ void TurnSleep(){
       delayMicroseconds(50);
     }
     if(t1 > timer13/2){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-//        epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-//        dynamicTopic += "/";
-//        dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += TimeoutTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += t1;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-//        delay(20);
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
       }
     }
     if(t1 > timer13 - 1){
+        if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+        }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+        }
         ConnectionTimeoutFlag = LOW;
+        t1 = 0;
         tmp = 3;
         if (client.connected()){
           topica = "";
@@ -3351,22 +3429,24 @@ void TurnSleep(){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
     }*/
-    if (client.connected()){
-      topica = "";
-      dynamicTopic = "";
-  //    epochtimeTopic = getTime();
-      dynamicTopic += prefix;
-      dynamicTopic += idTopic;
-  //    dynamicTopic += "/";
-  //    dynamicTopic += epochtimeTopic;
-      fullTopic = dynamicTopic;
-      fullTopic += ResponseFSTopic;
-      topica = fullTopic.c_str();
-      TempValue = "";
-      TempValue += ResponseMessage;
-      TempValueChar = TempValue.c_str();
-      client.publish(topica, TempValueChar);
-//      delay(20);
+    if(debug2 == 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += ResponseFSTopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ResponseMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
     }
  /*   if(index > 1){
       if (client.connected()){
@@ -3447,31 +3527,37 @@ void SetMQTTCurrent(){
             delayMicroseconds(50);
           }
           if(t1 > timer13/2){
-            if (client.connected()){
-              topica = "";
-              dynamicTopic = "";
-      //        epochtimeTopic = getTime();
-              dynamicTopic += prefix;
-              dynamicTopic += idTopic;
-      //        dynamicTopic += "/";
-      //        dynamicTopic += epochtimeTopic;
-              fullTopic = dynamicTopic;
-              fullTopic += TimeoutTopic;
-              topica = fullTopic.c_str();
-              TempValue = "";
-              TempValue += t1;
-              TempValueChar = TempValue.c_str();
-              client.publish(topica, TempValueChar);
-    //          delay(20);
+            if(debug1_MQTT == 1){
+              if (client.connected()){
+                topica = "";
+                dynamicTopic = "";
+        //        epochtimeTopic = getTime();
+                dynamicTopic += prefix;
+                dynamicTopic += idTopic;
+        //        dynamicTopic += "/";
+        //        dynamicTopic += epochtimeTopic;
+                fullTopic = dynamicTopic;
+                fullTopic += TimeoutTopic;
+                topica = fullTopic.c_str();
+                TempValue = "";
+                TempValue += t1;
+                TempValueChar = TempValue.c_str();
+                client.publish(topica, TempValueChar);
+      //          delay(20);
+              }
             }
           }
           if(t1 > timer13 - 1){
-            Serial.print("timeout flag ON, t1 = ");
-            Serial.println(t1);
+            if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+            }
             ConnectionTimeoutFlag = HIGH;
           }else{
-            Serial.print("timeout flag OFF, t1 = ");
-            Serial.println(t1);
+            if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+            }
             ConnectionTimeoutFlag = LOW;
             t1 = 0;
             
@@ -3480,22 +3566,24 @@ void SetMQTTCurrent(){
               ATMessage.remove(0, index);
               ResponseMessage.remove(index);
             }*/
-            if (client.connected()){
-              topica = "";
-              dynamicTopic = "";
-          //    epochtimeTopic = getTime();
-              dynamicTopic += prefix;
-              dynamicTopic += idTopic;
-          //    dynamicTopic += "/";
-          //    dynamicTopic += epochtimeTopic;
-              fullTopic = dynamicTopic;
-              fullTopic += ResponseSCTopic;
-              topica = fullTopic.c_str();
-              TempValue = "";
-              TempValue += ResponseMessage;
-              TempValueChar = TempValue.c_str();
-              client.publish(topica, TempValueChar);
-    //          delay(20);
+            if(debug2 == 1){
+              if (client.connected()){
+                topica = "";
+                dynamicTopic = "";
+            //    epochtimeTopic = getTime();
+                dynamicTopic += prefix;
+                dynamicTopic += idTopic;
+            //    dynamicTopic += "/";
+            //    dynamicTopic += epochtimeTopic;
+                fullTopic = dynamicTopic;
+                fullTopic += ResponseSCTopic;
+                topica = fullTopic.c_str();
+                TempValue = "";
+                TempValue += ResponseMessage;
+                TempValueChar = TempValue.c_str();
+                client.publish(topica, TempValueChar);
+      //          delay(20);
+              }
             }
    /*         if(index > 1){
               if (client.connected()){
@@ -3560,31 +3648,37 @@ void SetCurrent(){
             delayMicroseconds(50);
           }
           if(t1 > timer13/2){
-            if (client.connected()){
-              topica = "";
-              dynamicTopic = "";
-      //        epochtimeTopic = getTime();
-              dynamicTopic += prefix;
-              dynamicTopic += idTopic;
-      //        dynamicTopic += "/";
-      //        dynamicTopic += epochtimeTopic;
-              fullTopic = dynamicTopic;
-              fullTopic += TimeoutTopic;
-              topica = fullTopic.c_str();
-              TempValue = "";
-              TempValue += t1;
-              TempValueChar = TempValue.c_str();
-              client.publish(topica, TempValueChar);
-    //          delay(20);
+            if(debug1_MQTT == 1){
+              if (client.connected()){
+                topica = "";
+                dynamicTopic = "";
+        //        epochtimeTopic = getTime();
+                dynamicTopic += prefix;
+                dynamicTopic += idTopic;
+        //        dynamicTopic += "/";
+        //        dynamicTopic += epochtimeTopic;
+                fullTopic = dynamicTopic;
+                fullTopic += TimeoutTopic;
+                topica = fullTopic.c_str();
+                TempValue = "";
+                TempValue += t1;
+                TempValueChar = TempValue.c_str();
+                client.publish(topica, TempValueChar);
+      //          delay(20);
+              }
             }
           }
           if(t1 > timer13 - 1){
-            Serial.print("timeout flag ON, t1 = ");
-            Serial.println(t1);
+            if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+            }
             ConnectionTimeoutFlag = HIGH;
           }else{
-            Serial.print("timeout flag OFF, t1 = ");
-            Serial.println(t1);
+            if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+            }
             ConnectionTimeoutFlag = LOW;
             t1 = 0;
     
@@ -3593,22 +3687,24 @@ void SetCurrent(){
               ATMessage.remove(0, index);
               ResponseMessage.remove(index);
             }*/
-            if (client.connected()){
-              topica = "";
-              dynamicTopic = "";
-          //    epochtimeTopic = getTime();
-              dynamicTopic += prefix;
-              dynamicTopic += idTopic;
-          //    dynamicTopic += "/";
-          //    dynamicTopic += epochtimeTopic;
-              fullTopic = dynamicTopic;
-              fullTopic += ResponseSCTopic;
-              topica = fullTopic.c_str();
-              TempValue = "";
-              TempValue += ResponseMessage;
-              TempValueChar = TempValue.c_str();
-              client.publish(topica, TempValueChar);
-    //          delay(20);
+            if(debug2 == 1){
+              if (client.connected()){
+                topica = "";
+                dynamicTopic = "";
+            //    epochtimeTopic = getTime();
+                dynamicTopic += prefix;
+                dynamicTopic += idTopic;
+            //    dynamicTopic += "/";
+            //    dynamicTopic += epochtimeTopic;
+                fullTopic = dynamicTopic;
+                fullTopic += ResponseSCTopic;
+                topica = fullTopic.c_str();
+                TempValue = "";
+                TempValue += ResponseMessage;
+                TempValueChar = TempValue.c_str();
+                client.publish(topica, TempValueChar);
+      //          delay(20);
+              }
             }
      /*       if(index > 1){
               if (client.connected()){
@@ -3686,51 +3782,59 @@ void SetTimer(){
           delayMicroseconds(50);
         }
         if(t1 > timer13/2){
-          if (client.connected()){
-            topica = "";
-            dynamicTopic = "";
-    //        epochtimeTopic = getTime();
-            dynamicTopic += prefix;
-            dynamicTopic += idTopic;
-    //        dynamicTopic += "/";
-    //        dynamicTopic += epochtimeTopic;
-            fullTopic = dynamicTopic;
-            fullTopic += TimeoutTopic;
-            topica = fullTopic.c_str();
-            TempValue = "";
-            TempValue += t1;
-            TempValueChar = TempValue.c_str();
-            client.publish(topica, TempValueChar);
-  //          delay(20);
+          if(debug1_MQTT == 1){
+            if (client.connected()){
+              topica = "";
+              dynamicTopic = "";
+      //        epochtimeTopic = getTime();
+              dynamicTopic += prefix;
+              dynamicTopic += idTopic;
+      //        dynamicTopic += "/";
+      //        dynamicTopic += epochtimeTopic;
+              fullTopic = dynamicTopic;
+              fullTopic += TimeoutTopic;
+              topica = fullTopic.c_str();
+              TempValue = "";
+              TempValue += t1;
+              TempValueChar = TempValue.c_str();
+              client.publish(topica, TempValueChar);
+    //          delay(20);
+            }
           }
         }
         if(t1 > timer13 - 1){
-          Serial.print("timeout flag ON, t1 = ");
-          Serial.println(t1);
+          if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+          }
           ConnectionTimeoutFlag = HIGH;
         }else{
-          Serial.print("timeout flag OFF, t1 = ");
-          Serial.println(t1);
+          if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+          }
           ConnectionTimeoutFlag = LOW;
           SetTimerFlag = LOW;
         }
         t1 = 0;
-        if (client.connected()){
-          topica = "";
-          dynamicTopic = "";
-      //    epochtimeTopic = getTime();
-          dynamicTopic += prefix;
-          dynamicTopic += idTopic;
-      //    dynamicTopic += "/";
-      //    dynamicTopic += epochtimeTopic;
-          fullTopic = dynamicTopic;
-          fullTopic += ResponseSTTopic;
-          topica = fullTopic.c_str();
-          TempValue = "";
-          TempValue += ResponseMessage;
-          TempValueChar = TempValue.c_str();
-          client.publish(topica, TempValueChar);
-  //        delay(20);
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseSTTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+    //        delay(20);
+          }
         }
     }  
   }
@@ -3762,51 +3866,59 @@ void SetLimit(){
           delayMicroseconds(50);
         }
         if(t1 > timer13/2){
-          if (client.connected()){
-            topica = "";
-            dynamicTopic = "";
-    //        epochtimeTopic = getTime();
-            dynamicTopic += prefix;
-            dynamicTopic += idTopic;
-    //        dynamicTopic += "/";
-    //        dynamicTopic += epochtimeTopic;
-            fullTopic = dynamicTopic;
-            fullTopic += TimeoutTopic;
-            topica = fullTopic.c_str();
-            TempValue = "";
-            TempValue += t1;
-            TempValueChar = TempValue.c_str();
-            client.publish(topica, TempValueChar);
-  //          delay(20);
+          if(debug1_MQTT == 1){
+            if (client.connected()){
+              topica = "";
+              dynamicTopic = "";
+      //        epochtimeTopic = getTime();
+              dynamicTopic += prefix;
+              dynamicTopic += idTopic;
+      //        dynamicTopic += "/";
+      //        dynamicTopic += epochtimeTopic;
+              fullTopic = dynamicTopic;
+              fullTopic += TimeoutTopic;
+              topica = fullTopic.c_str();
+              TempValue = "";
+              TempValue += t1;
+              TempValueChar = TempValue.c_str();
+              client.publish(topica, TempValueChar);
+    //          delay(20);
+            }
           }
         }
         if(t1 > timer13 - 1){
-          Serial.print("timeout flag ON, t1 = ");
-          Serial.println(t1);
+          if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+          }
           ConnectionTimeoutFlag = HIGH;
         }else{
-          Serial.print("timeout flag OFF, t1 = ");
-          Serial.println(t1);
+          if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+          }
           ConnectionTimeoutFlag = LOW;
           SetEnergyLimitFlag = LOW;
         }
         t1 = 0;
-        if (client.connected()){
-          topica = "";
-          dynamicTopic = "";
-      //    epochtimeTopic = getTime();
-          dynamicTopic += prefix;
-          dynamicTopic += idTopic;
-      //    dynamicTopic += "/";
-      //    dynamicTopic += epochtimeTopic;
-          fullTopic = dynamicTopic;
-          fullTopic += ResponseSHTopic;
-          topica = fullTopic.c_str();
-          TempValue = "";
-          TempValue += ResponseMessage;
-          TempValueChar = TempValue.c_str();
-          client.publish(topica, TempValueChar);
-  //        delay(20);
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseSHTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+    //        delay(20);
+          }
         }
     }    
   }
@@ -3840,51 +3952,59 @@ void AskRAPIF(){
           delayMicroseconds(50);
         }
         if(t1 > timer13/2){
-          if (client.connected()){
-            topica = "";
-            dynamicTopic = "";
-    //        epochtimeTopic = getTime();
-            dynamicTopic += prefix;
-            dynamicTopic += idTopic;
-    //        dynamicTopic += "/";
-    //        dynamicTopic += epochtimeTopic;
-            fullTopic = dynamicTopic;
-            fullTopic += TimeoutTopic;
-            topica = fullTopic.c_str();
-            TempValue = "";
-            TempValue += t1;
-            TempValueChar = TempValue.c_str();
-            client.publish(topica, TempValueChar);
-  //          delay(20);
+          if(debug1_MQTT == 1){
+            if (client.connected()){
+              topica = "";
+              dynamicTopic = "";
+      //        epochtimeTopic = getTime();
+              dynamicTopic += prefix;
+              dynamicTopic += idTopic;
+      //        dynamicTopic += "/";
+      //        dynamicTopic += epochtimeTopic;
+              fullTopic = dynamicTopic;
+              fullTopic += TimeoutTopic;
+              topica = fullTopic.c_str();
+              TempValue = "";
+              TempValue += t1;
+              TempValueChar = TempValue.c_str();
+              client.publish(topica, TempValueChar);
+    //          delay(20);
+            }
           }
         }
         if(t1 > timer13 - 1){
-          Serial.print("timeout flag ON, t1 = ");
-          Serial.println(t1);
+          if(debug1 == 1){
+              Serial.print("timeout flag ON, t1 = ");
+              Serial.println(t1);
+          }
           ConnectionTimeoutFlag = HIGH;
         }else{
-          Serial.print("timeout flag OFF, t1 = ");
-          Serial.println(t1);
+          if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+          }
           ConnectionTimeoutFlag = LOW;
           AskRAPI = LOW;
         }
         t1 = 0;
-        if (client.connected()){
-          topica = "";
-          dynamicTopic = "";
-      //    epochtimeTopic = getTime();
-          dynamicTopic += prefix;
-          dynamicTopic += idTopic;
-      //    dynamicTopic += "/";
-      //    dynamicTopic += epochtimeTopic;
-          fullTopic = dynamicTopic;
-          fullTopic += RapiTopic;
-          topica = fullTopic.c_str();
-          TempValue = "";
-          TempValue += ResponseMessage;
-          TempValueChar = TempValue.c_str();
-          client.publish(topica, TempValueChar);
-  //        delay(20);
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += RapiTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+    //        delay(20);
+          }
         }
     }    
   }
