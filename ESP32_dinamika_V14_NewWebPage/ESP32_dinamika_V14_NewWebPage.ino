@@ -106,6 +106,8 @@ long timer13;
 
 long now11;
 
+int vmesna;
+
 
 
 // Second Core Settings//
@@ -191,6 +193,7 @@ String SendSettingsTopic = "/settings";
 String SendWiFiTopic = "/wifi";
 String SendDebugTopic = "/debug";
 String RapiTopic = "/rapi_response";
+String PandCTopic = "/plugandcharge";
 
 
 const char * topica;
@@ -337,7 +340,7 @@ String ATMessage;
 
 uint8_t State;
 
-boolean SetChargeFlag;
+boolean SetChargeFlag = HIGH;
 boolean ChargeSetState;
 boolean SetMQTTCurrentFlag;
 boolean SetCurrentFlag;
@@ -358,6 +361,7 @@ boolean ResponseStatus;
 boolean SetupComplete = LOW;
 boolean FWSentFlag = LOW;
 boolean AskRAPI = LOW;
+boolean PowerOn;
 
 
 uint8_t tmp;
@@ -861,7 +865,8 @@ void callback(char* topic, byte* message, unsigned int length) {
     Serial.print("Plug and Charge setting update received ");
     Serial.println(messageTemp);
     temp_message = messageTemp;
-    int vmesna = temp_message.toInt();
+    vmesna = temp_message.toInt();
+    RespondPandC();
     if(vmesna == 1){
       PAndC = HIGH;
       SetPAC();
@@ -966,6 +971,23 @@ void selectTopic(){
     dynamicTopic += idTopic;
     dynamicTopic += "/";
     dynamicTopic += epochtimeTopic;
+}
+
+void GetRuntimeSettings(){
+  preferences.begin("RuntimeSets", true);
+  PowerOn = preferences.getBool("poweron", LOW);
+  preferences.end();
+  if(PowerOn == HIGH){
+    tmp=2;
+  }else{
+    tmp=3;
+  }
+}
+
+void SetRuntimeSettings(){
+  preferences.begin("RuntimeSets", false);
+  preferences.putBool("poweron", PowerOn);
+  preferences.end();
 }
 
 void CheckWiFiCredentials(){
@@ -1121,51 +1143,64 @@ void SendSettingsF(){
   Serial.println("Send Settings function called");
   if(SendSettings == HIGH){
     Serial.println("Sending Settings");
-    TempValue = "$";
-    TempValue += "breaker=";
+    TempValue = "{";
+    TempValue += "\"B\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += breaker;
-    TempValue += "$$";
-    TempValue += "max_current=";
+    TempValue += "\",";
+    TempValue += "\"MAXC\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += MQTTmax_current;
-    TempValue += "$$";
-    TempValue += "min_current=";
+    TempValue += "\",";
+    TempValue += "\"MINC\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += min_current;
-    TempValue += "$$";
-    TempValue += "calibration=";
+    TempValue += "\",";
+    TempValue += "\"C\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += calibration;
-    TempValue += "$$";
-    TempValue += "P&C";
+    TempValue += "\",";
+    TempValue += "\"P&C\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += PAndC;
-    TempValue += "$$";
-    TempValue += "timers=";
+    TempValue += "\",";
+    TempValue += "\"T\"";
+    TempValue += ":";
+    TempValue += "[";
     TempValue += timer;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer1;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer2;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer3;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer4;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer5;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer6;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer7;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer8;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer9;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer10;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer11;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer12;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer13;
-    TempValue += "$";
+    TempValue += "]";
+    TempValue += "}";
     
     topica = "";
       dynamicTopic = "";
@@ -1187,34 +1222,52 @@ void SendWiFiF(){
   Serial.println("Send WiFi function called");
   if(SendWiFi == HIGH){
     Serial.println("Sending WiFi");
-    TempValue = "$";
-    TempValue += "ssid=";
+    TempValue = "{";
+    TempValue += "\"ssid\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += ssid;
-    TempValue += "$$";
-    TempValue += "pass=";
+    TempValue += "\",";
+    TempValue += "\"pass\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += pass;
-    TempValue += "$$";
-    TempValue += "ssid1=";
+    TempValue += "\",";
+    TempValue += "\"ssid1\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += ssid1;
-    TempValue += "$$";
-    TempValue += "pass1=";
+    TempValue += "\",";
+    TempValue += "\"pass1\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += pass1;
-    TempValue += "$$";
-    TempValue += "ip=";
+    TempValue += "\",";
+    TempValue += "\"ip\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += ip;
-    TempValue += "$$";
-    TempValue += "gateway=";
+    TempValue += "\",";
+    TempValue += "\"gateway\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += gateway;
-    TempValue += "$$";
-    TempValue += "subnet=";
+    TempValue += "\",";
+    TempValue += "\"subnet\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += subnet;
-    TempValue += "$$";
-    TempValue += "mdns=";
+    TempValue += "\",";
+    TempValue += "\"mdns\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += mdns;
-    TempValue += "$$";
-    TempValue += "dhcpcheck=";
+    TempValue += "\",";
+    TempValue += "\"dhcpcheck\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += dhcpcheck;
-    TempValue += "$";
+    TempValue += "\"}";
     
     topica = "";
       dynamicTopic = "";
@@ -1336,88 +1389,91 @@ void SendDebugF(){
   Serial.println("Send Debug Settings function called");
   if(SendDebug == HIGH){
     Serial.println("Sending Debug Settings");
-    TempValue = "$";
-    TempValue += "Debugs=";
+    TempValue = "{";
+    TempValue += "\"Debugs\"";
+    TempValue += ":";
+    TempValue += "[";
     TempValue += debug1;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug1_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug2;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug2_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug3;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug3_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug4;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug4_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug5;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug5_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug6;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug6_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug7;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug7_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug8;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug8_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug9;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug9_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug10;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug10_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug11;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug11_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug12;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug12_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug13;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug13_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug14;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug14_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug15;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug15_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug16;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug16_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug17;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug17_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug18;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug18_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug19;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug19_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug20;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug20_MQTT;
-    TempValue += "$";
+    TempValue += "]";
+    TempValue += "}";
     
     topica = "";
       dynamicTopic = "";
@@ -1704,6 +1760,7 @@ void setup() {
   CheckSettings();
   GetSettings();
   GetDebug();
+  GetRuntimeSettings();
 
 
 /*  WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
@@ -2348,6 +2405,22 @@ void SENDFWversion(){
     digitalWrite(LED_RED, LOW);
     FWSentFlag = HIGH;
   }
+}
+
+void RespondPandC(){
+  dynamicTopic = "";
+//  epochtimeTopic = getTime();
+  dynamicTopic += prefix;
+  dynamicTopic += idTopic;
+//  dynamicTopic += "/";
+//  dynamicTopic += epochtimeTopic;
+  fullTopic = dynamicTopic;
+  fullTopic += PandCTopic;
+  topica = fullTopic.c_str();
+  TempValue = "";
+  TempValue += vmesna;
+  TempValueChar = TempValue.c_str();
+  client.publish(topica, TempValueChar);
 }
 
 void SENDCurrents(){
@@ -3480,16 +3553,22 @@ void ChargeChanger(){
       debug += "$";
       switch(tmp){
         case 1:
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnOff();
         break;
         case 2:
           c2 = 0;
           c3 = 0;
           c4 = 0;
-          c5 = 0; 
+          c5 = 0;
+          PowerOn = HIGH;
+          SetRuntimeSettings(); 
           TurnOn();
         break;
         case 3:
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnSleep();
         break;
       }
@@ -3998,6 +4077,7 @@ void AskRAPIF(){
         //    dynamicTopic += epochtimeTopic;
             fullTopic = dynamicTopic;
             fullTopic += RapiTopic;
+            fullTopic += RAPI;
             topica = fullTopic.c_str();
             TempValue = "";
             TempValue += ResponseMessage;
@@ -4128,18 +4208,6 @@ void CheckPhaseChange(){
 void StopCharge(){
   if(ConnectionTimeoutFlag == LOW){
     if(ChargeSetState == HIGH && PAndC == LOW){
-      if(charge_current > 0.5){
-        c2 = 0;
-      }else{
-        c2 = c2+1;
-        if(c2 > timer1){
-          Serial.println("Izklop, premali tok");
-          debug += "$";
-          debug += "Izklop, premali tok";
-          debug += "$";
-          TurnSleep();
-        }
-      }
       if((State != 0) && (State != 2)){
         c6 = 0;
       }else{
@@ -4149,10 +4217,28 @@ void StopCharge(){
           debug += "$";
           debug += "Izklop, state";
           debug += "$";
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnSleep();
         }
       }
-      if(charge_current <= max_current + 0.2){
+    }
+    if(ChargeSetState == HIGH){
+      if(charge_current > 0.3){
+        c2 = 0;
+      }else{
+        c2 = c2+1;
+        if(c2 > timer1){
+          Serial.println("Izklop, premali tok");
+          debug += "$";
+          debug += "Izklop, premali tok";
+          debug += "$";
+          PowerOn = LOW;
+          SetRuntimeSettings();
+          TurnSleep();
+        }
+      }
+      if(charge_current <= max_current + 0.5){
         c3 = 0; 
       }else{
         c3 = c3+1;
@@ -4161,11 +4247,11 @@ void StopCharge(){
           debug += "$";
           debug += "Izklop, prevelik tok";
           debug += "$";
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnSleep();
         }     
       }
-    }
-    if(ChargeSetState == HIGH){
       if(max_current >= min_current){
         c4 = 0;
       }else{
@@ -4178,8 +4264,8 @@ void StopCharge(){
           TurnSleep();
         }
       }
-    }else if(PAndC == HIGH && ChargeSetState == LOW && max_current >= min_current && charge_current == 0){
-      Serial.println("vklapljam polnilnico, dovolj toka + P&C");
+    }else if((PAndC == HIGH || PowerOn == HIGH) && ChargeSetState == LOW && max_current >= min_current && charge_current == 0){
+      Serial.println("vklapljam polnilnico, dovolj toka + P&C ali PowerOn");
       TurnOn();
     }
   }

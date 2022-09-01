@@ -106,6 +106,8 @@ long timer13;
 
 long now11;
 
+int vmesna;
+
 
 
 // Second Core Settings//
@@ -191,6 +193,7 @@ String SendSettingsTopic = "/settings";
 String SendWiFiTopic = "/wifi";
 String SendDebugTopic = "/debug";
 String RapiTopic = "/rapi_response";
+String PandCTopic = "/plugandcharge";
 
 
 const char * topica;
@@ -337,7 +340,7 @@ String ATMessage;
 
 uint8_t State;
 
-boolean SetChargeFlag;
+boolean SetChargeFlag = HIGH;
 boolean ChargeSetState;
 boolean SetMQTTCurrentFlag;
 boolean SetCurrentFlag;
@@ -358,6 +361,7 @@ boolean ResponseStatus;
 boolean SetupComplete = LOW;
 boolean FWSentFlag = LOW;
 boolean AskRAPI = LOW;
+boolean PowerOn;
 
 
 uint8_t tmp;
@@ -555,47 +559,7 @@ bool initWiFi() {
   return true;
 }
 
-// Replaces placeholder with LED state value
-// replaces the text between %match% in spiffs index.html on upload with actual variables
-String processor(const String& var) {
-  if (var == "STATE") {                 // in index.html noted as &STATE&
-    if (tmp == 2) {
-      ledState = "ON";
-    }
-    else if (tmp == 3){
-      ledState = "OFF";
-    }
-    return ledState;
-    return String();
-  }
-  else if (var == "CURRENT1"){
-    String temp1String = String(average1, 1);
-    return temp1String;
-  }
-  else if (var == "CURRENT2"){
-    String temp2String = String(average2, 1);
-    return temp2String;
-  }
-  else if (var == "CURRENT3"){
-    String temp3String = String(average3, 1);
-    return temp3String;
-  }
-  else if (var == "BREAKERS"){
-    String temp4String = String(breaker);
-    return temp4String;
-  }
-  else if (var == "MDNSNAME") {                  // in index.html noted as &MDNSNAME&
-    return String(mdnsdotlocalurl);
-  } else if (var == "IP") {                      // in index.html noted as &IP&
-    return ssid+"<br>"+WiFi.localIP().toString() + " DHCP: " + dhcpcheck ;
-  } else if (var == "GATEWAY") {                // in index.html noted as &GATEWAY&
-    return WiFi.gatewayIP().toString();
-  } else if (var == "SUBNET") {                  // in index.html noted as &SUBNET&
-    return WiFi.subnetMask().toString() + "<br>DNS: " + WiFi.dnsIP().toString() + "<br>MAC: " + WiFi.macAddress();
-  }
 
-  return String();
-}
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -861,7 +825,8 @@ void callback(char* topic, byte* message, unsigned int length) {
     Serial.print("Plug and Charge setting update received ");
     Serial.println(messageTemp);
     temp_message = messageTemp;
-    int vmesna = temp_message.toInt();
+    vmesna = temp_message.toInt();
+    RespondPandC();
     if(vmesna == 1){
       PAndC = HIGH;
       SetPAC();
@@ -966,6 +931,23 @@ void selectTopic(){
     dynamicTopic += idTopic;
     dynamicTopic += "/";
     dynamicTopic += epochtimeTopic;
+}
+
+void GetRuntimeSettings(){
+  preferences.begin("RuntimeSets", true);
+  PowerOn = preferences.getBool("poweron", LOW);
+  preferences.end();
+  if(PowerOn == HIGH){
+    tmp=2;
+  }else{
+    tmp=3;
+  }
+}
+
+void SetRuntimeSettings(){
+  preferences.begin("RuntimeSets", false);
+  preferences.putBool("poweron", PowerOn);
+  preferences.end();
 }
 
 void CheckWiFiCredentials(){
@@ -1121,51 +1103,64 @@ void SendSettingsF(){
   Serial.println("Send Settings function called");
   if(SendSettings == HIGH){
     Serial.println("Sending Settings");
-    TempValue = "$";
-    TempValue += "breaker=";
+    TempValue = "{";
+    TempValue += "\"B\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += breaker;
-    TempValue += "$$";
-    TempValue += "max_current=";
+    TempValue += "\",";
+    TempValue += "\"MAXC\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += MQTTmax_current;
-    TempValue += "$$";
-    TempValue += "min_current=";
+    TempValue += "\",";
+    TempValue += "\"MINC\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += min_current;
-    TempValue += "$$";
-    TempValue += "calibration=";
+    TempValue += "\",";
+    TempValue += "\"C\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += calibration;
-    TempValue += "$$";
-    TempValue += "P&C";
+    TempValue += "\",";
+    TempValue += "\"P&C\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += PAndC;
-    TempValue += "$$";
-    TempValue += "timers=";
+    TempValue += "\",";
+    TempValue += "\"T\"";
+    TempValue += ":";
+    TempValue += "[";
     TempValue += timer;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer1;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer2;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer3;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer4;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer5;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer6;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer7;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer8;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer9;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer10;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer11;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer12;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += timer13;
-    TempValue += "$";
+    TempValue += "]";
+    TempValue += "}";
     
     topica = "";
       dynamicTopic = "";
@@ -1187,34 +1182,52 @@ void SendWiFiF(){
   Serial.println("Send WiFi function called");
   if(SendWiFi == HIGH){
     Serial.println("Sending WiFi");
-    TempValue = "$";
-    TempValue += "ssid=";
+    TempValue = "{";
+    TempValue += "\"ssid\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += ssid;
-    TempValue += "$$";
-    TempValue += "pass=";
+    TempValue += "\",";
+    TempValue += "\"pass\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += pass;
-    TempValue += "$$";
-    TempValue += "ssid1=";
+    TempValue += "\",";
+    TempValue += "\"ssid1\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += ssid1;
-    TempValue += "$$";
-    TempValue += "pass1=";
+    TempValue += "\",";
+    TempValue += "\"pass1\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += pass1;
-    TempValue += "$$";
-    TempValue += "ip=";
+    TempValue += "\",";
+    TempValue += "\"ip\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += ip;
-    TempValue += "$$";
-    TempValue += "gateway=";
+    TempValue += "\",";
+    TempValue += "\"gateway\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += gateway;
-    TempValue += "$$";
-    TempValue += "subnet=";
+    TempValue += "\",";
+    TempValue += "\"subnet\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += subnet;
-    TempValue += "$$";
-    TempValue += "mdns=";
+    TempValue += "\",";
+    TempValue += "\"mdns\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += mdns;
-    TempValue += "$$";
-    TempValue += "dhcpcheck=";
+    TempValue += "\",";
+    TempValue += "\"dhcpcheck\"";
+    TempValue += ":";
+    TempValue += "\"";
     TempValue += dhcpcheck;
-    TempValue += "$";
+    TempValue += "\"}";
     
     topica = "";
       dynamicTopic = "";
@@ -1336,88 +1349,91 @@ void SendDebugF(){
   Serial.println("Send Debug Settings function called");
   if(SendDebug == HIGH){
     Serial.println("Sending Debug Settings");
-    TempValue = "$";
-    TempValue += "Debugs=";
+    TempValue = "{";
+    TempValue += "\"Debugs\"";
+    TempValue += ":";
+    TempValue += "[";
     TempValue += debug1;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug1_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug2;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug2_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug3;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug3_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug4;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug4_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug5;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug5_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug6;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug6_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug7;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug7_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug8;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug8_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug9;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug9_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug10;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug10_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug11;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug11_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug12;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug12_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug13;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug13_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug14;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug14_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug15;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug15_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug16;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug16_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug17;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug17_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug18;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug18_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug19;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug19_MQTT;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug20;
-    TempValue += ":";
+    TempValue += ",";
     TempValue += debug20_MQTT;
-    TempValue += "$";
+    TempValue += "]";
+    TempValue += "}";
     
     topica = "";
       dynamicTopic = "";
@@ -1704,6 +1720,7 @@ void setup() {
   CheckSettings();
   GetSettings();
   GetDebug();
+  GetRuntimeSettings();
 
 
 /*  WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
@@ -1719,128 +1736,29 @@ void setup() {
 
       if (initWiFi()) {
       Serial.println("InitWiFi = HIGH");
-    // Route for root / web page
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    // Web Server Root URL
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/Implera-Dynamics.html", "text/html");
     });
+
     server.serveStatic("/", SPIFFS, "/");
 
-    // Route to set GPIO state to HIGH
-    server.on("/on", HTTP_GET, [](AsyncWebServerRequest * request) {
-      SetChargeFlag = HIGH;
-      tmp = 2;
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/Charging-Settings.html", "text/html");
     });
-
-    // Route to set GPIO state to LOW
-    server.on("/off", HTTP_GET, [](AsyncWebServerRequest * request) {
-      SetChargeFlag = HIGH;
-      tmp = 3;
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
+  
+    server.on("/wifi-settings", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/WiFi-Settings.html", "text/html");
     });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status", HTTP_GET, [](AsyncWebServerRequest * request) {
-      int readval = tmp;
-      request->send(200, "text/txt", String(readval));
+  
+    server.on("/system-settings", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/System-Settings.html", "text/html");
     });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status1", HTTP_GET, [](AsyncWebServerRequest * request) {
-      float readval1 = average1;
-      request->send(200, "text/txt", String(readval1, 1));
+  
+    server.on("/about", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/About.html", "text/html");
     });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status2", HTTP_GET, [](AsyncWebServerRequest * request) {
-      float readval2 = average2;
-      request->send(200, "text/txt", String(readval2, 1));
-    });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status3", HTTP_GET, [](AsyncWebServerRequest * request) {
-      float readval3 = average3;
-      request->send(200, "text/txt", String(readval3, 1));
-    });
-
-    //  /status returns text 0 ro 1 for remote monitoring
-    server.on("/status4", HTTP_GET, [](AsyncWebServerRequest * request) {
-      int readval4 = breaker;
-      request->send(200, "text/txt", String(readval4));
-    });
-
-
-    //  /resetwifitoap
-    server.on("/resetwifitoap", HTTP_GET, [](AsyncWebServerRequest * request) {
-      SPIFFS.remove("/ssid.txt");
-      SPIFFS.remove("/pass.txt");
-      DeleteWiFiCredentials();
-      request->send(200, "text/html", "<h1>deleted wifi credentials ssid.txt and pass.txt<br>Done.<br>ESP restart,<br>connect to AP access point ESP WIFI MANAGER <br>to configure wifi settings again<br><a href=\"http://192.168.4.1\">http://192.168.4.1</a></h1>");
-      delay(5000);
-      ESP.restart();
-    });
-
-    //  /reboot
-    server.on("/reboot", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(200, "text/html", "<h1>Huh, Reboot Electra, Restart ESP32<br><a href=\"http://" + WiFi.localIP().toString()  + "\">http://" + WiFi.localIP().toString() + "</a></h1>");
-      delay(5000);
-      ESP.restart();
-    });
-
-    server.on("/timer", HTTP_POST, [](AsyncWebServerRequest * request) {
-      int params = request->params();
-      for (int i = 0; i < params; i++) {
-        AsyncWebParameter* p = request->getParam(i);
-//        if (p->isPost()) {
-//          // HTTP POST ssid value
-//          const char* PARAM_INPUT_20 = "off";                  // Search for parameter in HTTP POST request
-//          if (p->name() == PARAM_INPUT_20) {
-//            offdelay = p->value().toInt();
-//            Serial.print("offdelay set to: ");
-//            Serial.println(offdelay);
-//            // Write file to save value
-//            writeFile(SPIFFS, offdelayPath, offdelay.c_str());
-//            offdelayint = offdelay.toInt();
-//            Serial.println(offdelayint);
-//          }
-//        }
-      }
-      request->send(SPIFFS, "/index.html", "text/html", false, processor);
-    });
-
-
-    server.on("/list", HTTP_GET, [](AsyncWebServerRequest * request) {    // /list files in spiffs on webpage
-      if (!SPIFFS.begin(true)) {
-        Serial.println("An Error has occurred while mounting SPIFFS");
-        debug += "$";
-        debug += "An Error has occurred while mounting SPIFFS";
-        debug += "$";
-        return;
-      }
-
-      File root = SPIFFS.open("/");
-      File file = root.openNextFile();
-      String str = "";
-      while (file) {
-        str += " / ";
-        str += file.name();
-        str += "\r\n";
-        file = root.openNextFile();
-      }
-      str += "\r\n";
-      str += "\r\n";
-      str += "totalBytes   ";
-      str += SPIFFS.totalBytes();
-      str += "\r\n";
-      str += "usedBytes    ";
-      str += SPIFFS.usedBytes();
-      str += "\r\n";
-      str += "freeBytes??? ";
-      str += SPIFFS.totalBytes()-SPIFFS.usedBytes();
-      str += "\r\n";
-      request->send(200, "text/txt", str);
-    });
-
+    
     server.begin();
   }
   else {
@@ -1861,89 +1779,28 @@ void setup() {
     
 
     // Web Server Root URL
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/wifimanager.html", "text/html");
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/Implera-Dynamics.html", "text/html");
     });
 
     server.serveStatic("/", SPIFFS, "/");
 
-    server.on("/", HTTP_POST, [](AsyncWebServerRequest * request) {
-      int params = request->params();
-      for (int i = 0; i < params; i++) {
-        AsyncWebParameter* p = request->getParam(i);
-        if (p->isPost()) {
-          // HTTP POST ssid value
-          const char* PARAM_INPUT_1 = "ssid";                  // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_1) {
-            ssid = p->value().c_str();
-            Serial.print("SSID set to: ");
-            Serial.println(ssid);
-            // Write file to save value
-//            writeFile(SPIFFS, ssidPath, ssid.c_str());
-          }
-          // HTTP POST pass value
-          const char* PARAM_INPUT_2 = "pass";                 // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_2) {
-            pass = p->value().c_str();
-            Serial.print("Password set to: ");
-            Serial.println(pass);
-            // Write file to save value
-//            writeFile(SPIFFS, passPath, pass.c_str());
-          }
-          // HTTP POST ip value
-          const char* PARAM_INPUT_3 = "ip";                   // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_3) {
-            dhcpcheck = "off";
-            writeFile(SPIFFS, dhcpcheckPath, "off");          //dhcp unchecked . if we recieve post with ip set dhcpcheck.txt file to off
-            ip = p->value().c_str();
-            Serial.print("IP Address set to: ");
-            Serial.println(ip);
-//            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
-          }
-          // HTTP POST gateway value
-          const char* PARAM_INPUT_4 = "gateway";              // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_4) {
-            gateway = p->value().c_str();
-            Serial.print("gateway Address set to: ");
-            Serial.println(gateway);
-//            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
-          }
-
-          // HTTP POST subnet value
-          const char* PARAM_INPUT_5 = "subnet";               // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_5) {
-            subnet = p->value().c_str();
-            Serial.print("subnet Address set to: ");
-            Serial.println(subnet);
-//            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
-          }
-          // HTTP POST mdns value
-          const char* PARAM_INPUT_6 = "mdns";                 // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_6) {
-            mdnsdotlocalurl = p->value().c_str();
-            Serial.print("mdnsdotlocalurl Address set to: ");
-            Serial.println(mdnsdotlocalurl);
-//            writeFile(SPIFFS, mdnsPath, mdnsdotlocalurl.c_str());            // Write file to save value
-          }
-          // HTTP POST dhcp value on
-          const char* PARAM_INPUT_7 = "dhcp";                // Search for parameter in HTTP POST request
-          if (p->name() == PARAM_INPUT_7) {
-            dhcpcheck = p->value().c_str();
-            Serial.print("dhcpcheck set to: ");
-            Serial.println(dhcpcheck);
-//            writeFile(SPIFFS, dhcpcheckPath, dhcpcheck.c_str());            // Write file to save value
-          }
-          //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-        }
-      }
-      if (dhcpcheck == "on") {
-        ip = "dhcp ip adress";
-      }
-      SetWiFiCredentials();
-      request->send(200, "text/html", "<h1>Done. ESP restart,<br> connect router <br>go to: <a href=\"http://" + ip + "\">" + ip + "</a><br><a href=\"http://" + mdnsdotlocalurl + ".lan\">http://" + mdnsdotlocalurl + ".lan</a></h1>");
-      delay(5000);
-      ESP.restart();
+    server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/Charging-Settings.html", "text/html");
     });
+  
+    server.on("/wifi-settings", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/WiFi-Settings.html", "text/html");
+    });
+  
+    server.on("/system-settings", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/System-Settings.html", "text/html");
+    });
+  
+    server.on("/about", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(SPIFFS, "/About.html", "text/html");
+    });
+    
     server.begin();
   }
 
@@ -2348,6 +2205,22 @@ void SENDFWversion(){
     digitalWrite(LED_RED, LOW);
     FWSentFlag = HIGH;
   }
+}
+
+void RespondPandC(){
+  dynamicTopic = "";
+//  epochtimeTopic = getTime();
+  dynamicTopic += prefix;
+  dynamicTopic += idTopic;
+//  dynamicTopic += "/";
+//  dynamicTopic += epochtimeTopic;
+  fullTopic = dynamicTopic;
+  fullTopic += PandCTopic;
+  topica = fullTopic.c_str();
+  TempValue = "";
+  TempValue += vmesna;
+  TempValueChar = TempValue.c_str();
+  client.publish(topica, TempValueChar);
 }
 
 void SENDCurrents(){
@@ -3480,16 +3353,22 @@ void ChargeChanger(){
       debug += "$";
       switch(tmp){
         case 1:
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnOff();
         break;
         case 2:
           c2 = 0;
           c3 = 0;
           c4 = 0;
-          c5 = 0; 
+          c5 = 0;
+          PowerOn = HIGH;
+          SetRuntimeSettings(); 
           TurnOn();
         break;
         case 3:
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnSleep();
         break;
       }
@@ -3998,6 +3877,7 @@ void AskRAPIF(){
         //    dynamicTopic += epochtimeTopic;
             fullTopic = dynamicTopic;
             fullTopic += RapiTopic;
+            fullTopic += RAPI;
             topica = fullTopic.c_str();
             TempValue = "";
             TempValue += ResponseMessage;
@@ -4128,18 +4008,6 @@ void CheckPhaseChange(){
 void StopCharge(){
   if(ConnectionTimeoutFlag == LOW){
     if(ChargeSetState == HIGH && PAndC == LOW){
-      if(charge_current > 0.5){
-        c2 = 0;
-      }else{
-        c2 = c2+1;
-        if(c2 > timer1){
-          Serial.println("Izklop, premali tok");
-          debug += "$";
-          debug += "Izklop, premali tok";
-          debug += "$";
-          TurnSleep();
-        }
-      }
       if((State != 0) && (State != 2)){
         c6 = 0;
       }else{
@@ -4149,10 +4017,28 @@ void StopCharge(){
           debug += "$";
           debug += "Izklop, state";
           debug += "$";
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnSleep();
         }
       }
-      if(charge_current <= max_current + 0.2){
+    }
+    if(ChargeSetState == HIGH){
+      if(charge_current > 0.3){
+        c2 = 0;
+      }else{
+        c2 = c2+1;
+        if(c2 > timer1){
+          Serial.println("Izklop, premali tok");
+          debug += "$";
+          debug += "Izklop, premali tok";
+          debug += "$";
+          PowerOn = LOW;
+          SetRuntimeSettings();
+          TurnSleep();
+        }
+      }
+      if(charge_current <= max_current + 0.5){
         c3 = 0; 
       }else{
         c3 = c3+1;
@@ -4161,11 +4047,11 @@ void StopCharge(){
           debug += "$";
           debug += "Izklop, prevelik tok";
           debug += "$";
+          PowerOn = LOW;
+          SetRuntimeSettings();
           TurnSleep();
         }     
       }
-    }
-    if(ChargeSetState == HIGH){
       if(max_current >= min_current){
         c4 = 0;
       }else{
@@ -4178,8 +4064,8 @@ void StopCharge(){
           TurnSleep();
         }
       }
-    }else if(PAndC == HIGH && ChargeSetState == LOW && max_current >= min_current && charge_current == 0){
-      Serial.println("vklapljam polnilnico, dovolj toka + P&C");
+    }else if((PAndC == HIGH || PowerOn == HIGH) && ChargeSetState == LOW && max_current >= min_current && charge_current == 0){
+      Serial.println("vklapljam polnilnico, dovolj toka + P&C ali PowerOn");
       TurnOn();
     }
   }
