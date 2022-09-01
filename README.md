@@ -9,6 +9,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 <!-- toc -->
 - [Versions](#versions)
+- [SetUp](#setup)
 - [Changes](#changes)
 - [Requests](#requests)
 - [Settings](#settings)
@@ -24,10 +25,25 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder ESP32_dinamika_V11_getSettings
+Last version is in folder ESP32_dinamika_V14_NewWebPage
+Bin file DinamicsV4.bin
+
+## SetUp
+
+At first start some settings have to be set over MQTT in order for Dinamics to work as supposed.
+
+Mandatory settings:
+set_calibration
+set_c_limit
+set_plugandcharge
+
+(look in [Settings](#setting) for details)
 
 
 ## Changes
+
+V14: added debug set/get
+     added JSON form for some answers (not complete)
 
 V11:
 - added requests for settings and wifi
