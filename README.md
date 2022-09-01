@@ -10,6 +10,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 <!-- toc -->
 - [Versions](#versions)
 - [SetUp](#setup)
+- [EVSECalibration](#evsecalibration)
 - [Changes](#changes)
 - [Requests](#requests)
 - [Settings](#settings)
@@ -38,6 +39,16 @@ Mandatory settings:
 - set_plugandcharge
 
 (look in [Settings](#setting) for details)
+
+## EVSECalibration
+
+EVSEs current measurments, can be calibrated using RAPI commands. Usable commands are:
+- S2 (set 0|1 - disable/enable ammeter calibration mode - ammeter is read even when not charging)
+- SA currentscalefactor currentoffset - set ammeter settings
+- T0 amps - set fake charging current
+
+more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware/open_evse/rapi_proc.h
+ 
 
 
 ## Changes
