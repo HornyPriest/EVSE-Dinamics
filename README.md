@@ -33,9 +33,9 @@ Bin file DinamicsV4.bin
 At first start some settings have to be set over MQTT in order for Dinamics to work as supposed.
 
 Mandatory settings:
-set_calibration
-set_c_limit
-set_plugandcharge
+- set_calibration
+- set_c_limit
+- set_plugandcharge
 
 (look in [Settings](#setting) for details)
 
