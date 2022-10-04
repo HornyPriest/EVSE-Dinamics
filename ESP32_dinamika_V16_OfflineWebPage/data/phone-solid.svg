@@ -1,1 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.1.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M511.2 387l-23.25 100.8c-3.266 14.25-15.79 24.22-30.46 24.22C205.2 512 0 306.8 0 54.5c0-14.66 9.969-27.2 24.22-30.45l100.8-23.25C139.7-2.602 154.7 5.018 160.8 18.92l46.52 108.5c5.438 12.78 1.77 27.67-8.98 36.45L144.5 207.1c33.98 69.22 90.26 125.5 159.5 159.5l44.08-53.8c8.688-10.78 23.69-14.51 36.47-8.975l108.5 46.51C506.1 357.2 514.6 372.4 511.2 387z"/></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="512" height="513" viewBox="0 0 512 513" xml:space="preserve">
+<desc>Created with Fabric.js 3.6.3</desc>
+<defs>
+</defs>
+<g transform="matrix(1 0 0 1 256.48 256.51)"  >
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; fill: rgb(85,172,238); fill-rule: nonzero; opacity: 1;"  transform=" translate(-255.98, -256.01)" d="M 511.2 387 l -23.25 100.8 c -3.266 14.25 -15.79 24.22 -30.46 24.22 C 205.2 512 0 306.8 0 54.5 c 0 -14.66 9.969 -27.2 24.22 -30.45 l 100.8 -23.25 C 139.7 -2.602 154.7 5.018 160.8 18.92 l 46.52 108.5 c 5.438 12.78 1.77 27.67 -8.98 36.45 L 144.5 207.1 c 33.98 69.22 90.26 125.5 159.5 159.5 l 44.08 -53.8 c 8.688 -10.78 23.69 -14.51 36.47 -8.975 l 108.5 46.51 C 506.1 357.2 514.6 372.4 511.2 387 z" stroke-linecap="round" />
+</g>
+</svg>

@@ -102,9 +102,13 @@ long timer10;
 long timer11;
 long timer12;
 long timer13;
+long timer14;
 
 
 long now11;
+
+long TimeoutTime;
+boolean TimeoutTimeSet = LOW;
 
 int vmesna;
 
@@ -249,6 +253,8 @@ const char * charTimer12;
 String sub_Timer12Topic;
 const char * charTimer13;
 String sub_Timer13Topic;
+const char * charTimer14;
+String sub_Timer14Topic;
 const char * charDeleteSettings;
 String sub_DeleteSettingsTopic;
 const char * charPlugAndCharge;
@@ -339,6 +345,7 @@ String ATMessage;
 
 
 uint8_t State;
+uint8_t OldState;
 
 boolean SetChargeFlag = HIGH;
 boolean ChargeSetState;
@@ -361,7 +368,7 @@ boolean ResponseStatus;
 boolean SetupComplete = LOW;
 boolean FWSentFlag = LOW;
 boolean AskRAPI = LOW;
-boolean PowerOn;
+boolean PowerOn=LOW;
 
 
 uint8_t tmp;
@@ -851,6 +858,14 @@ void callback(char* topic, byte* message, unsigned int length) {
     SetTimers();
   }
 
+  if (String(topic) == sub_Timer14Topic) {
+    Serial.print("Counter14 value received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    timer14 = temp_message.toDouble();
+    SetTimers();
+  }
+
   if (String(topic) == sub_DeleteSettingsTopic) {
     Serial.print("Delete settings received ");
     Serial.println(messageTemp);
@@ -949,6 +964,7 @@ void reconnect() {
       client.subscribe(charTimer11);
       client.subscribe(charTimer12);
       client.subscribe(charTimer13);
+      client.subscribe(charTimer14);
       client.subscribe(charPlugAndCharge);
       client.subscribe(charGetSettings);
       client.subscribe(charGetWiFi);
@@ -1067,6 +1083,7 @@ void GetSettings(){
     timer11 = preferences.getLong("timer11", 50000);
     timer12 = preferences.getLong("timer12", 100000);
     timer13 = preferences.getLong("timer13", 8000);
+    timer14 = preferences.getLong("timer14", 10000);
     PAndC = preferences.getBool("pac", HIGH);
     MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
     min_current = preferences.getInt("min_current", 6);
@@ -1099,6 +1116,7 @@ void SetTimers(){
   preferences.putLong("timer11", timer11);
   preferences.putLong("timer12", timer12);
   preferences.putLong("timer13", timer13);
+  preferences.putLong("timer14", timer14);
   preferences.end();
   debug += "$saving timers to preferences$";
 }
@@ -1199,6 +1217,8 @@ void SendSettingsF(){
     TempValue += timer12;
     TempValue += ",";
     TempValue += timer13;
+    TempValue += ",";
+    TempValue += timer14;
     TempValue += "]";
     TempValue += "}";
     
@@ -1688,6 +1708,10 @@ void setup() {
   sub_Timer13Topic += idTopic;
   sub_Timer13Topic += "/set_timer13";
   charTimer13 = sub_Timer13Topic.c_str();
+  sub_Timer14Topic += prefix;
+  sub_Timer14Topic += idTopic;
+  sub_Timer14Topic += "/set_timer14";
+  charTimer14 = sub_Timer14Topic.c_str();
   sub_PlugAndChargeTopic += prefix;
   sub_PlugAndChargeTopic += idTopic;
   sub_PlugAndChargeTopic += "/set_plugandcharge";
@@ -2034,12 +2058,26 @@ void setup() {
 
   Serial.println(FW_version);
   
+  if(PAndC == LOW){
+    TurnSleep();
+  }
+  
   SetupComplete = HIGH;
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   SENDFWversion();
+
+  if(ConnectionTimeoutFlag == HIGH && TimeoutTimeSet == LOW){
+    TimeoutTime = millis();
+    TimeoutTimeSet = HIGH;
+  }
+  long TimeoutTimeCurrent = millis();
+  if(TimeoutTimeSet == HIGH && TimeoutTimeCurrent-TimeoutTime > timer14){
+    TimeoutTimeSet = LOW;
+    ConnectionTimeoutFlag = LOW;
+  }
 
 
   if (!client.connected()) {
@@ -2820,15 +2858,24 @@ void CheckState(){
         ResponseMessage.remove(1);
         State = ResponseMessage.toInt();
 
+        if(State == 0){
+          PowerOn = LOW;
+          SetRuntimeSettings();
+          TurnSleep();
+        }
+
         if (client.connected()){
-          fullTopic = dynamicTopic;
-          fullTopic += StateTopic;
-          topica = fullTopic.c_str();
-          TempValue = "";
-          TempValue += State;
-          TempValueChar = TempValue.c_str();
-          client.publish(topica, TempValueChar, true);
-//          delay(20);
+          if(OldState != State){
+            OldState = State;
+            fullTopic = dynamicTopic;
+            fullTopic += StateTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += State;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar, true);
+  //          delay(20);
+          }
         }
       }
       t1 = 0;
@@ -2908,6 +2955,20 @@ void CheckStatus(){
         client.publish(topica, TempValueChar);
   //      delay(20);
       }
+    }
+    int index = ResponseMessage.indexOf(" ");
+    ResponseMessage.remove(0, index+1);
+    index = ResponseMessage.indexOf(" ");
+    ResponseMessage.remove(index);
+    uint8_t ChState = ResponseMessage.toInt();
+    if(ChState == 3 && PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW){
+      Serial.println("Izklop, stanje ne ustreza");
+      debug += "$";
+      debug += "Izklop, stanje ne ustreza";
+      debug += "$";
+      PowerOn = LOW;
+      SetRuntimeSettings();
+      TurnSleep();
     }
   }
 }
@@ -2991,7 +3052,7 @@ void CheckSetAmps(){
 }
 
 void CheckCharge(){
-//  if(ConnectionTimeoutFlag == LOW){
+  if(ConnectionTimeoutFlag == LOW){
     ResponseStatus = LOW;
     debug += "$";
     debug += "Checking Charge RAPI = GG";
@@ -3088,7 +3149,7 @@ void CheckCharge(){
     if(c1 == 4){
         c1 = 0;
     }
-//  }
+  }
 }
 
 void CheckEnergy(){
@@ -4264,8 +4325,21 @@ void StopCharge(){
           TurnSleep();
         }
       }
-    }else if((PAndC == HIGH || PowerOn == HIGH) && ChargeSetState == LOW && max_current >= min_current && charge_current == 0){
+    }
+    if(PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW && charge_current > 0){
+      Serial.println("Izklop, stanje ne ustreza");
+      debug += "$";
+      debug += "Izklop, stanje ne ustreza";
+      debug += "$";
+      PowerOn = LOW;
+      SetRuntimeSettings();
+      TurnSleep();
+    }
+    if((PAndC == HIGH || PowerOn == HIGH) && ChargeSetState == LOW && max_current >= min_current && charge_current == 0){
       Serial.println("vklapljam polnilnico, dovolj toka + P&C ali PowerOn");
+      debug += "$";
+      debug += "Vklop, dovolj toka + P&C ali PowerOn";
+      debug += "$";
       TurnOn();
     }
   }
@@ -4398,6 +4472,7 @@ void Task1code( void * pvParameters ){
   emon2.current(ct_sensor_2, calibration);
   vTaskDelay(50);
   emon3.current(ct_sensor_3, calibration);
+  OldState = State;
 
   for(;;){
 
