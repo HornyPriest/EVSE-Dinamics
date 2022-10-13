@@ -13,9 +13,12 @@ nav ul {
 	padding: 0;
 	padding-bottom: 100px;
         margin: 0;
-	margin-left: 1%;
 	list-style: none;
 	position: relative;
+	text-align: center;
+	display: float;
+  	justify-content: center;
+	align-items: center;	
 	}
 	
 nav ul li {
@@ -30,6 +33,12 @@ nav a {
 	text-decoration:none;
 	vertical-align: bottom;
 }
+
+
+/* Delete underline in footer */
+a {
+	text-decoration:none;
+}
  
 nav a:hover { 
     	color: rgba(0,155,248, 0.7);
@@ -41,14 +50,10 @@ nav ul ul li {
 	float:none;
 	display:list-item;
 	position: relative;
-	left: -58%;
-}
-
-/* Second, Third and more levels	*/
-nav ul ul ul li {
-	position: relative;
-	top:-60px; 
-	left:170px;
+	text-align: center;
+  	justify-content: center;
+	align-items: center;
+	margin-left: 1.4vw;
 }
 
 
@@ -66,8 +71,8 @@ nav ul li:hover > ul {
 
 .center-navigation{
 	z-index: 1;
-	float: left;
-    	width: 100%;
+	float: center;
+    	width: auto;
     	text-align: center;
 }
 
@@ -435,4 +440,90 @@ input:checked + .toggle:before {
 }
 .slider input[type="range"]::-webkit-slider-thumb:hover {
 	background-color: rgba(85, 172, 238, 1);
+}
+
+.margin-top-data {
+
+} 
+
+.main-grid2x{
+	display: grid;  
+    	grid-gap: 5px; 
+	justify-items: center;  
+    	grid-template-columns: repeat(auto-fit, 195px);
+    	grid-template-rows: repeat(auto-fit, 50px);
+}
+
+.main-grid3x{
+	display: grid;
+    	grid-gap: 5px;
+	align-items: center;
+  	justify-items: center;   
+    	grid-template-columns: repeat(auto-fit, 150px);
+    	grid-template-rows: repeat(auto-fit, 50px);
+}
+
+.nav-grid3x{
+	display: grid;
+    	grid-gap: 5px;
+	align-items: center;
+  	justify-items: center;   
+    	grid-template-columns: repeat(auto-fit, 150px);
+    	grid-template-rows: repeat(auto-fit, 40px);
+}
+
+.vertalign{
+	display: flex;
+	align-items: center;
+}
+
+.navalign{
+	text-align: center;
+  	justify-content: center;
+	display: flex;
+  	align-items: center;
+}
+
+
+@media only screen and (max-width: 480px) {
+
+nav ul {
+	text-align: left;
+	display: float;
+  	justify-content: left;
+	align-items: center;	
+}
+
+
+/* Hide Dropdowns by Default */
+nav ul ul {
+	display: none;
+	position: absolute; 
+	top: 8vw; /* the height of the main nav */
+
+}
+
+ .margin-top-data {
+  	margin-top: 10vw;
+}
+
+ .main-grid3x {
+	grid-template-columns: repeat(1, 150px);
+	grid-template-rows: repeat(3, 50px);
+  }
+}
+
+
+@media only screen and (max-width: 476px) {
+ .nav-grid3x {
+	grid-template-columns: repeat(1, 150px);
+	grid-template-rows: repeat(3, 40px);
+  }
+}
+
+@media only screen and (max-width: 1300px) {
+ nav ul ul li {
+	margin-left: 0px;
+	margin-right: 1.2vw;
+}
 }

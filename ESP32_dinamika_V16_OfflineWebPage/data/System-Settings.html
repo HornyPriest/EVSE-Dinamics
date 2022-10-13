@@ -17,7 +17,7 @@
 			<a style="display:inline-block;" class="mt" href="www.implera.com">
 				<img src="logo.png" alt="IMPLERA DINAMICS">
 			</a>
-			<ul>
+			<ul class="navalign">
 				<li><a class="first-navtxt" href="Implera-Dynamics.html">Home</a></li>
 				<li><a class="first-navtxt active" href="#">Settings</a>
 				<!-- First Tier Drop Down -->
@@ -43,7 +43,7 @@
 			<tr>
 				<td>
 					<label class="switch" style="margin-top: 1px;">
-						<input type="checkbox">
+						<input onchange="toggleCheckbox(this)" id="AutoUpdate" type="checkbox">
 						<span class="toggle"></span>
 					</label>
 				</td>
@@ -84,7 +84,7 @@
 						</span>
 					</td>
 					<td>
-						<span style="margin-left: 5px" id="last_update">
+						<span style="margin-left: 5px" id="last_update_wp">
 							14:33:17, 30.09.2022
 						</span>
 					</td>
@@ -163,5 +163,36 @@
 			</div>
 		</div>
 	</footer>
+
+	<script>
+
+		function toggleCheckbox(AutoUpdate) {
+			var xhr = new XMLHttpRequest();
+			if(AutoUpdate.checked){ xhr.open("GET", "/setAU?state=1", true); }
+			else { xhr.open("GET", "/setAU?state=0", true); }
+			xhr.send();
+		}
+
+		function getAutoUpdate() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("AutoUpdate").checked = true;
+				}else{
+					document.getElementById("AutoUpdate").checked = false;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/AutoUpdate", true);
+		  xhttp.send();
+		}
+		window.onload=getAutoUpdate();
+
+  	</script>
+
+
+
 </body>
 </html>

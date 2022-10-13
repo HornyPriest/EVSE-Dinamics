@@ -17,7 +17,7 @@
 			<a style="display:inline-block;" class="mt" href="http://www.implera.com">
 				<img src="logo.png" alt="IMPLERA DINAMICS">
 			</a>
-			<ul>
+			<ul class="navalign">
 				<li><a class="first-navtxt" href="Implera-Dynamics.html">Home</a></li>
 				<li><a class="first-navtxt" href="#">Settings</a>
 				<!-- First Tier Drop Down -->
@@ -53,7 +53,7 @@
 				</td>
 				<td>
 					<span id="SN">
-						545466BD9E7C
+						No data
 					</span>
 				</td>
 			</tr>
@@ -64,8 +64,8 @@
 					</span>
 				</td>
 				<td>
-					<span id="FV">
-						1.0
+					<span id="FW">
+						No data
 					</span>
 				</td>
 			</tr>
@@ -77,7 +77,7 @@
 				</td>
 				<td>
 					<span id="WV">
-						1.0
+						1.0a
 					</span>
 				</td>
 			</tr>
@@ -195,5 +195,35 @@
 			</div>
 		</div>
 	</footer>
+
+
+	<script>
+		function getSN() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  document.getElementById("SN").textContent = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/SN", true);
+		  xhttp.send();
+		}
+		
+		function getFW() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  document.getElementById("FW").textContent = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/FW", true);
+		  xhttp.send();
+		}
+
+		window.onload=getSN();
+		window.onload=getFW(); 
+
+  	</script>
+
 </body>
 </html>

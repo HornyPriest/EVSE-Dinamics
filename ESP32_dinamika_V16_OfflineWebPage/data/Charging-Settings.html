@@ -17,7 +17,7 @@
 			<a style="display:inline-block;" class="mt" href="http://www.implera.com">
 				<img src="logo.png" alt="IMPLERA DINAMICS">
 			</a>
-			<ul>
+			<ul class="navalign">
 				<li><a class="first-navtxt" href="Implera-Dynamics.html">Home</a></li>
 				<li><a class="first-navtxt active" href="#">Settings</a>
 				<!-- First Tier Drop Down -->
@@ -32,8 +32,8 @@
 		</nav>
 	</header>
 	<div class="mid-body" style="margin-bottom: 30px;">
-		<form>
-			<table style="width: 100%;">
+		<table style="width: 100%;">
+			<form action="/setCharge" method="POST">
 				<tr>
 					<td class="text-size-body-set">
 						<span class="text-size-body-cell">
@@ -44,7 +44,7 @@
 				<tr>
 					<td>
 						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
-							<input type="checkbox">
+							<input name="PandC" id="PandC" type="checkbox">
 							<span class="toggle"></span>
 						</label>
 					</td>
@@ -59,8 +59,8 @@
 				<tr>
 					<td>
 						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
-							<input type="range" min="6" max="32" value="6" oninput="rangeValue1.innerText = this.value">
-							<p id="rangeValue1" >6</p>
+							<input name="rangeValueMax" id="rangeValueMax" type="range" min="6" max="32" value="6" oninput="ValueMax.innerText = this.value">
+							<p id="ValueMax" >6</p>
 						</div>
 					</td>
 				</tr>
@@ -74,8 +74,8 @@
 				<tr>
 					<td>
 						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
-							<input type="range" min="6" max="64" value="6" oninput="rangeValue2.innerText = this.value">
-							<p id="rangeValue2" >6</p>
+							<input name="rangeValueBreaker" id="rangeValueBreaker" type="range" min="6" max="64" value="6" oninput="ValueBreaker.innerText = this.value">
+							<p id="ValueBreaker" >6</p>
 						</div>
 					</td>
 				</tr>
@@ -89,8 +89,8 @@
 				<tr>
 					<td>
 						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
-							<input type="range" min="6" max="32" value="6" oninput="rangeValue3.innerText = this.value">
-							<p id="rangeValue3" >6</p>
+							<input name="rangeValueMin" id="rangeValueMin" type="range" min="6" max="32" value="6" oninput="ValueMin.innerText = this.value">
+							<p id="ValueMin" >6</p>
 						</div>
 					</td>
 				</tr>
@@ -104,7 +104,7 @@
 				<tr>
 					<td>
 						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
-							<input type="checkbox">
+							<input name="Adjust" id="Adjust" type="checkbox">
 							<span class="toggle"></span>
 						</label>
 					</td>
@@ -114,13 +114,15 @@
 						<button type="submit" class="button-update">SAVE</button>
 					</td>
 				</tr>
+			</form>
+			<form action="/restoreCharge" method="GET">
 				<tr>
 					<td>
 						<button type="submit" class="button-factory">RESTORE TO DEFAULT</button>
 					</td>
 				</tr>
-			</table>
-		</form>	
+			</form>
+		</table>
 	</div>
 	<footer>
 		<div class="container-footer">
@@ -186,5 +188,85 @@
 			</div>
 		</div>
 	</footer>
+
+	<script>
+
+		function getPandC() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("PandC").checked = true;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/pandc", true);
+		  xhttp.send();
+		}
+
+		function getMax() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("ValueMax").textContent = this.responseText;
+			  	document.getElementById("rangeValueMax").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/max", true);
+		  xhttp.send();
+		}
+		
+		function getBreaker() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("ValueBreaker").textContent = this.responseText;
+			  	document.getElementById("rangeValueBreaker").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/breaker", true);
+		  xhttp.send();
+		}
+
+		function getMin() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("ValueMin").textContent = this.responseText;
+			  	document.getElementById("rangeValueMin").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/min", true);
+		  xhttp.send();
+		}
+
+		function getAdjust() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("Adjust").checked = true;
+				}else if(this.responseText != 1){
+					document.getElementById("Adjust").checked = false;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/adjust", true);
+		  xhttp.send();
+		}
+
+		window.onload=getPandC();
+		window.onload=getMax();
+		window.onload=getBreaker();
+		window.onload=getMin();
+		window.onload=getAdjust();
+
+  	</script>
+
 </body>
 </html>

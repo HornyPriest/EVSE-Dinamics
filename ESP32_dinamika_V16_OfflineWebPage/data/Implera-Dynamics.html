@@ -17,7 +17,7 @@
 			<a style="display:inline-block;" class="mt" href="http://www.implera.com">
 				<img src="logo.png" alt="IMPLERA DINAMICS">
 			</a>
-			<ul>
+			<ul class="navalign">
 				<li><a class="first-navtxt active" href="Implera-Dynamics.html">Home</a></li>
 				<li><a class="first-navtxt" href="#">Settings</a>
 				<!-- First Tier Drop Down -->
@@ -43,82 +43,60 @@
 			<span class="text-size-body">
 				ACTIVE CHARGING
 			</span>
-			<table style="width: 100%;">
-				<tr class="text-size-data">
-					<td>
-						<img style="padding-top: 8px" src="electric-power-icon.png" width="48" height="48" alt="POWER">
-					</td>
-					<td>
-						<span style="margin-left: 1rem; margin-right: 0.5rem;" id="power">
-							0.0
-						</span>
-					</td>
-					<td>
-						<span style="margin-right: 3rem">
-							kWh
-						</span>
-					</td>
-					<td>
-						<img style="margin-left: 3rem; padding-top: 8px" src="Current.png" width="58" height="38" alt="CURRENT">
-					</td>
-					<td>
-						<span style="margin-left: 1rem; margin-right: 0.5rem;" id="current">
-							0.0
-						</span>
-					</td>
-					<td>
-						<span>
-							A
-						</span>
-					</td>
-				</tr>
-			</table>
-			<span class="text-size-body">
-				LOAD IN FACILITY
-			</span>
-			<table style="width: 100%;">
-				<tr class="text-size-data">
-					<td>
-						<img style="padding-top: 8px" src="Current1.png" width="58" height="38" alt="CURRENT1">
-					</td>
-					<td>
-						<span style="margin-left: 1rem;" id="current1">
-							0.0
-						</span>
-					</td>
-					<td>
-						<span>
-							A
-						</span>
-					</td>
-					<td>
-						<img style="margin-left: 3rem; padding-top: 8px" src="Current2.png" width="58" height="38" alt="CURRENT2">
-					</td>
-					<td>
-						<span style="margin-left: 1rem;" id="current2">
-							0.0
-						</span>
-					</td>
-					<td>
-						<span>
-							A
-						</span>
-					</td>
-					<td>
-						<img style="margin-left: 3rem; padding-top: 8px" src="Current3.png" width="58" height="38" alt="CURRENT3">
-					</td>
-					<td>
-						<span style="margin-left: 1rem;" id="current3">
-							0.0
-						</span>
-					</td>
-					<td>
-						<span>
-							A
-						</span>
-					</td>
-				</tr>
-			</table>
+			<div class="text-size-data main-grid2x" style="width: 100%;">
+				<div class="vertalign">
+					<img src="electric-power-icon.png" width="48" height="48" alt="POWER">
+					<span style="margin-left: 1vw; margin-right: 0.5vw;" id="power">
+						0.0
+					</span>
+					<span>
+						W
+					</span>
+				</div>
+				<div class="vertalign">
+					<img src="Current.png" width="58" height="38" alt="CURRENT">
+					<span style="margin-left: 1vw; margin-right: 0.5vw;" id="current">
+						0.0
+					</span>
+					<span>
+						A
+					</span>
+				</div>
+			</div>
+			<div class="margin-top-data">
+				<span class="text-size-body">
+					LOAD IN FACILITY
+				</span>
+			</div>
+			<div class="text-size-data main-grid3x" style="width: 100%;">
+				<div class="vertalign" style="margin-left: 1.5vw; margin-right: 1.5vw;">
+					<img src="Current1.png" width="58" height="38" alt="CURRENT1">
+					<span style="margin-left: 1vw;" id="current1">
+						0.0
+					</span>
+					<span>
+						A
+					</span>
+				</div>
+				<div class="vertalign" style="margin-left: 1.5vw; margin-right: 1.5vw;">
+					<img src="Current2.png" width="58" height="38" alt="CURRENT2">
+					<span style="margin-left: 1vw;" id="current2">
+						0.0
+					</span>
+					<span>
+						A
+					</span>
+				</div>
+				<div class="vertalign" style="margin-left: 1.5vw; margin-right: 1.5vw;">
+					<img src="Current3.png" width="58" height="38" alt="CURRENT3">
+					<span style="margin-left: 1vw;" id="current3">
+						0.0
+					</span>
+					<span>
+						A
+					</span>
+				</div>
+			</div>
 			<div>
 				<a href="http://napolni.me/app">
 					<button class="button-details">
@@ -192,5 +170,87 @@
 			</div>
 		</div>
 	</footer>
+
+	<script>
+		function getPower() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  document.getElementById("power").textContent = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/power", true);
+		  xhttp.send();
+		}
+		
+		function getCurrent() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  document.getElementById("current").textContent = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/current", true);
+		  xhttp.send();
+		}
+		
+		function getCurrent1() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  document.getElementById("current1").textContent = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/current1", true);
+		  xhttp.send();
+		}
+
+		function getCurrent2() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  document.getElementById("current2").textContent = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/current2", true);
+		  xhttp.send();
+		}
+
+		function getCurrent3() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			  document.getElementById("current3").textContent = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/current3", true);
+		  xhttp.send();
+		}
+
+/*		window.onload=getPower();
+		window.onload=getCurrent();
+		window.onload=getCurrent1();
+		window.onload=getCurrent2();
+		window.onload=getCurrent3();*/
+
+		setInterval(function ( ) {
+	    	console.log("power");
+    		getPower();
+      	}, 5000);
+
+	  	setInterval(function ( ) {
+			console.log("current");
+        	getCurrent();
+      	}, 2000);
+
+		setInterval(function ( ) {
+			console.log("currents");
+        	getCurrent1();
+			getCurrent2();
+			getCurrent3();
+      	}, 1000);
+
+  	</script>
+
 </body>
 </html>
