@@ -382,6 +382,11 @@ boolean AskRAPI = LOW;
 boolean PowerOn=LOW;
 boolean ImpleraAdjust;
 boolean AutoUpdate;
+boolean SetChargeSettingsFlag;
+boolean RestoreChargeSettingsFlag;
+boolean SetWiFiCredsFlag;
+boolean DeleteWiFiCredsFlag;
+boolean SetAutoUpdateFlag;
 
 
 uint8_t tmp;
@@ -490,7 +495,7 @@ String readFile(fs::FS &fs, const char * path) {
 }
 
 // Write file to SPIFFS
-void writeFile(fs::FS &fs, const char * path, const char * message) {
+/*void writeFile(fs::FS &fs, const char * path, const char * message) {
   Serial.printf("Writing file: %s\r\n", path);
 
   File file = fs.open(path, FILE_WRITE);
@@ -503,7 +508,7 @@ void writeFile(fs::FS &fs, const char * path, const char * message) {
   } else {
     Serial.println("- frite failed");
   }
-}
+}*/
 
 // Initialize WiFi
 bool initWiFi() {
@@ -1099,6 +1104,7 @@ void reconnect() {
       client.subscribe(charDebug);
       client.subscribe(charRAPI);
       client.subscribe(charTimer);
+      vTaskDelay(10);
       client.subscribe(charTimer1);
       client.subscribe(charTimer2);
       client.subscribe(charTimer3);
@@ -1114,6 +1120,7 @@ void reconnect() {
       client.subscribe(charTimer12);
       client.subscribe(charTimer13);
       client.subscribe(charTimer14);
+      vTaskDelay(10);
       client.subscribe(charPlugAndCharge);
       client.subscribe(charAdjust);
       client.subscribe(charAutoUpdate);
@@ -2023,7 +2030,9 @@ void setup() {
       
         // Route for root / web page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/Implera-Dynamics.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Implera-Dynamics.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.serveStatic("/", SPIFFS, "/");
     server.on("/power", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -2041,10 +2050,25 @@ void setup() {
     server.on("/current3", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(average3, 1));
     });
+    server.on("/powerbutton", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(200, "text/txt", String(PowerOn));
+    });
+    server.on("/setpower", HTTP_GET, [](AsyncWebServerRequest *request){
+      if(tmp == 2){
+        tmp = 3;
+        SetChargeFlag = HIGH;
+      }else{
+        tmp = 2;
+        SetChargeFlag = HIGH;
+      }
+      request->send(200, "text/txt", "OK");
+    });
 
     // Route for charging settings /Charging-Settings.html web page
     server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/Charging-Settings.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Charging-Settings.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/pandc", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(PAndC));
@@ -2070,8 +2094,8 @@ void setup() {
           const char* PARAM_INPUT_1 = "PandC";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
             PAndC = p->value().toInt();
-            Serial.print("PandC set to: ");
-            Serial.println(PAndC);
+//            Serial.print("PandC set to: ");
+//            Serial.println(PAndC);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
@@ -2080,8 +2104,8 @@ void setup() {
           const char* PARAM_INPUT_2 = "rangeValueMax";                 // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_2) {
             MQTTmax_current = p->value().toInt();
-            Serial.print("Max charging current set to: ");
-            Serial.println(MQTTmax_current);
+//            Serial.print("Max charging current set to: ");
+//            Serial.println(MQTTmax_current);
             // Write file to save value
 //            writeFile(SPIFFS, passPath, pass.c_str());
           }
@@ -2090,8 +2114,8 @@ void setup() {
           const char* PARAM_INPUT_3 = "rangeValueBreaker";                   // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_3) {
             breaker = p->value().toInt();
-            Serial.print("Breakers set to: ");
-            Serial.println(breaker);
+//            Serial.print("Breakers set to: ");
+//            Serial.println(breaker);
 //            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
           }
           vTaskDelay(50);
@@ -2099,8 +2123,8 @@ void setup() {
           const char* PARAM_INPUT_4 = "rangeValueMin";              // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_4) {
             min_current = p->value().toInt();
-            Serial.print("Min charging current set to: ");
-            Serial.println(min_current);
+//            Serial.print("Min charging current set to: ");
+//            Serial.println(min_current);
 //            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
           }
           vTaskDelay(50);
@@ -2108,23 +2132,25 @@ void setup() {
           const char* PARAM_INPUT_5 = "Adjust";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
             ImpleraAdjust = p->value().c_str();
-            Serial.print("Adjust set to: ");
-            Serial.println(ImpleraAdjust);
+//            Serial.print("Adjust set to: ");
+//            Serial.println(ImpleraAdjust);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
         }
       }
-      SetChargeSettings();
+      SetChargeSettingsFlag = HIGH;
       request->send(200, "text/html", "<h1>Charging settings saved</h1>");
     }); 
     server.on("/restoreCharge", HTTP_GET, [](AsyncWebServerRequest * request){
-      RestoreChargeSettings();
+      RestoreChargeSettingsFlag = HIGH;
       request->send(200, "text/html", "<h1>Restoring charging settings.</h1>");
     });
     
     // Route for wifi settings /WiFi-Settings.html web page
     server.on("/wifi-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/WiFi-Settings.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/WiFi-Settings.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/SSID", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", ssid);
@@ -2150,8 +2176,8 @@ void setup() {
           const char* PARAM_INPUT_1 = "ssid";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
             ssid = p->value().c_str();
-            Serial.print("SSID set to: ");
-            Serial.println(ssid);
+//            Serial.print("SSID set to: ");
+//            Serial.println(ssid);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
@@ -2160,8 +2186,8 @@ void setup() {
           const char* PARAM_INPUT_2 = "pass";                 // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_2) {
             pass = p->value().c_str();
-            Serial.print("Password set to: ");
-            Serial.println(pass);
+//            Serial.print("Password set to: ");
+//            Serial.println(pass);
             // Write file to save value
 //            writeFile(SPIFFS, passPath, pass.c_str());
           }
@@ -2170,10 +2196,10 @@ void setup() {
           const char* PARAM_INPUT_3 = "ip";                   // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_3) {
             dhcpcheck = "off";
-            writeFile(SPIFFS, dhcpcheckPath, "off");          //dhcp unchecked . if we recieve post with ip set dhcpcheck.txt file to off
+//            writeFile(SPIFFS, dhcpcheckPath, "off");          //dhcp unchecked . if we recieve post with ip set dhcpcheck.txt file to off
             ip = p->value().c_str();
-            Serial.print("IP Address set to: ");
-            Serial.println(ip);
+//            Serial.print("IP Address set to: ");
+//            Serial.println(ip);
 //            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
           }
           vTaskDelay(50);
@@ -2181,8 +2207,8 @@ void setup() {
           const char* PARAM_INPUT_4 = "gwip";              // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_4) {
             gateway = p->value().c_str();
-            Serial.print("gateway Address set to: ");
-            Serial.println(gateway);
+//            Serial.print("gateway Address set to: ");
+//            Serial.println(gateway);
 //            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
           }
           vTaskDelay(50);
@@ -2190,8 +2216,8 @@ void setup() {
           const char* PARAM_INPUT_5 = "subnet";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
             subnet = p->value().c_str();
-            Serial.print("subnet Address set to: ");
-            Serial.println(subnet);
+//            Serial.print("subnet Address set to: ");
+//            Serial.println(subnet);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
           vTaskDelay(50);
@@ -2199,8 +2225,8 @@ void setup() {
           const char* PARAM_INPUT_6 = "dhcp";                // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_6) {
             dhcpcheck = p->value().c_str();
-            Serial.print("dhcpcheck set to: ");
-            Serial.println(dhcpcheck);
+//            Serial.print("dhcpcheck set to: ");
+//            Serial.println(dhcpcheck);
 //            writeFile(SPIFFS, dhcpcheckPath, dhcpcheck.c_str());            // Write file to save value
           }
           //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
@@ -2209,21 +2235,19 @@ void setup() {
       if (dhcpcheck == "on") {
         ip = "dhcp ip adress";
       }
-      SetWiFiCredentials();
+      SetWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Done. ESP will restart shortly.</h1>");
-      vTaskDelay(5000);
-      ESP.restart();
     }); 
     server.on("/restoreWiFI", HTTP_GET, [](AsyncWebServerRequest * request){
-      DeleteWiFiCredentials();
+      DeleteWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Deleting stored WiFi credentials<br>Done.<br>ESP restart,<br>connect to AP access point Dynamics-" + idTopic + "<br>to configure wifi settings again<br><a href=\"http://192.168.4.1\">http://192.168.4.1</a></h1>");
-      vTaskDelay(5000);
-      ESP.restart();
     });
     
     // Route for system settings /System-Settings.html web page
     server.on("/system-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/System-Settings.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/System-Settings.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/AutoUpdate", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(AutoUpdate));
@@ -2237,21 +2261,23 @@ void setup() {
           const char* PARAM_INPUT_1 = "state";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
             AutoUpdate = p->value().toInt();
-            Serial.print("Auto Update set to: ");
-            Serial.println(AutoUpdate);
+//            Serial.print("Auto Update set to: ");
+//            Serial.println(AutoUpdate);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
           //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
         }
       }
-      SetAutoUpdate();
+      SetAutoUpdateFlag = HIGH;
       request->send(200, "text/html", "<h1>OK</h1>");
     });
 
     // Route for about /About.html web page
     server.on("/about", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/About.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/About.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/SN", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", idTopic);
@@ -2405,7 +2431,9 @@ void setup() {
 
         // Route for root / web page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/Implera-Dynamics.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Implera-Dynamics.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.serveStatic("/", SPIFFS, "/");
     server.on("/power", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -2423,10 +2451,25 @@ void setup() {
     server.on("/current3", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(average3, 1));
     });
+    server.on("/powerbutton", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(200, "text/txt", String(PowerOn));
+    });
+    server.on("/setpower", HTTP_GET, [](AsyncWebServerRequest *request){
+      if(tmp == 2){
+        tmp = 3;
+        SetChargeFlag = HIGH;
+      }else{
+        tmp = 2;
+        SetChargeFlag = HIGH;
+      }
+      request->send(200, "text/txt", "OK");
+    });
 
     // Route for charging settings /Charging-Settings.html web page
     server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/Charging-Settings.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Charging-Settings.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/pandc", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(PAndC));
@@ -2443,10 +2486,72 @@ void setup() {
     server.on("/adjust", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(ImpleraAdjust));
     });
+    server.on("/setCharge", HTTP_POST, [](AsyncWebServerRequest *request){
+      int params = request->params();
+      for (int i = 0; i < params; i++) {
+        AsyncWebParameter* p = request->getParam(i);
+        if (p->isPost()) {
+          // HTTP POST ssid value
+          const char* PARAM_INPUT_1 = "PandC";                  // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_1) {
+            PAndC = p->value().toInt();
+//            Serial.print("PandC set to: ");
+//            Serial.println(PAndC);
+            // Write file to save value
+//            writeFile(SPIFFS, ssidPath, ssid.c_str());
+          }
+          vTaskDelay(50);
+          // HTTP POST pass value
+          const char* PARAM_INPUT_2 = "rangeValueMax";                 // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_2) {
+            MQTTmax_current = p->value().toInt();
+//            Serial.print("Max charging current set to: ");
+//            Serial.println(MQTTmax_current);
+            // Write file to save value
+//            writeFile(SPIFFS, passPath, pass.c_str());
+          }
+          vTaskDelay(50);
+          // HTTP POST ip value
+          const char* PARAM_INPUT_3 = "rangeValueBreaker";                   // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_3) {
+            breaker = p->value().toInt();
+//            Serial.print("Breakers set to: ");
+//            Serial.println(breaker);
+//            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
+          }
+          vTaskDelay(50);
+          // HTTP POST gateway value
+          const char* PARAM_INPUT_4 = "rangeValueMin";              // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_4) {
+            min_current = p->value().toInt();
+//            Serial.print("Min charging current set to: ");
+//            Serial.println(min_current);
+//            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
+          }
+          vTaskDelay(50);
+          // HTTP POST subnet value
+          const char* PARAM_INPUT_5 = "Adjust";               // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_5) {
+            ImpleraAdjust = p->value().c_str();
+//            Serial.print("Adjust set to: ");
+//            Serial.println(ImpleraAdjust);
+//            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
+          }
+        }
+      }
+      SetChargeSettingsFlag = HIGH;
+      request->send(200, "text/html", "<h1>Charging settings saved</h1>");
+    }); 
+    server.on("/restoreCharge", HTTP_GET, [](AsyncWebServerRequest * request){
+      RestoreChargeSettingsFlag = HIGH;
+      request->send(200, "text/html", "<h1>Restoring charging settings.</h1>");
+    });
     
     // Route for wifi settings /WiFi-Settings.html web page
     server.on("/wifi-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/WiFi-Settings.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/WiFi-Settings.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/SSID", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", ssid);
@@ -2472,8 +2577,8 @@ void setup() {
           const char* PARAM_INPUT_1 = "ssid";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
             ssid = p->value().c_str();
-            Serial.print("SSID set to: ");
-            Serial.println(ssid);
+//            Serial.print("SSID set to: ");
+//            Serial.println(ssid);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
@@ -2482,8 +2587,8 @@ void setup() {
           const char* PARAM_INPUT_2 = "pass";                 // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_2) {
             pass = p->value().c_str();
-            Serial.print("Password set to: ");
-            Serial.println(pass);
+//            Serial.print("Password set to: ");
+//            Serial.println(pass);
             // Write file to save value
 //            writeFile(SPIFFS, passPath, pass.c_str());
           }
@@ -2492,10 +2597,10 @@ void setup() {
           const char* PARAM_INPUT_3 = "ip";                   // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_3) {
             dhcpcheck = "off";
-            writeFile(SPIFFS, dhcpcheckPath, "off");          //dhcp unchecked . if we recieve post with ip set dhcpcheck.txt file to off
+//            writeFile(SPIFFS, dhcpcheckPath, "off");          //dhcp unchecked . if we recieve post with ip set dhcpcheck.txt file to off
             ip = p->value().c_str();
-            Serial.print("IP Address set to: ");
-            Serial.println(ip);
+//            Serial.print("IP Address set to: ");
+//            Serial.println(ip);
 //            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
           }
           vTaskDelay(50);
@@ -2503,8 +2608,8 @@ void setup() {
           const char* PARAM_INPUT_4 = "gwip";              // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_4) {
             gateway = p->value().c_str();
-            Serial.print("gateway Address set to: ");
-            Serial.println(gateway);
+//            Serial.print("gateway Address set to: ");
+//            Serial.println(gateway);
 //            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
           }
           vTaskDelay(50);
@@ -2512,8 +2617,8 @@ void setup() {
           const char* PARAM_INPUT_5 = "subnet";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
             subnet = p->value().c_str();
-            Serial.print("subnet Address set to: ");
-            Serial.println(subnet);
+//            Serial.print("subnet Address set to: ");
+//            Serial.println(subnet);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
           vTaskDelay(50);
@@ -2521,8 +2626,8 @@ void setup() {
           const char* PARAM_INPUT_6 = "dhcp";                // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_6) {
             dhcpcheck = p->value().c_str();
-            Serial.print("dhcpcheck set to: ");
-            Serial.println(dhcpcheck);
+//            Serial.print("dhcpcheck set to: ");
+//            Serial.println(dhcpcheck);
 //            writeFile(SPIFFS, dhcpcheckPath, dhcpcheck.c_str());            // Write file to save value
           }
           //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
@@ -2531,21 +2636,19 @@ void setup() {
       if (dhcpcheck == "on") {
         ip = "dhcp ip adress";
       }
-      SetWiFiCredentials();
+      SetWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Done. ESP will restart shortly.</h1>");
-      vTaskDelay(5000);
-      ESP.restart();
     }); 
     server.on("/restoreWiFI", HTTP_GET, [](AsyncWebServerRequest * request){
-      DeleteWiFiCredentials();
+      DeleteWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Deleting stored WiFi credentials<br>Done.<br>ESP restart,<br>connect to AP access point Dynamics-" + idTopic + "<br>to configure wifi settings again<br><a href=\"http://192.168.4.1\">http://192.168.4.1</a></h1>");
-      vTaskDelay(5000);
-      ESP.restart();
     });
     
     // Route for system settings /System-Settings.html web page
     server.on("/system-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/System-Settings.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/System-Settings.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/AutoUpdate", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(AutoUpdate));
@@ -2559,21 +2662,23 @@ void setup() {
           const char* PARAM_INPUT_1 = "state";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
             AutoUpdate = p->value().toInt();
-            Serial.print("Auto Update set to: ");
-            Serial.println(AutoUpdate);
+//            Serial.print("Auto Update set to: ");
+//            Serial.println(AutoUpdate);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
           //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
         }
       }
-      SetAutoUpdate();
+      SetAutoUpdateFlag = HIGH;
       request->send(200, "text/html", "<h1>OK</h1>");
     });
 
     // Route for about /About.html web page
     server.on("/about", HTTP_GET, [](AsyncWebServerRequest * request) {
-      request->send(SPIFFS, "/About.html", "text/html");
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/About.html.gz", "text/html", false);
+      response->addHeader("Content-Encoding", "gzip");
+      request->send(response);
     });
     server.on("/SN", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", idTopic);
@@ -2845,6 +2950,34 @@ void loop() {
   vTaskDelay(20);
 
   average3 = total3 / NoRead3;
+
+
+  if(SetChargeSettingsFlag == HIGH){
+    SetChargeSettings();
+    SetChargeSettingsFlag = LOW;
+  }
+
+  if(RestoreChargeSettingsFlag == HIGH){
+    RestoreChargeSettings();
+    SetChargeSettingsFlag = LOW;
+  }
+
+  if(SetWiFiCredsFlag == HIGH){
+    SetWiFiCredentials();
+    SetWiFiCredsFlag = LOW;
+    ESP.restart();    
+  }
+
+  if(DeleteWiFiCredsFlag == HIGH){
+    DeleteWiFiCredentials();
+    SetWiFiCredsFlag = LOW;
+    ESP.restart(); 
+  }
+
+  if(SetAutoUpdateFlag == HIGH){
+    SetAutoUpdate();
+    SetAutoUpdateFlag = LOW;
+  }
 
 
   Dovoljen_Tok();
@@ -3624,8 +3757,8 @@ void CheckState(){
     debug += "$";
     debug += "Checking State RAPI = G0";
     debug += "$";
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     ResponseMessage = "";
     Serial.println(G0);
@@ -3738,8 +3871,8 @@ void CheckStatus(){
     debug += "Checking Status RAPI = GS";
     debug += "$";
     ResponseStatus = LOW;
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     ResponseMessage = "";
     Serial.println(GS);
@@ -3830,8 +3963,8 @@ void CheckSetAmps(){
     debug += "Checking Set AMPS RAPI = GC";
     debug += "$";
     ResponseStatus = LOW;
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     ResponseMessage = "";
     Serial.println(GC);
@@ -3907,8 +4040,8 @@ void CheckCharge(){
     debug += "$";
     debug += "Checking Charge RAPI = GG";
     debug += "$";
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     ResponseMessage = "";
     Serial.println(GG);
@@ -4009,8 +4142,8 @@ void CheckEnergy(){
     debug += "$";
     debug += "Checking Energy RAPI = GU";
     debug += "$";
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     ResponseMessage = "";
     Serial.println(GU);
@@ -4095,8 +4228,8 @@ void TurnOn(){
     debug += "$";
     ChargeSetState = HIGH;
     ResponseStatus = LOW;
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     ResponseMessage = "";
     tmp = 2;
@@ -4221,8 +4354,8 @@ void TurnOff(){
     debug += "$";
     ChargeSetState = LOW;
     ResponseStatus = LOW;
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     tmp = 1;
     ResponseMessage = "";
@@ -4344,8 +4477,8 @@ void TurnSleep(){
     debug += "$";
     ChargeSetState = LOW;
     ResponseStatus = LOW;
-    while(Serial.available() > 0) {
-      char t = Serial.read();
+    if(Serial.available() > 0){
+      CatchStateChange();
     }
     ResponseMessage = "";
     tmp = 3;
@@ -4505,8 +4638,8 @@ void SetMQTTCurrent(){
         debug += MQTTmax_current;
         debug += "$";
         ResponseStatus = LOW;
-        while(Serial.available() > 0) {
-          char t = Serial.read();
+        if(Serial.available() > 0){
+          CatchStateChange();
         }
         if(MQTTmax_current >= min_current){
           ResponseMessage = "";
@@ -4623,8 +4756,8 @@ void SetCurrent(){
       debug += "$";
       ResponseStatus = LOW;
       c5 = 0;
-      while(Serial.available() > 0) {
-        char t = Serial.read();
+      if(Serial.available() > 0){
+        CatchStateChange();
       }
       if(MQTTmax_current < max_current){
         max_current = MQTTmax_current;
@@ -4762,8 +4895,8 @@ void SetTimer(){
         debug += TimeLimit;
         debug += "$";
         ResponseStatus = LOW;
-        while(Serial.available() > 0) {
-          char t = Serial.read();
+        if(Serial.available() > 0){
+          CatchStateChange();
         }
         ResponseMessage = "";
         TempValue = "";
@@ -4846,8 +4979,8 @@ void SetLimit(){
         debug += EnergyLimit;
         debug += "$";
         ResponseStatus = LOW;
-        while(Serial.available() > 0) {
-          char t = Serial.read();
+        if(Serial.available() > 0){
+          CatchStateChange();
         }
         ResponseMessage = "";
         TempValue = "";
@@ -4931,8 +5064,8 @@ void AskRAPIF(){
         debug += RAPI;
         debug += "$";
         ResponseStatus = LOW;
-        while(Serial.available() > 0) {
-          char t = Serial.read();
+        if(Serial.available() > 0){
+          CatchStateChange();
         }
         ResponseMessage = "";
         TempValue = "";
@@ -5252,8 +5385,10 @@ void CatchStateChange(){
     ATMessage.remove(5);
     Serial.print("Catch state izrez je : ");
     Serial.println(ATMessage);
-    if(ChargeSetState == HIGH && PAndC == LOW){
+    if(PAndC == LOW){
       if(ATMessage != "03 03"){
+        PowerOn = LOW;
+        SetRuntimeSettings();
         TurnSleep();
       }
     }
