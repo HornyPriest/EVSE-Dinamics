@@ -202,6 +202,7 @@ String SendWiFiTopic = "/wifi";
 String SendDebugTopic = "/debug";
 String RapiTopic = "/rapi_response";
 String PandCTopic = "/plugandcharge";
+String ipTopic = "/ip";
 
 
 const char * topica;
@@ -378,6 +379,7 @@ boolean UpdateSpiffs = LOW;
 boolean ResponseStatus;
 boolean SetupComplete = LOW;
 boolean FWSentFlag = LOW;
+boolean ipSentFlag = LOW;
 boolean AskRAPI = LOW;
 boolean PowerOn=LOW;
 boolean ImpleraAdjust;
@@ -387,6 +389,8 @@ boolean RestoreChargeSettingsFlag;
 boolean SetWiFiCredsFlag;
 boolean DeleteWiFiCredsFlag;
 boolean SetAutoUpdateFlag;
+
+int PowerStatus;
 
 
 uint8_t tmp;
@@ -403,6 +407,9 @@ uint16_t c3 = 0;
 uint16_t c4 = 0;
 uint16_t c5 = 0;
 uint16_t c6 = 0;
+
+
+int wifi_reconnects = 1;
 
 
 float average1Old;
@@ -550,6 +557,11 @@ bool initWiFi() {
   delay(500);
   Serial.println("");
   Serial.println(WiFi.localIP());
+  ip = WiFi.localIP().toString();
+  gateway = WiFi.gatewayIP().toString();
+  if(ip.length()>0){
+    ipSentFlag = LOW;
+  }
 
   if(WiFi.status() != WL_CONNECTED){
     WiFi.begin(ssid1.c_str(), pass1.c_str());
@@ -568,130 +580,28 @@ bool initWiFi() {
     delay(500);
     Serial.println("");
     Serial.println(WiFi.localIP());
+    ip = WiFi.localIP().toString();
+    gateway = WiFi.gatewayIP().toString();
+    if(ip.length()>0){
+      ipSentFlag = LOW;
+    }
   }
   
 
-  if (!MDNS.begin(mdnsdotlocalurl.c_str())) {
+  if (!MDNS.begin("dynamics")) {
     Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      vTaskDelay(1000);
-    }
+//    return;
   }
 
   MDNS.addService("http", "tcp", 80);
 
-  Serial.print("http://");
-  Serial.print(mdnsdotlocalurl);
-  Serial.println(".lan");
+//  Serial.print("http://");
+//  Serial.print(mdnsdotlocalurl);
+//  Serial.println(".lan");
   return true;
 }
 
-// Replaces placeholder with LED state value
-// replaces the text between %match% in spiffs index.html on upload with actual variables
-/*String processor(const String& var) {
-  
-  if(var == "POWER"){
-    String tempPowerString = String(temppower, 1);
-    return String(tempPowerString);
-  }
-
-  if(var == "CURRENT"){
-    String tempCurrentString = String(charge_current, 1);
-    return String(tempCurrentString);
-  }
-
-  if(var == "CURRENT1"){
-    String temp1String = String(average1, 1);
-    return String(temp1String);
-  }
-
-  if(var == "CURRENT2"){
-    String temp2String = String(average2, 1);
-    return String(temp2String);
-  }
-
-  if(var == "CURRENT3"){
-    String temp3String = String(average3, 1);
-    return String(temp3String);
-  }*/
-
-//  if(var == "SN"){
-////    return String(idTopic);
-//    return String(random(1,20));
-//  }
-//  else if(var == "FW"){
-////    return String(FW_versionStr);
-//  return String(random(1,20));
-//  }
-  
-/*  if (var == "STATE") {                 // in index.html noted as &STATE&
-    if (tmp == 2) {
-      ledState = "ON";
-    }
-    else if (tmp == 3){
-      ledState = "OFF";
-    }
-    return ledState;
-    return String();
-  }
-  else if (var == "CURRENT1"){
-    String temp1String = String(average1, 1);
-    return temp1String;
-  }
-  else if (var == "CURRENT2"){
-    String temp2String = String(average2, 1);
-    return temp2String;
-  }
-  else if (var == "CURRENT3"){
-    String temp3String = String(average3, 1);
-    return temp3String;
-  }
-  else if (var == "BREAKERS"){
-    String temp4String = String(breaker);
-    return temp4String;
-  }
-  else if (var == "MDNSNAME") {                  // in index.html noted as &MDNSNAME&
-    return String(mdnsdotlocalurl);
-  } else if (var == "IP") {                      // in index.html noted as &IP&
-    return ssid+"<br>"+WiFi.localIP().toString() + " DHCP: " + dhcpcheck ;
-  } else if (var == "GATEWAY") {                // in index.html noted as &GATEWAY&
-    return WiFi.gatewayIP().toString();
-  } else if (var == "SUBNET") {                  // in index.html noted as &SUBNET&
-    return WiFi.subnetMask().toString() + "<br>DNS: " + WiFi.dnsIP().toString() + "<br>MAC: " + WiFi.macAddress();
-  }
-
-  return String();
-}*/
-
 //---------------------------------------------------------------------------------------------------------
-
-void setup_wifi()
-{
-  WiFi.mode(WIFI_OFF);
-  vTaskDelay(1000);
-  // We start by connecting to a WiFi network
-  WiFi.mode(WIFI_MODE_STA);
-  vTaskDelay(1000);
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-
-  WiFi.begin(ssid.c_str(), pass.c_str());
-  int i;
-  while (WiFi.status() != WL_CONNECTED && i<5) {
-    vTaskDelay(300);
-    i = i + 1;
-    Serial.print(".");
-  }
-  if(i==5){
-    ESP.restart();
-  }
-  vTaskDelay(1000);
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-}
 
 void callback(char* topic, byte* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
@@ -2051,15 +1961,17 @@ void setup() {
       request->send(200, "text/txt", String(average3, 1));
     });
     server.on("/powerbutton", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(200, "text/txt", String(PowerOn));
+      request->send(200, "text/txt", String(PowerStatus));
     });
     server.on("/setpower", HTTP_GET, [](AsyncWebServerRequest *request){
-      if(tmp == 2){
-        tmp = 3;
-        SetChargeFlag = HIGH;
-      }else{
-        tmp = 2;
-        SetChargeFlag = HIGH;
+      if(PowerStatus != 2){
+        if(tmp == 2){
+          tmp = 3;
+          SetChargeFlag = HIGH;
+        }else{
+          tmp = 2;
+          SetChargeFlag = HIGH;
+        }
       }
       request->send(200, "text/txt", "OK");
     });
@@ -2165,7 +2077,7 @@ void setup() {
       request->send(200, "text/txt", ip);
     });
     server.on("/GWIP", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(200, "text/txt", ip);
+      request->send(200, "text/txt", gateway);
     });
     server.on("/setWiFi", HTTP_POST, [](AsyncWebServerRequest *request){
       int params = request->params();
@@ -2238,7 +2150,7 @@ void setup() {
       SetWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Done. ESP will restart shortly.</h1>");
     }); 
-    server.on("/restoreWiFI", HTTP_GET, [](AsyncWebServerRequest * request){
+    server.on("/restoreWiFi", HTTP_GET, [](AsyncWebServerRequest * request){
       DeleteWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Deleting stored WiFi credentials<br>Done.<br>ESP restart,<br>connect to AP access point Dynamics-" + idTopic + "<br>to configure wifi settings again<br><a href=\"http://192.168.4.1\">http://192.168.4.1</a></h1>");
     });
@@ -2452,7 +2364,7 @@ void setup() {
       request->send(200, "text/txt", String(average3, 1));
     });
     server.on("/powerbutton", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(200, "text/txt", String(PowerOn));
+      request->send(200, "text/txt", String(PowerStatus));
     });
     server.on("/setpower", HTTP_GET, [](AsyncWebServerRequest *request){
       if(tmp == 2){
@@ -2639,7 +2551,7 @@ void setup() {
       SetWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Done. ESP will restart shortly.</h1>");
     }); 
-    server.on("/restoreWiFI", HTTP_GET, [](AsyncWebServerRequest * request){
+    server.on("/restoreWiFi", HTTP_GET, [](AsyncWebServerRequest * request){
       DeleteWiFiCredsFlag = HIGH;
       request->send(200, "text/html", "<h1>Deleting stored WiFi credentials<br>Done.<br>ESP restart,<br>connect to AP access point Dynamics-" + idTopic + "<br>to configure wifi settings again<br><a href=\"http://192.168.4.1\">http://192.168.4.1</a></h1>");
     });
@@ -2789,19 +2701,11 @@ void setup() {
   configTime(0, 0, ntpServer);
 
 
-//  if (!client.connected()) {
-//    if (!WiFi.status() == WL_CONNECTED){
-//      setup_wifi();
-//    }
-//    reconnect();
-//  }
   digitalWrite(LED_GREEN, LOW);
   digitalWrite(LED_RED, LOW);
 
   vTaskDelay(500);
   
-//  SENDBreaker();
-//  SENDFWversion();
 
   SendDebugF2();
 
@@ -2817,6 +2721,12 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   SENDFWversion();
+
+  vTaskDelay(50);
+
+  SENDip();
+
+  vTaskDelay(50);
 
   if(ConnectionTimeoutFlag == HIGH && TimeoutTimeSet == LOW){
     TimeoutTime = millis();
@@ -2836,6 +2746,7 @@ void loop() {
       if (!WiFi.status() == WL_CONNECTED){      
         WiFiReconnect();
         vTaskDelay(50);
+        wifi_reconnects = wifi_reconnects + 5;
   //        ESP.restart();  // test, da mi ne zginjajo
       }else{
         vTaskDelay(50);
@@ -2886,6 +2797,7 @@ void loop() {
                     debug += " : ";
                     debug += ESPhttpUpdate.getLastErrorString();
                     debug += "$";
+                    UpdateStart = LOW;
                     break;
 
                 case HTTP_UPDATE_NO_UPDATES:
@@ -2893,6 +2805,7 @@ void loop() {
                     debug += "$";
                     debug += "HTTP_UPDATE_NO_UPDATES";
                     debug += "$";
+                    UpdateStart = LOW;
                     break;
 
                 case HTTP_UPDATE_OK:
@@ -2900,10 +2813,11 @@ void loop() {
                     debug += "$";
                     debug += "HTTP_UPDATE_OK";
                     debug += "$";
+                    UpdateStart = LOW;
                     break;
             }
     }else{
-      if(!SPIFFS.exists("/Implera-Dynamics.html")){
+      if(!SPIFFS.exists("/Implera-Dynamics.html.gz")){
         UpdateSpiffs = HIGH;
       }
     }
@@ -2996,6 +2910,8 @@ void loop() {
   vTaskDelay(100);
   ConnectionAlert();
   vTaskDelay(10);
+  PowerStatusChanger();
+  vTaskDelay(10);
   
 
   CatchStateChange();
@@ -3067,6 +2983,14 @@ void loop() {
     } 
  client.loop();
  vTaskDelay(300);
+}
+
+void PowerStatusChanger(){
+  if(ActiveTimeoutFlag == HIGH){
+    PowerStatus = 2;
+  }else{
+    PowerStatus = PowerOn;
+  }
 }
 
 void CalcPower(){
@@ -3298,6 +3222,36 @@ void SENDFWversion(){
     digitalWrite(LED_GREEN, LOW);
     digitalWrite(LED_RED, LOW);
     FWSentFlag = HIGH;
+  }
+}
+
+void SENDip(){
+  if (client.connected() && ipSentFlag == LOW){
+
+    debug += "$";
+    debug += "Sending ip";
+    debug += "$";
+    
+    digitalWrite(LED_GREEN, HIGH);
+    digitalWrite(LED_RED, HIGH);
+    topica = "";
+    dynamicTopic = "";
+//    epochtimeTopic = getTime();
+    dynamicTopic += prefix;
+    dynamicTopic += idTopic;
+//    dynamicTopic += "/";
+//    dynamicTopic += epochtimeTopic;
+    fullTopic = dynamicTopic;
+    fullTopic += ipTopic;
+    topica = fullTopic.c_str();
+    TempValue = "";
+    TempValue += ip;
+    TempValueChar = TempValue.c_str();
+    client.publish(topica, TempValueChar);
+//    delay(20);
+    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_RED, LOW);
+    ipSentFlag = HIGH;
   }
 }
 
@@ -5396,48 +5350,21 @@ void CatchStateChange(){
   }
 }
 
-/*void WiFiStationConnected(WiFiEvent_t event, WiFiEventInfo_t info){
-  Serial.println("Connected to AP successfully!");
-  debug += "$";
-  debug += "Connected to AP successfully!";
-  debug += "$";
-}
-
-void WiFiGotIP(WiFiEvent_t event, WiFiEventInfo_t info){
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  debug += "$";
-  debug += "WiFi connected, IP address: ";
-  debug += WiFi.localIP();
-  debug += ", RSSI:  ";
-  debug += WiFi.RSSI();
-  debug += "$";
-}
-
-void WiFiStationDisconnected(WiFiEvent_t event, WiFiEventInfo_t info){
-  Serial.println("Disconnected from WiFi access point");
-  Serial.print("WiFi lost connection. Reason: ");
-  Serial.println(info.disconnected.reason);
-  Serial.println("Trying to Reconnect");
-  WiFi.begin(ssid.c_str(), pass.c_str());
-  debug += "$";
-  debug += "Disconnected from WiFi access point,  WiFi lost connection. Reason: ";
-  debug += info.disconnected.reason;
-  debug += "$";
-}*/
-
 void WiFiReconnect(){
   now11 = millis();
   // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
-  if ((WiFi.status() != WL_CONNECTED) && (now11 - lastInfo11 >= timer11)) {
-    Serial.print(millis());
-    Serial.println("Reconnecting to WiFi...");
-    debug += "$";
-    debug += "Reconnecting to WiFi...";
-    debug += "$";
-    WiFi.disconnect();
-    WiFi.reconnect();
+  if ((WiFi.status() != WL_CONNECTED) && (now11 - lastInfo11 >= timer11*wifi_reconnects)) {
+    int ssidlength = ssid.length();
+    if(wifi_reconnects > 25){
+      initWiFi();
+      wifi_reconnects = 100;
+    }else if(ssidlength > 0){
+      Serial.println("Reconnecting to user WiFi...");
+      debug += "$";
+      debug += "Reconnecting to user WiFi...";
+      debug += "$";
+      WiFiConnect();
+    }
     lastInfo11 = now11;
   }
 }
@@ -5445,11 +5372,12 @@ void WiFiReconnect(){
 void WiFiConnect(){
   WiFi.disconnect();
   WiFi.begin(ssid.c_str(), pass.c_str());
-}
-
-void WiFiConnect1(){
-  WiFi.disconnect();
-  WiFi.begin(ssid1.c_str(), pass1.c_str());
+  ip = WiFi.localIP().toString();
+  gateway = WiFi.gatewayIP().toString();
+  if(ip.length()>0){
+    wifi_reconnects = 0;
+    ipSentFlag = LOW;
+  }
 }
 
 

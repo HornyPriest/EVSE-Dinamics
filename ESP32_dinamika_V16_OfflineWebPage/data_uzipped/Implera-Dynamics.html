@@ -7,7 +7,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<!-- Local Implera css-->
-		<link rel="stylesheet" type="text/css" href="main.css.gz">
+		<link rel="stylesheet" type="text/css" href="main.css">
 	</head>
 
 <body>
@@ -235,6 +235,8 @@
 						document.getElementById("powerbutton").style.borderColor = "#55acee";
 					}else if(this.responseText == 0){
 						document.getElementById("powerbutton").style.borderColor = "#47ff1e";
+					}else if(this.responseText == 2){
+						document.getElementById("powerbutton").style.borderColor = "#f41f1f"
 					}
 				}
 			};
