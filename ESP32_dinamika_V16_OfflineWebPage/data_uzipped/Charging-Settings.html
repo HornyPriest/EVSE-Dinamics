@@ -97,6 +97,21 @@
 				<tr>
 					<td class="text-size-body-cell">
 						<span class="text-size-body-cell">
+							EXPECT NEGATIVE AMPERAGE (!might burn your breakers)
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
+							<input name="NegativeAmperage" id="NegativeAmperage" type="checkbox">
+							<span class="toggle"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-cell">
+						<span class="text-size-body-cell">
 							ALLOW IMPLERA TO ADJUST CHARGING POWER
 						</span>
 					</td>
@@ -244,6 +259,22 @@
 		  xhttp.send();
 		}
 
+		function getNegativeAmperage() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("NegativeAmperage").checked = true;
+				}else if(this.responseText != 1){
+					document.getElementById("NegativeAmperage").checked = false;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/neg_amp", true);
+		  xhttp.send();
+		}
+
 		function getAdjust() {
 		  var xhttp = new XMLHttpRequest();
 		  xhttp.onreadystatechange = function() {
@@ -265,6 +296,7 @@
 		window.onload=getBreaker();
 		window.onload=getMin();
 		window.onload=getAdjust();
+		window.onload=getNegativeAmperage();
 
   	</script>
 

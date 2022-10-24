@@ -104,6 +104,8 @@ long timer12;
 long timer13;
 long timer14;
 
+long NegAmpTime;
+long nowNegAmp;
 
 long now11;
 
@@ -264,6 +266,8 @@ const char * charDeleteSettings;
 String sub_DeleteSettingsTopic;
 const char * charPlugAndCharge;
 String sub_PlugAndChargeTopic;
+const char * charNegativeAmperage;
+String sub_NegativeAmperageTopic;
 const char * charAdjust;
 String sub_AdjustTopic;
 const char * charAutoUpdate;
@@ -383,6 +387,8 @@ boolean ipSentFlag = LOW;
 boolean AskRAPI = LOW;
 boolean PowerOn=LOW;
 boolean ImpleraAdjust;
+boolean NegativeAmperage;
+boolean NegAmpFlag = LOW;
 boolean AutoUpdate;
 boolean SetChargeSettingsFlag;
 boolean RestoreChargeSettingsFlag;
@@ -912,6 +918,22 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   vTaskDelay(20);
 
+  if (String(topic) == sub_NegativeAmperageTopic) {
+    Serial.print("NEgative amperage setting update received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    vmesna = temp_message.toInt();
+    if(vmesna == 1){
+      NegativeAmperage = HIGH;
+      SetNegativeAmperage();
+    }else{
+      NegativeAmperage = LOW;
+      SetNegativeAmperage();
+    }
+  }
+
+  vTaskDelay(20);
+
   if (String(topic) == sub_AdjustTopic) {
     Serial.print("Adjust setting update received ");
     Serial.println(messageTemp);
@@ -1127,6 +1149,7 @@ void SetChargeSettings(){
   preferences.putInt("MQTTmax_current", MQTTmax_current);
   preferences.putInt("breaker", breaker);
   preferences.putInt("min_current", min_current);
+  preferences.putBool("NegativeAmperage", NegativeAmperage); 
   preferences.putBool("ImpleraAdjust", ImpleraAdjust);  
   preferences.end();
   debug += "$saving chargeing settings to preferences$";
@@ -1137,12 +1160,14 @@ void RestoreChargeSettings(){
   MQTTmax_current = 6;
   breaker = 6;
   min_current = 6;
+  NegativeAmperage = LOW;
   ImpleraAdjust = HIGH;
   preferences.begin("Settings", false);
   preferences.putBool("pac", PAndC);
   preferences.putInt("MQTTmax_current", MQTTmax_current);
   preferences.putInt("breaker", breaker);
   preferences.putInt("min_current", min_current);
+  preferences.putBool("NegativeAmperage", NegativeAmperage); 
   preferences.putBool("ImpleraAdjust", ImpleraAdjust);
   preferences.end();
   debug += "$restoring chargeing settings in preferences$";
@@ -1182,6 +1207,7 @@ void GetSettings(){
     PAndC = preferences.getBool("pac", HIGH);
     MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
     min_current = preferences.getInt("min_current", 6);
+    NegativeAmperage = preferences.getBool("NegativeAmperage", LOW);
     ImpleraAdjust = preferences.getBool("ImpleraAdjust", HIGH);
     AutoUpdate = preferences.getBool("AutoUpdate", HIGH);
     preferences.end();
@@ -1246,6 +1272,13 @@ void SetPAC(){
   debug += "$saving PAC setting to preferences$";
 }
 
+void SetNegativeAmperage(){
+  preferences.begin("Settings", false);
+  preferences.putBool("NegativeAmperage", NegativeAmperage);
+  preferences.end();
+  debug += "$saving NegativeAmperage setting to preferences$";
+}
+
 void SetAdjust(){
   preferences.begin("Settings", false);
   preferences.putBool("ImpleraAdjust", ImpleraAdjust);
@@ -1297,6 +1330,11 @@ void SendSettingsF(){
     TempValue += ":";
     TempValue += "\"";
     TempValue += PAndC;
+    TempValue += "\",";
+    TempValue += "\"Neg_Amp\"";
+    TempValue += ":";
+    TempValue += "\"";
+    TempValue += NegativeAmperage;
     TempValue += "\",";
     TempValue += "\"Adjust\"";
     TempValue += ":";
@@ -1845,6 +1883,10 @@ void setup() {
   sub_PlugAndChargeTopic += idTopic;
   sub_PlugAndChargeTopic += "/set_plugandcharge";
   charPlugAndCharge = sub_PlugAndChargeTopic.c_str();
+  sub_NegativeAmperageTopic += prefix;
+  sub_NegativeAmperageTopic += idTopic;
+  sub_NegativeAmperageTopic += "/set_neg_amp";
+  charNegativeAmperage = sub_NegativeAmperageTopic.c_str();
   sub_AdjustTopic += prefix;
   sub_AdjustTopic += idTopic;
   sub_AdjustTopic += "/set_adjust";
@@ -1994,6 +2036,9 @@ void setup() {
     server.on("/min", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(min_current));
     });
+    server.on("/neg_amp", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(200, "text/txt", String(NegativeAmperage));
+    });
     server.on("/adjust", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(ImpleraAdjust));
     });
@@ -2041,8 +2086,17 @@ void setup() {
           }
           vTaskDelay(50);
           // HTTP POST subnet value
-          const char* PARAM_INPUT_5 = "Adjust";               // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_5 = "NegativeAmperage";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
+            NegativeAmperage = p->value().c_str();
+//            Serial.print("Adjust set to: ");
+//            Serial.println(ImpleraAdjust);
+//            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
+          }
+          vTaskDelay(50);
+          // HTTP POST subnet value
+          const char* PARAM_INPUT_6 = "Adjust";               // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_6) {
             ImpleraAdjust = p->value().c_str();
 //            Serial.print("Adjust set to: ");
 //            Serial.println(ImpleraAdjust);
@@ -2395,6 +2449,9 @@ void setup() {
     server.on("/min", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(min_current));
     });
+    server.on("/neg_amp", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(200, "text/txt", String(NegativeAmperage));
+    });
     server.on("/adjust", HTTP_GET, [](AsyncWebServerRequest *request){
       request->send(200, "text/txt", String(ImpleraAdjust));
     });
@@ -2442,8 +2499,17 @@ void setup() {
           }
           vTaskDelay(50);
           // HTTP POST subnet value
-          const char* PARAM_INPUT_5 = "Adjust";               // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_5 = "NegativeAmperage";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
+            NegativeAmperage = p->value().c_str();
+//            Serial.print("Adjust set to: ");
+//            Serial.println(ImpleraAdjust);
+//            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
+          }
+          vTaskDelay(50);
+          // HTTP POST subnet value
+          const char* PARAM_INPUT_6 = "Adjust";               // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_6) {
             ImpleraAdjust = p->value().c_str();
 //            Serial.print("Adjust set to: ");
 //            Serial.println(ImpleraAdjust);
@@ -2837,7 +2903,7 @@ void loop() {
 
   vTaskDelay(20);
 
-  average1 = total1 / NoRead1;
+  
 
   total2 = total2 - branja2[readindex2];
   branja2[readindex2] = Irms_2;
@@ -2850,7 +2916,6 @@ void loop() {
 
   vTaskDelay(20);
 
-  average2 = total2 / NoRead2;
 
   total3 = total3 - branja3[readindex3];
   branja3[readindex3] = Irms_3;
@@ -2863,7 +2928,16 @@ void loop() {
 
   vTaskDelay(20);
 
+
+  average1 = total1 / NoRead1;
+  average2 = total2 / NoRead2;
   average3 = total3 / NoRead3;
+
+  if(NegAmpFlag == HIGH){
+    average1 = -average1;
+    average2 = -average2;
+    average3 = -average3;
+  }
 
 
   if(SetChargeSettingsFlag == HIGH){
@@ -2911,6 +2985,8 @@ void loop() {
   ConnectionAlert();
   vTaskDelay(10);
   PowerStatusChanger();
+  vTaskDelay(10);
+  NegativeAmperageSet();
   vTaskDelay(10);
   
 
@@ -3041,6 +3117,17 @@ void CalcEnergy(){
     case 123:
       energy = energy*3;
      break;
+  }
+}
+
+void NegativeAmperageSet(){
+  if(NegativeAmperage == HIGH){
+    nowNegAmp = millis();
+    if(nowNegAmp - NegAmpTime < 30000){
+      NegAmpFlag = HIGH;
+    }else{
+      NegAmpFlag = LOW;
+    }
   }
 }
 
@@ -4232,6 +4319,9 @@ void TurnOn(){
               Serial.println(t1);
         }
         ConnectionTimeoutFlag = LOW;
+        if(NegativeAmperage == HIGH){
+          NegAmpTime = millis();
+        }
         t1 = 0;
 //        tmp = 2;    PRESTAVIL GOR, RAZMISLI IN DAJ NAZAJ TU IN ZGORAJ ZBRIŠI
         if (client.connected()){
