@@ -415,7 +415,7 @@ uint16_t c5 = 0;
 uint16_t c6 = 0;
 
 
-int wifi_reconnects = 1;
+int wifi_reconnects = 0;
 
 
 float average1Old;
@@ -556,7 +556,7 @@ bool initWiFi() {
   while (WiFi.status() != WL_CONNECTED) {
     currentMillis = millis();
     if (currentMillis - previousMillis >= interval) {
-      Serial.println("Failed to connect.");
+      Serial.println("Failed to connect.");      
       return false;
     }
   }
@@ -594,12 +594,12 @@ bool initWiFi() {
   }
   
 
-  if (!MDNS.begin("dynamics")) {
-    Serial.println("Error setting up MDNS responder!");
-//    return;
-  }
-
-  MDNS.addService("http", "tcp", 80);
+//  if (!MDNS.begin("dynamics")) {
+//    Serial.println("Error setting up MDNS responder!");
+////    return;
+//  }
+//
+//  MDNS.addService("http", "tcp", 80);
 
 //  Serial.print("http://");
 //  Serial.print(mdnsdotlocalurl);
@@ -1064,7 +1064,7 @@ void reconnect() {
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
       // Wait 5 seconds before retrying
-      vTaskDelay(30000);
+      vTaskDelay(5000);
     }
   }
 }
@@ -2050,56 +2050,56 @@ void setup() {
           // HTTP POST ssid value
           const char* PARAM_INPUT_1 = "PandC";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
-            PAndC = p->value().toInt();
-//            Serial.print("PandC set to: ");
-//            Serial.println(PAndC);
+            PAndC = p->value().c_str();
+            Serial.print("PandC set to: ");
+            Serial.println(PAndC);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST pass value
-          const char* PARAM_INPUT_2 = "rangeValueMax";                 // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_2 = "rVMax";                 // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_2) {
             MQTTmax_current = p->value().toInt();
-//            Serial.print("Max charging current set to: ");
-//            Serial.println(MQTTmax_current);
+            Serial.print("Max charging current set to: ");
+            Serial.println(MQTTmax_current);
             // Write file to save value
 //            writeFile(SPIFFS, passPath, pass.c_str());
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST ip value
-          const char* PARAM_INPUT_3 = "rangeValueBreaker";                   // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_3 = "rVB";                   // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_3) {
             breaker = p->value().toInt();
-//            Serial.print("Breakers set to: ");
-//            Serial.println(breaker);
+            Serial.print("Breakers set to: ");
+            Serial.println(breaker);
 //            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST gateway value
-          const char* PARAM_INPUT_4 = "rangeValueMin";              // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_4 = "rVMin";              // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_4) {
             min_current = p->value().toInt();
-//            Serial.print("Min charging current set to: ");
-//            Serial.println(min_current);
+            Serial.print("Min charging current set to: ");
+            Serial.println(min_current);
 //            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST subnet value
-          const char* PARAM_INPUT_5 = "NegativeAmperage";               // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_5 = "NegAmp";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
             NegativeAmperage = p->value().c_str();
-//            Serial.print("Adjust set to: ");
-//            Serial.println(ImpleraAdjust);
+            Serial.print("Negative Amperage set to: ");
+            Serial.println(NegativeAmperage);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST subnet value
-          const char* PARAM_INPUT_6 = "Adjust";               // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_6 = "Adj";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_6) {
             ImpleraAdjust = p->value().c_str();
-//            Serial.print("Adjust set to: ");
-//            Serial.println(ImpleraAdjust);
+            Serial.print("Adjust set to: ");
+            Serial.println(ImpleraAdjust);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
         }
@@ -2378,6 +2378,7 @@ void setup() {
   }
   else {
     // Connect to Wi-Fi network with SSID and password == setup an AP AccessPoint for wifi direct connect
+    WiFi.disconnect(true); //Disable STA
     Serial.println("Setting AP (Access Point)");
     // NULL sets an open Access Point
     String broadcastintheair = String("Dinamics-") + charid;  // want a unique broadcast id for each device
@@ -2463,56 +2464,56 @@ void setup() {
           // HTTP POST ssid value
           const char* PARAM_INPUT_1 = "PandC";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
-            PAndC = p->value().toInt();
-//            Serial.print("PandC set to: ");
-//            Serial.println(PAndC);
+            PAndC = p->value().c_str();
+            Serial.print("PandC set to: ");
+            Serial.println(PAndC);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST pass value
-          const char* PARAM_INPUT_2 = "rangeValueMax";                 // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_2 = "rVMax";                 // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_2) {
             MQTTmax_current = p->value().toInt();
-//            Serial.print("Max charging current set to: ");
-//            Serial.println(MQTTmax_current);
+            Serial.print("Max charging current set to: ");
+            Serial.println(MQTTmax_current);
             // Write file to save value
 //            writeFile(SPIFFS, passPath, pass.c_str());
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST ip value
-          const char* PARAM_INPUT_3 = "rangeValueBreaker";                   // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_3 = "rVB";                   // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_3) {
             breaker = p->value().toInt();
-//            Serial.print("Breakers set to: ");
-//            Serial.println(breaker);
+            Serial.print("Breakers set to: ");
+            Serial.println(breaker);
 //            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST gateway value
-          const char* PARAM_INPUT_4 = "rangeValueMin";              // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_4 = "rVMin";              // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_4) {
             min_current = p->value().toInt();
-//            Serial.print("Min charging current set to: ");
-//            Serial.println(min_current);
+            Serial.print("Min charging current set to: ");
+            Serial.println(min_current);
 //            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST subnet value
-          const char* PARAM_INPUT_5 = "NegativeAmperage";               // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_5 = "NegAmp";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
             NegativeAmperage = p->value().c_str();
-//            Serial.print("Adjust set to: ");
-//            Serial.println(ImpleraAdjust);
+            Serial.print("Negative Amperage set to: ");
+            Serial.println(NegativeAmperage);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
-          vTaskDelay(50);
+          vTaskDelay(20);
           // HTTP POST subnet value
-          const char* PARAM_INPUT_6 = "Adjust";               // Search for parameter in HTTP POST request
+          const char* PARAM_INPUT_6 = "Adj";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_6) {
             ImpleraAdjust = p->value().c_str();
-//            Serial.print("Adjust set to: ");
-//            Serial.println(ImpleraAdjust);
+            Serial.print("Adjust set to: ");
+            Serial.println(ImpleraAdjust);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
         }
@@ -2790,6 +2791,8 @@ void loop() {
 
   vTaskDelay(50);
 
+  client.loop();
+
   SENDip();
 
   vTaskDelay(50);
@@ -2814,7 +2817,7 @@ void loop() {
         vTaskDelay(50);
         wifi_reconnects = wifi_reconnects + 5;
   //        ESP.restart();  // test, da mi ne zginjajo
-      }else{
+      }else if(WiFi.status() == WL_CONNECTED){
         vTaskDelay(50);
         reconnect();
       }
@@ -2938,17 +2941,22 @@ void loop() {
     average2 = -average2;
     average3 = -average3;
   }
+  vTaskDelay(200);
 
 
   if(SetChargeSettingsFlag == HIGH){
+    Serial.println("saving charging settings");
     SetChargeSettings();
     SetChargeSettingsFlag = LOW;
   }
 
   if(RestoreChargeSettingsFlag == HIGH){
+    Serial.println("restore charging settings");
     RestoreChargeSettings();
     SetChargeSettingsFlag = LOW;
   }
+
+  vTaskDelay(100);
 
   if(SetWiFiCredsFlag == HIGH){
     SetWiFiCredentials();
@@ -2966,6 +2974,8 @@ void loop() {
     SetAutoUpdate();
     SetAutoUpdateFlag = LOW;
   }
+
+  client.loop();
 
 
   Dovoljen_Tok();
@@ -2991,7 +3001,7 @@ void loop() {
   
 
   CatchStateChange();
-
+  vTaskDelay(100);
   
     long now = millis();
     if (now - lastInfo > timer) {   //2000
@@ -3033,6 +3043,8 @@ void loop() {
       CheckStatus();
       digitalWrite(LED_GREEN, LOW);
     } 
+    client.loop();
+    vTaskDelay(100);
     long now9 = millis();
     if (now9 - lastInfo9 > timer9) {    //100000
       digitalWrite(LED_GREEN, HIGH);
@@ -5464,7 +5476,7 @@ void WiFiConnect(){
   WiFi.begin(ssid.c_str(), pass.c_str());
   ip = WiFi.localIP().toString();
   gateway = WiFi.gatewayIP().toString();
-  if(ip.length()>0){
+  if(ip.length()>1){
     wifi_reconnects = 0;
     ipSentFlag = LOW;
   }

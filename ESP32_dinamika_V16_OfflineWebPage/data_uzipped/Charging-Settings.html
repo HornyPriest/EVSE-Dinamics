@@ -59,7 +59,7 @@
 				<tr>
 					<td>
 						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
-							<input name="rangeValueMax" id="rangeValueMax" type="range" min="6" max="32" value="6" oninput="ValueMax.innerText = this.value">
+							<input name="rVMax" id="rVMax" type="range" min="6" max="32" value="6" oninput="ValueMax.innerText = this.value">
 							<p id="ValueMax" >6</p>
 						</div>
 					</td>
@@ -74,7 +74,7 @@
 				<tr>
 					<td>
 						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
-							<input name="rangeValueBreaker" id="rangeValueBreaker" type="range" min="6" max="64" value="6" oninput="ValueBreaker.innerText = this.value">
+							<input name="rVB" id="rVB" type="range" min="6" max="64" value="6" oninput="ValueBreaker.innerText = this.value">
 							<p id="ValueBreaker" >6</p>
 						</div>
 					</td>
@@ -89,7 +89,7 @@
 				<tr>
 					<td>
 						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
-							<input name="rangeValueMin" id="rangeValueMin" type="range" min="6" max="32" value="6" oninput="ValueMin.innerText = this.value">
+							<input name="rVMin" id="rVMin" type="range" min="6" max="32" value="6" oninput="ValueMin.innerText = this.value">
 							<p id="ValueMin" >6</p>
 						</div>
 					</td>
@@ -104,7 +104,7 @@
 				<tr>
 					<td>
 						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
-							<input name="NegativeAmperage" id="NegativeAmperage" type="checkbox">
+							<input name="NegAmp" id="NegAmp" type="checkbox">
 							<span class="toggle"></span>
 						</label>
 					</td>
@@ -119,7 +119,7 @@
 				<tr>
 					<td>
 						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
-							<input name="Adjust" id="Adjust" type="checkbox">
+							<input name="Adj" id="Adj" type="checkbox">
 							<span class="toggle"></span>
 						</label>
 					</td>
@@ -226,7 +226,7 @@
 			if (this.readyState == 4 && this.status == 200) {
 				console.log(this.responseText);
 			  	document.getElementById("ValueMax").textContent = this.responseText;
-			  	document.getElementById("rangeValueMax").value = this.responseText;
+			  	document.getElementById("rVMax").value = this.responseText;
 			}
 		  };
 		  xhttp.open("GET", "/max", true);
@@ -239,7 +239,7 @@
 			if (this.readyState == 4 && this.status == 200) {
 				console.log(this.responseText);
 			  	document.getElementById("ValueBreaker").textContent = this.responseText;
-			  	document.getElementById("rangeValueBreaker").value = this.responseText;
+			  	document.getElementById("rVB").value = this.responseText;
 			}
 		  };
 		  xhttp.open("GET", "/breaker", true);
@@ -252,7 +252,7 @@
 			if (this.readyState == 4 && this.status == 200) {
 				console.log(this.responseText);
 			  	document.getElementById("ValueMin").textContent = this.responseText;
-			  	document.getElementById("rangeValueMin").value = this.responseText;
+			  	document.getElementById("rVMin").value = this.responseText;
 			}
 		  };
 		  xhttp.open("GET", "/min", true);
@@ -265,9 +265,9 @@
 			if (this.readyState == 4 && this.status == 200) {
 				console.log(this.responseText);
 				if(this.responseText == 1){
-					document.getElementById("NegativeAmperage").checked = true;
+					document.getElementById("NegAmp").checked = true;
 				}else if(this.responseText != 1){
-					document.getElementById("NegativeAmperage").checked = false;
+					document.getElementById("NegAmp").checked = false;
 				}
 			}
 		  };
@@ -281,9 +281,9 @@
 			if (this.readyState == 4 && this.status == 200) {
 				console.log(this.responseText);
 				if(this.responseText == 1){
-					document.getElementById("Adjust").checked = true;
+					document.getElementById("Adj").checked = true;
 				}else if(this.responseText != 1){
-					document.getElementById("Adjust").checked = false;
+					document.getElementById("Adj").checked = false;
 				}
 			}
 		  };
