@@ -1,7 +1,7 @@
 #include "EmonLib.h" // Include Emon Library
 #include "math.h"
 #include "driver/adc.h"
-#include "esp32fota.h"
+#include "esp32FOTA.hpp"
 #include "WiFi.h"
 #include "PubSubClient.h"
 #include "ESPAsyncWebServer.h"            // https://github.com/me-no-dev/ESPAsyncWebServer
@@ -14,9 +14,9 @@
 #include "HTTPClient.h"
 #include "ESP32httpUpdate.h"
 #include "Preferences.h"
+#include "ESP32-targz.h" // http://github.com/tobozo/ESP32-targz
 
 
-//#define SPIFFS LittleFS
  
 
 // Initiate Preferences to save WiFi credentials to EEPROM
@@ -128,10 +128,19 @@ long lastInfo2 = 0;
 //const char *password = "iMplera!";
 
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
-esp32FOTA esp32FOTA("Dinamics", 3);
+esp32FOTA esp32FOTA;
 
 int FW_version = 3;
 String FW_versionStr = "0.3a";
+
+#define FOTA_URL "http://lockit.pro/ota/Dinamics/Dinamics.json"
+const char *firmware_name = "Dinamics";
+const bool check_signature = false;
+const bool disable_security = true;
+
+int firmware_version_major = 3;
+int firmware_version_minor = 0;
+int firmware_version_patch = 0;
 
 
 // Add your MQTT Broker IP address, example:
@@ -1975,6 +1984,21 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
 
+  {
+    auto cfg = esp32FOTA.getConfig();
+    cfg.name = firmware_name;
+    cfg.manifest_url = FOTA_URL;
+    cfg.sem = SemverClass(firmware_version_major, firmware_version_minor, firmware_version_patch);
+    cfg.check_sig = check_signature;
+    cfg.unsafe = disable_security;
+    // cfg.root_ca = MyRootCA;
+    // cfg.pub_key = MyRSAKey;
+    esp32FOTA.setConfig(cfg);
+    esp32FOTA.setCertFileSystem(nullptr);
+  }
+
+
+
 
 
       if (initWiFi()) {
@@ -2229,14 +2253,19 @@ void setup() {
             AutoUpdate = p->value().toInt();
 //            Serial.print("Auto Update set to: ");
 //            Serial.println(AutoUpdate);
-            // Write file to save value
-//            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
-          //Serial.printf("POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
         }
       }
       SetAutoUpdateFlag = HIGH;
       request->send(200, "text/html", "<h1>OK</h1>");
+    });
+    server.on("/updatefw", HTTP_GET, [](AsyncWebServerRequest * request){
+      UpdateStart = HIGH;
+      request->send(200, "text/html", "<h1>Updating firmware.<br>Wait for a few minutes.<br>Implera Dynamics will restart when done.<br>Refresh the webpage after few minutes</h1>");
+    });
+    server.on("/updatewp", HTTP_GET, [](AsyncWebServerRequest * request){
+      UpdateSpiffs = HIGH;
+      request->send(200, "text/html", "<h1>Updating webpage.<br>Wait for a few minutes.<br>Implera Dynamics will restart when done.<br>Refresh the webpage after few minutes</h1>");
     });
 
     // Route for about /About.html web page
@@ -2761,7 +2790,6 @@ void setup() {
   vTaskDelay(300);
   client.setServer(mqtt_server, 31883);
   client.setCallback(callback);
-  esp32FOTA.checkURL = "http://lockit.pro/ota/Dinamics/Dinamics.json";
 
 
   //init and get the time
@@ -2833,6 +2861,7 @@ void loop() {
       boolean updatedNeeded = esp32FOTA.execHTTPcheck();
       if(updatedNeeded == HIGH){
         Serial.print("najden update");
+        server.end();
         esp32FOTA.execOTA();
       }else{
         UpdateStart = LOW;
@@ -2843,48 +2872,61 @@ void loop() {
   if((WiFi.status() == WL_CONNECTED)){
     client.loop();
     if(UpdateSpiffs == HIGH) {
-        Serial.println("Update SPIFFS...");
-        debug += "$";
-        debug += "SPIFFS update select";
-        debug += "$";
-        t_httpUpdate_return ret = ESPhttpUpdate.updateSpiffs("http://lockit.pro/ota/Dinamics/spiffs.bin");
-        if(ret == HTTP_UPDATE_OK) {
-          Serial.println("Update succesful");
+        Serial.println("checking for wp update");
+        boolean updatedNeeded = esp32FOTA.execHTTPcheck();
+        if(updatedNeeded == HIGH){
+          server.end();
+//          SPIFFS.end();
+//          SPIFFS.format();
+          Serial.println("Update SPIFFS...");
           debug += "$";
-          debug += "SPIFFS update succesful";
+          debug += "SPIFFS update select";
           debug += "$";
+          esp32FOTA.execOTA();
           UpdateSpiffs = LOW;
         }else{
           UpdateSpiffs = LOW;
         }
-        switch(ret) {
-                case HTTP_UPDATE_FAILED:
-                    Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());         
-                    debug += "$";
-                    debug += "HTTP_UPDATE_FAILED Error ";
-                    debug += ESPhttpUpdate.getLastError();
-                    debug += " : ";
-                    debug += ESPhttpUpdate.getLastErrorString();
-                    debug += "$";
-                    UpdateStart = LOW;
-                    break;
-
-                case HTTP_UPDATE_NO_UPDATES:
-                    Serial.println("HTTP_UPDATE_NO_UPDATES");
-                    debug += "$";
-                    debug += "HTTP_UPDATE_NO_UPDATES";
-                    debug += "$";
-                    UpdateStart = LOW;
-                    break;
-
-                case HTTP_UPDATE_OK:
-                    Serial.println("HTTP_UPDATE_OK");
-                    debug += "$";
-                    debug += "HTTP_UPDATE_OK";
-                    debug += "$";
-                    UpdateStart = LOW;
-                    break;
-            }
+//          t_httpUpdate_return ret = ESPhttpUpdate.updateSpiffs("http://lockit.pro/ota/Dinamics/spiffs.bin");
+//          if(ret == HTTP_UPDATE_OK) {
+//            Serial.println("Update succesful");
+//            debug += "$";
+//            debug += "SPIFFS update succesful";
+//            debug += "$";
+//            UpdateSpiffs = LOW;
+//            SPIFFS.begin(false);
+//          }else{
+//            UpdateSpiffs = LOW;
+//            SPIFFS.begin(false);
+//          }
+//        switch(ret) {
+//                case HTTP_UPDATE_FAILED:
+//                    Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());         
+//                    debug += "$";
+//                    debug += "HTTP_UPDATE_FAILED Error ";
+//                    debug += ESPhttpUpdate.getLastError();
+//                    debug += " : ";
+//                    debug += ESPhttpUpdate.getLastErrorString();
+//                    debug += "$";
+//                    UpdateStart = LOW;
+//                    break;
+//
+//                case HTTP_UPDATE_NO_UPDATES:
+//                    Serial.println("HTTP_UPDATE_NO_UPDATES");
+//                    debug += "$";
+//                    debug += "HTTP_UPDATE_NO_UPDATES";
+//                    debug += "$";
+//                    UpdateStart = LOW;
+//                    break;
+//
+//                case HTTP_UPDATE_OK:
+//                    Serial.println("HTTP_UPDATE_OK");
+//                    debug += "$";
+//                    debug += "HTTP_UPDATE_OK";
+//                    debug += "$";
+//                    UpdateStart = LOW;
+//                    break;
+//            }
     }else{
       if(!SPIFFS.exists("/Implera-Dynamics.html.gz")){
         UpdateSpiffs = HIGH;

@@ -50,8 +50,8 @@
 			</tr>
 		</table>
 		<div>
-			<a href="http://napolni.me/app">
-				<button class="button-update">
+			<a>
+				<button onclick="fwupdate(this)" id="UpdateFW" class="button-update">
 					UPDATE FIRMWARE
 				</button>
 			</a>
@@ -71,8 +71,8 @@
 			</table>
 		</div>
 		<div>
-			<a href="http://napolni.me/app">
-				<button class="button-update">
+			<a>
+				<button onclick="wpupdate(this)" id="UpdateWP" class="button-update">
 					UPDATE WEBPAGE
 				</button>
 			</a>
@@ -92,7 +92,7 @@
 			</table>
 		</div>
 		<div>
-			<a href="http://napolni.me/app">
+			<a>
 				<button class="button-factory">
 					FACTORY RESET
 				</button>
@@ -170,6 +170,18 @@
 			var xhr = new XMLHttpRequest();
 			if(AutoUpdate.checked){ xhr.open("GET", "/setAU?state=1", true); }
 			else { xhr.open("GET", "/setAU?state=0", true); }
+			xhr.send();
+		}
+
+		function fwupdate(UpdateFW) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "/updatefw", true);
+			xhr.send();
+		}
+
+		function wpupdate(UpdateWP) {
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", "/updatewp", true);
 			xhr.send();
 		}
 
