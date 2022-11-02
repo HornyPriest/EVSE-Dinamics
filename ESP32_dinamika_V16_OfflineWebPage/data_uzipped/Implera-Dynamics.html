@@ -39,6 +39,23 @@
 				</button>
 			</a>
 		</div>
+		<table style="width: 100%;">
+			<tr>
+				<td class="text-size-body-set">
+					<span class="text-size-body-cell">
+						Amperage is negative
+					</span>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label class="switch" style="margin-top: 1px;">
+						<input onchange="toggleCheckbox(this)" id="Negative" type="checkbox">
+						<span class="toggle"></span>
+					</label>
+				</td>
+			</tr>
+		</table>
 		<div>
 			<span class="text-size-body">
 				ACTIVE CHARGING
@@ -172,6 +189,14 @@
 	</footer>
 
 	<script>
+
+		function toggleCheckbox(Negative) {
+			var xhr = new XMLHttpRequest();
+			if(AutoUpdate.checked){ xhr.open("GET", "/setNegative?state=1", true); }
+			else { xhr.open("GET", "/setNegative?state=0", true); }
+			xhr.send();
+		}
+
 		function getPower() {
 		  var xhttp = new XMLHttpRequest();
 		  xhttp.onreadystatechange = function() {
@@ -252,6 +277,23 @@
 			xhttp.open("GET", "/setpower", true);
 			xhttp.send();
 		}
+
+		function getNegative() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("Negative").checked = true;
+				}else{
+					document.getElementById("Negative").checked = false;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/getNegative", true);
+		  xhttp.send();
+		}
+		window.onload=getAutoUpdate();
 
 /*		window.onload=getPower();
 		window.onload=getCurrent();

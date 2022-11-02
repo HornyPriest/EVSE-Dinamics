@@ -130,16 +130,15 @@ long lastInfo2 = 0;
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-int FW_version = 3;
-String FW_versionStr = "0.3a";
+String FW_versionStr = "0.1.0";
 
 #define FOTA_URL "http://lockit.pro/ota/Dinamics/Dinamics.json"
 const char *firmware_name = "Dinamics";
 const bool check_signature = false;
 const bool disable_security = true;
 
-int firmware_version_major = 3;
-int firmware_version_minor = 0;
+int firmware_version_major = 0;
+int firmware_version_minor = 1;
 int firmware_version_patch = 0;
 
 
@@ -404,6 +403,7 @@ boolean RestoreChargeSettingsFlag;
 boolean SetWiFiCredsFlag;
 boolean DeleteWiFiCredsFlag;
 boolean SetAutoUpdateFlag;
+boolean NegAmpOnceFlag = LOW;
 
 int PowerStatus;
 
@@ -2041,6 +2041,25 @@ void setup() {
       }
       request->send(200, "text/txt", "OK");
     });
+    server.on("/getNegative", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(200, "text/txt", String(NegAmpOnceFlag));
+    });
+    server.on("/setNegative", HTTP_GET, [](AsyncWebServerRequest *request){
+      int params = request->params();
+      for (int i = 0; i < params; i++) {
+        AsyncWebParameter* p = request->getParam(i);
+        if (p->isPost()) {
+          // HTTP POST ssid value
+          const char* PARAM_INPUT_1 = "state";                  // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_1) {
+            NegAmpOnceFlag = p->value().toInt();
+//            Serial.print("Auto Update set to: ");
+//            Serial.println(AutoUpdate);
+          }
+        }
+      }
+      request->send(200, "text/html", "OK");
+    });
 
     // Route for charging settings /Charging-Settings.html web page
     server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -2460,6 +2479,25 @@ void setup() {
       }
       request->send(200, "text/txt", "OK");
     });
+    server.on("/getNegative", HTTP_GET, [](AsyncWebServerRequest *request){
+      request->send(200, "text/txt", String(NegAmpOnceFlag));
+    });
+    server.on("/setNegative", HTTP_GET, [](AsyncWebServerRequest *request){
+      int params = request->params();
+      for (int i = 0; i < params; i++) {
+        AsyncWebParameter* p = request->getParam(i);
+        if (p->isPost()) {
+          // HTTP POST ssid value
+          const char* PARAM_INPUT_1 = "state";                  // Search for parameter in HTTP POST request
+          if (p->name() == PARAM_INPUT_1) {
+            NegAmpOnceFlag = p->value().toInt();
+//            Serial.print("Auto Update set to: ");
+//            Serial.println(AutoUpdate);
+          }
+        }
+      }
+      request->send(200, "text/html", "OK");
+    });
 
     // Route for charging settings /Charging-Settings.html web page
     server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -2494,8 +2532,8 @@ void setup() {
           const char* PARAM_INPUT_1 = "PandC";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
             PAndC = p->value().c_str();
-            Serial.print("PandC set to: ");
-            Serial.println(PAndC);
+//            Serial.print("PandC set to: ");
+//            Serial.println(PAndC);
             // Write file to save value
 //            writeFile(SPIFFS, ssidPath, ssid.c_str());
           }
@@ -2504,8 +2542,8 @@ void setup() {
           const char* PARAM_INPUT_2 = "rVMax";                 // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_2) {
             MQTTmax_current = p->value().toInt();
-            Serial.print("Max charging current set to: ");
-            Serial.println(MQTTmax_current);
+//            Serial.print("Max charging current set to: ");
+//            Serial.println(MQTTmax_current);
             // Write file to save value
 //            writeFile(SPIFFS, passPath, pass.c_str());
           }
@@ -2514,8 +2552,8 @@ void setup() {
           const char* PARAM_INPUT_3 = "rVB";                   // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_3) {
             breaker = p->value().toInt();
-            Serial.print("Breakers set to: ");
-            Serial.println(breaker);
+//            Serial.print("Breakers set to: ");
+//            Serial.println(breaker);
 //            writeFile(SPIFFS, ipPath, ip.c_str());            // Write file to save value
           }
           vTaskDelay(20);
@@ -2523,8 +2561,8 @@ void setup() {
           const char* PARAM_INPUT_4 = "rVMin";              // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_4) {
             min_current = p->value().toInt();
-            Serial.print("Min charging current set to: ");
-            Serial.println(min_current);
+//            Serial.print("Min charging current set to: ");
+//            Serial.println(min_current);
 //            writeFile(SPIFFS, gatewayPath, gateway.c_str());          // Write file to save value
           }
           vTaskDelay(20);
@@ -2532,8 +2570,8 @@ void setup() {
           const char* PARAM_INPUT_5 = "NegAmp";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
             NegativeAmperage = p->value().c_str();
-            Serial.print("Negative Amperage set to: ");
-            Serial.println(NegativeAmperage);
+//            Serial.print("Negative Amperage set to: ");
+//            Serial.println(NegativeAmperage);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
           vTaskDelay(20);
@@ -2541,8 +2579,8 @@ void setup() {
           const char* PARAM_INPUT_6 = "Adj";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_6) {
             ImpleraAdjust = p->value().c_str();
-            Serial.print("Adjust set to: ");
-            Serial.println(ImpleraAdjust);
+//            Serial.print("Adjust set to: ");
+//            Serial.println(ImpleraAdjust);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
           }
         }
@@ -3175,12 +3213,13 @@ void CalcEnergy(){
 }
 
 void NegativeAmperageSet(){
-  if(NegativeAmperage == HIGH){
+  if(NegativeAmperage == HIGH || NegAmpOnceFlag == HIGH){
     nowNegAmp = millis();
     if(nowNegAmp - NegAmpTime < 30000){
       NegAmpFlag = HIGH;
     }else{
       NegAmpFlag = LOW;
+      NegAmpOnceFlag = LOW;
     }
   }
 }
@@ -4373,7 +4412,7 @@ void TurnOn(){
               Serial.println(t1);
         }
         ConnectionTimeoutFlag = LOW;
-        if(NegativeAmperage == HIGH){
+        if(NegativeAmperage == HIGH || NegAmpOnceFlag == HIGH){
           NegAmpTime = millis();
         }
         t1 = 0;
