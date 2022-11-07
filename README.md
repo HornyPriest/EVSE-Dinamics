@@ -9,6 +9,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 <!-- toc -->
 - [Versions](#versions)
+- [Flashing](#flashing)
 - [SetUp](#setup)
 - [EVSECalibration](#evsecalibration)
 - [Changes](#changes)
@@ -28,6 +29,11 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 Last version is in folder ESP32_dinamika_V14_NewWebPage
 Bin file DinamicsV4.bin
+
+## Flashing
+
+To flash use "flash_download_tool_3.9.2.rar". Open app after unrar. You must upload two files .bin (DinamicsV1.bin and spiffs.bin). See example picture.
+Make sure to add correct address before upload. Address for DinamicsV1.bin = 0x10000 and address for spiffs.bin = 0x290000
 
 ## SetUp
 
