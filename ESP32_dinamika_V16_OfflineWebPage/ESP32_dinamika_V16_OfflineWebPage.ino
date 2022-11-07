@@ -1068,6 +1068,7 @@ void reconnect() {
       client.subscribe(charGetSettings);
       client.subscribe(charGetWiFi);
       client.subscribe(charGetDebug);
+      client.subscribe(charNegativeAmperage);
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -2006,7 +2007,7 @@ void setup() {
       
         // Route for root / web page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Implera-Dynamics.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Implera-Dynamics.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2063,7 +2064,7 @@ void setup() {
 
     // Route for charging settings /Charging-Settings.html web page
     server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Charging-Settings.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Charging-Settings.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2157,7 +2158,7 @@ void setup() {
     
     // Route for wifi settings /WiFi-Settings.html web page
     server.on("/wifi-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/WiFi-Settings.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/WiFi-Settings.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2254,7 +2255,7 @@ void setup() {
     
     // Route for system settings /System-Settings.html web page
     server.on("/system-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/System-Settings.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/System-Settings.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2289,7 +2290,7 @@ void setup() {
 
     // Route for about /About.html web page
     server.on("/about", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/About.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/About.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2446,7 +2447,7 @@ void setup() {
 
         // Route for root / web page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Implera-Dynamics.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Implera-Dynamics.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2501,7 +2502,7 @@ void setup() {
 
     // Route for charging settings /Charging-Settings.html web page
     server.on("/charging-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Charging-Settings.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/Charging-Settings.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2595,7 +2596,7 @@ void setup() {
     
     // Route for wifi settings /WiFi-Settings.html web page
     server.on("/wifi-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/WiFi-Settings.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/WiFi-Settings.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2692,7 +2693,7 @@ void setup() {
     
     // Route for system settings /System-Settings.html web page
     server.on("/system-settings", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/System-Settings.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/System-Settings.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2722,7 +2723,7 @@ void setup() {
 
     // Route for about /About.html web page
     server.on("/about", HTTP_GET, [](AsyncWebServerRequest * request) {
-      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/About.html.gz", "text/html", false);
+      AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/About.html.jgz", "text/html", false);
       response->addHeader("Content-Encoding", "gzip");
       request->send(response);
     });
@@ -2966,7 +2967,7 @@ void loop() {
 //                    break;
 //            }
     }else{
-      if(!SPIFFS.exists("/Implera-Dynamics.html.gz")){
+      if(!SPIFFS.exists("/Implera-Dynamics.html.jgz")){
         UpdateSpiffs = HIGH;
       }
     }

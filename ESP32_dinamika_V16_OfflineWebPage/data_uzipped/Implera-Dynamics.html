@@ -18,16 +18,16 @@
 				<img src="logo.png" alt="IMPLERA DINAMICS">
 			</a>
 			<ul class="navalign">
-				<li><a class="first-navtxt active" href="Implera-Dynamics.html">Home</a></li>
+				<li><a class="first-navtxt active" href="/">Home</a></li>
 				<li><a class="first-navtxt" href="#">Settings</a>
 				<!-- First Tier Drop Down -->
 				<ul class="center=navigation">
-					<li><a class="second-navtxt" href="Charging-Settings.html">Charging Settings</a></li>
-					<li><a class="second-navtxt" href="WiFi-Settings.html">WiFi Settings</a></li>
-					<li><a class="second-navtxt" href="System-Settings.html">System Settings</a></li>
+					<li><a class="second-navtxt" href="charging-settings">Charging Settings</a></li>
+					<li><a class="second-navtxt" href="wifi-settings">WiFi Settings</a></li>
+					<li><a class="second-navtxt" href="system-settings">System Settings</a></li>
 				</ul>        
 				</li>
-				<li><a class="first-navtxt" href="About.html">About</a></li>
+				<li><a class="first-navtxt" href="about">About</a></li>
 			</ul>
 		</nav>
 	</header>
@@ -192,7 +192,7 @@
 
 		function toggleCheckbox(Negative) {
 			var xhr = new XMLHttpRequest();
-			if(AutoUpdate.checked){ xhr.open("GET", "/setNegative?state=1", true); }
+			if(Negative.checked){ xhr.open("GET", "/setNegative?state=1", true); }
 			else { xhr.open("GET", "/setNegative?state=0", true); }
 			xhr.send();
 		}
@@ -293,7 +293,7 @@
 		  xhttp.open("GET", "/getNegative", true);
 		  xhttp.send();
 		}
-		window.onload=getAutoUpdate();
+		window.onload=getNegative();
 
 /*		window.onload=getPower();
 		window.onload=getCurrent();
