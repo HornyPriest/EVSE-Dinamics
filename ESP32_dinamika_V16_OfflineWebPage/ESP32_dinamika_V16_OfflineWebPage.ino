@@ -1210,7 +1210,7 @@ void GetSettings(){
     timer8 = preferences.getLong("timer8", 50000);
     timer9 = preferences.getLong("timer9", 100000);
     timer10 = preferences.getLong("timer10", 50000);
-    timer11 = preferences.getLong("timer11", 50000);
+    timer11 = preferences.getLong("timer11", 10000);
     timer12 = preferences.getLong("timer12", 100000);
     timer13 = preferences.getLong("timer13", 8000);
     timer14 = preferences.getLong("timer14", 10000);
@@ -2856,30 +2856,30 @@ void loop() {
   // put your main code here, to run repeatedly:
   SENDFWversion();
 
-  vTaskDelay(50);
-
   client.loop();
 
   SENDip();
 
-  vTaskDelay(50);
 
   if(ConnectionTimeoutFlag == HIGH && TimeoutTimeSet == LOW){
     TimeoutTime = millis();
     TimeoutTimeSet = HIGH;
+    vTaskDelay(20);
   }
   long TimeoutTimeCurrent = millis();
   if(TimeoutTimeSet == HIGH && TimeoutTimeCurrent-TimeoutTime > timer14){
     TimeoutTimeSet = LOW;
     ConnectionTimeoutFlag = LOW;
+    vTaskDelay(20);
   }
-  vTaskDelay(50);
 
-
-  if (!client.connected()) {
+//  Serial.println("loop");
+  if(!client.connected()){
       digitalWrite(LED_RED, HIGH);
       digitalWrite(LED_GREEN, LOW);
-      if (!WiFi.status() == WL_CONNECTED){      
+//      Serial.println("client not connected");
+      if(WiFi.status() != WL_CONNECTED){
+//        Serial.println("wifi not connected");      
         WiFiReconnect();
         vTaskDelay(50);
         wifi_reconnects = wifi_reconnects + 5;
@@ -2889,8 +2889,10 @@ void loop() {
         reconnect();
       }
   }else{
+    if(ip == "0.0.0.0"){
+      ip = WiFi.localIP().toString();
+    }
     client.loop();
-    vTaskDelay(50);
     digitalWrite(LED_RED, LOW);
   }
 
@@ -2973,56 +2975,56 @@ void loop() {
     }
   }
 
-  vTaskDelay(100);
 
-
-  total1 = total1 - branja1[readindex1];
-  branja1[readindex1] = Irms_1;
-  total1 = total1 + branja1[readindex1];
-  readindex1 = readindex1 + 1;
-
-  if (readindex1 >= NoRead1){
-    readindex1 = 0;
-  }
-
-  vTaskDelay(20);
-
+  if(calibration > 5){
+    total1 = total1 - branja1[readindex1];
+    branja1[readindex1] = Irms_1;
+    total1 = total1 + branja1[readindex1];
+    readindex1 = readindex1 + 1;
   
-
-  total2 = total2 - branja2[readindex2];
-  branja2[readindex2] = Irms_2;
-  total2 = total2 + branja2[readindex2];
-  readindex2 = readindex2 + 1;
-
-  if (readindex2 >= NoRead2){
-    readindex2 = 0;
+    if (readindex1 >= NoRead1){
+      readindex1 = 0;
+    }
+  
+    vTaskDelay(5);
+  
+    
+  
+    total2 = total2 - branja2[readindex2];
+    branja2[readindex2] = Irms_2;
+    total2 = total2 + branja2[readindex2];
+    readindex2 = readindex2 + 1;
+  
+    if (readindex2 >= NoRead2){
+      readindex2 = 0;
+    }
+  
+    vTaskDelay(5);
+  
+  
+    total3 = total3 - branja3[readindex3];
+    branja3[readindex3] = Irms_3;
+    total3 = total3 + branja3[readindex3];
+    readindex3 = readindex3 + 1;
+  
+    if (readindex3 >= NoRead3){
+      readindex3 = 0;
+    }
+  
+    vTaskDelay(5);
+  
+  
+    average1 = total1 / NoRead1;
+    average2 = total2 / NoRead2;
+    average3 = total3 / NoRead3;
+  
+    if(NegAmpFlag == HIGH){
+      average1 = -average1;
+      average2 = -average2;
+      average3 = -average3;
+    }
+    vTaskDelay(5);
   }
-
-  vTaskDelay(20);
-
-
-  total3 = total3 - branja3[readindex3];
-  branja3[readindex3] = Irms_3;
-  total3 = total3 + branja3[readindex3];
-  readindex3 = readindex3 + 1;
-
-  if (readindex3 >= NoRead3){
-    readindex3 = 0;
-  }
-
-  vTaskDelay(20);
-
-
-  average1 = total1 / NoRead1;
-  average2 = total2 / NoRead2;
-  average3 = total3 / NoRead3;
-
-  if(NegAmpFlag == HIGH){
-    average1 = -average1;
-    average2 = -average2;
-    average3 = -average3;
-  }
-  vTaskDelay(200);
 
 
   if(SetChargeSettingsFlag == HIGH){
@@ -3036,8 +3038,6 @@ void loop() {
     RestoreChargeSettings();
     SetChargeSettingsFlag = LOW;
   }
-
-  vTaskDelay(100);
 
   if(SetWiFiCredsFlag == HIGH){
     SetWiFiCredentials();
@@ -3060,29 +3060,25 @@ void loop() {
 
 
   Dovoljen_Tok();
-  vTaskDelay(100);
   ChargeChanger();
-  vTaskDelay(10);
+  vTaskDelay(5);
   SetMQTTCurrent();
-  vTaskDelay(10);
+  vTaskDelay(5);
   CurrentFlagSet();
-  vTaskDelay(100);
   SetCurrent();
-  vTaskDelay(10);
+  vTaskDelay(5);
   client.loop();
-  vTaskDelay(10);
+  vTaskDelay(5);
   StopCharge();
-  vTaskDelay(100);
   ConnectionAlert();
-  vTaskDelay(10);
+  vTaskDelay(5);
   PowerStatusChanger();
-  vTaskDelay(10);
+  vTaskDelay(5);
   NegativeAmperageSet();
-  vTaskDelay(10);
+  vTaskDelay(5);
   
 
   CatchStateChange();
-  vTaskDelay(100);
   
     long now = millis();
     if (now - lastInfo > timer) {   //2000
@@ -3151,7 +3147,8 @@ void loop() {
       digitalWrite(LED_GREEN, LOW);
     } 
  client.loop();
- vTaskDelay(300);
+ vTaskDelay(100);
+
 }
 
 void PowerStatusChanger(){
@@ -3412,6 +3409,10 @@ void SENDip(){
     debug += "$";
     debug += "Sending ip";
     debug += "$";
+
+    if(ip == "0.0.0.0"){
+      ip = WiFi.localIP().toString();
+    }
     
     digitalWrite(LED_GREEN, HIGH);
     digitalWrite(LED_RED, HIGH);
@@ -5537,8 +5538,11 @@ void CatchStateChange(){
 void WiFiReconnect(){
   now11 = millis();
   // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
+//  Serial.println("WiFi reconnect was called");
   if ((WiFi.status() != WL_CONNECTED) && (now11 - lastInfo11 >= timer11*wifi_reconnects)) {
     int ssidlength = ssid.length();
+    Serial.println("reconnect timer");
+    Serial.println(wifi_reconnects);
     if(wifi_reconnects > 25){
       initWiFi();
       wifi_reconnects = 100;
@@ -5556,6 +5560,7 @@ void WiFiReconnect(){
 void WiFiConnect(){
   WiFi.disconnect();
   WiFi.begin(ssid.c_str(), pass.c_str());
+  vTaskDelay(50);
   ip = WiFi.localIP().toString();
   gateway = WiFi.gatewayIP().toString();
   if(ip.length()>1){
@@ -5572,18 +5577,22 @@ void Task1code( void * pvParameters ){
   pinMode(ct_sensor_1, INPUT_PULLUP);
   pinMode(ct_sensor_2, INPUT_PULLUP);
   pinMode(ct_sensor_3, INPUT_PULLUP);
-  emon1.current(ct_sensor_1, calibration); // Current: input pin, calibration 102.1 = Arduino pro mini
-  vTaskDelay(50);
-  emon2.current(ct_sensor_2, calibration);
-  vTaskDelay(50);
-  emon3.current(ct_sensor_3, calibration);
+  if(calibration > 5){
+    emon1.current(ct_sensor_1, calibration); // Current: input pin, calibration 102.1 = Arduino pro mini
+    vTaskDelay(50);
+    emon2.current(ct_sensor_2, calibration);
+    vTaskDelay(50);
+    emon3.current(ct_sensor_3, calibration);
+  }
   OldState = State;
 
   for(;;){
-
-    Irms_1 = emon1.calcIrms(1480);  // Calculate Irms only  1480
-    Irms_2 = emon2.calcIrms(1480);
-    Irms_3 = emon3.calcIrms(1480);
-    vTaskDelay(500);
+    
+    if(calibration > 5){
+      Irms_1 = emon1.calcIrms(1480);  // Calculate Irms only  1480
+      Irms_2 = emon2.calcIrms(1480);
+      Irms_3 = emon3.calcIrms(1480);
+    }
+    vTaskDelay(1000);
   } 
 }
