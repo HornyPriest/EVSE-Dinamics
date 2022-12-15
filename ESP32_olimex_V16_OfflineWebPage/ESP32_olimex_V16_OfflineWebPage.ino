@@ -15,6 +15,15 @@
 #include "ESP32httpUpdate.h"
 #include "Preferences.h"
 #include "ESP32-targz.h" // http://github.com/tobozo/ESP32-targz
+#include "SoftwareSerial.h"
+
+
+//#define MY_PORT_TX 32
+//#define MY_PORT_RX 16
+//SoftwareSerial Serial2;
+
+const byte RXD2 = 16;
+const byte TXD2 = 32;
 
 
  
@@ -132,8 +141,8 @@ esp32FOTA esp32FOTA;
 
 String FW_versionStr = "0.1.0";
 
-#define FOTA_URL "http://lockit.pro/ota/Dinamics/Dinamics.json"
-const char *firmware_name = "Dinamics";
+#define FOTA_URL "http://lockit.pro/ota/Olimex/Olimex.json"
+const char *firmware_name = "Olimex";
 const bool check_signature = false;
 const bool disable_security = true;
 
@@ -157,7 +166,7 @@ const char* mqtt_server = "mqshare.napolni.me";
 
 #define ct_sensor_1 34 // ESP32 Wroom
 #define ct_sensor_2 35
-#define ct_sensor_3 32
+#define ct_sensor_3 36
 
 
 volatile float Irms_1;
@@ -1121,13 +1130,13 @@ void CheckWiFiCredentials(){
 void GetWiFiCredentials(){
   if(SavedWiFi == HIGH){
     preferences.begin("WiFiCred", true);
-    ssid = preferences.getString("ssid", "");
-    pass = preferences.getString("pass", "");
+    ssid = preferences.getString("ssid", "Teltonika");
+    pass = preferences.getString("pass", "iMplera01");
     ip = preferences.getString("ip", "");
     gateway = preferences.getString("gateway", "");
     subnet = preferences.getString("subnet", "");
     mdns = preferences.getString("mdns", "");
-    dhcpcheck = preferences.getString("dhcpcheck", "");
+    dhcpcheck = preferences.getString("dhcpcheck", "on");
     preferences.end();
     debug += "$read credentials from preferences$";
   }
@@ -1198,7 +1207,7 @@ void GetSettings(){
   if(SavedCalibration == HIGH){
     preferences.begin("Settings", true);
     breaker = preferences.getInt("breaker", breaker);
-    calibration = preferences.getFloat("calibration", 27.7);
+    calibration = preferences.getFloat("calibration", 2);
     timer = preferences.getLong("timer", 2000);
     timer1 = preferences.getLong("timer1", 50000);
     timer2 = preferences.getLong("timer2", 10000);
@@ -1215,7 +1224,7 @@ void GetSettings(){
     timer13 = preferences.getLong("timer13", 8000);
     timer14 = preferences.getLong("timer14", 10000);
     PAndC = preferences.getBool("pac", HIGH);
-    MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
+    MQTTmax_current = preferences.getInt("MQTTmax_current", 32);
     min_current = preferences.getInt("min_current", 6);
     NegativeAmperage = preferences.getBool("NegativeAmperage", LOW);
     ImpleraAdjust = preferences.getBool("ImpleraAdjust", HIGH);
@@ -1754,6 +1763,8 @@ void setup() {
   delay(200);
 
   Serial.begin(115200);
+  Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
+//  Serial2.begin(115200, SWSERIAL_8N1, MY_PORT_RX, MY_PORT_TX);
   delay(200);
   
   
@@ -3894,16 +3905,16 @@ void CheckState(){
     debug += "$";
     debug += "Checking State RAPI = G0";
     debug += "$";
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     ResponseMessage = "";
-    Serial.println(G0);
+    Serial2.println(G0);
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(50);
@@ -4008,16 +4019,16 @@ void CheckStatus(){
     debug += "Checking Status RAPI = GS";
     debug += "$";
     ResponseStatus = LOW;
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     ResponseMessage = "";
-    Serial.println(GS);
+    Serial2.println(GS);
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(50);
@@ -4100,16 +4111,16 @@ void CheckSetAmps(){
     debug += "Checking Set AMPS RAPI = GC";
     debug += "$";
     ResponseStatus = LOW;
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     ResponseMessage = "";
-    Serial.println(GC);
+    Serial2.println(GC);
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(50);
@@ -4177,16 +4188,16 @@ void CheckCharge(){
     debug += "$";
     debug += "Checking Charge RAPI = GG";
     debug += "$";
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     ResponseMessage = "";
-    Serial.println(GG);
+    Serial2.println(GG);
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(50);
@@ -4279,16 +4290,16 @@ void CheckEnergy(){
     debug += "$";
     debug += "Checking Energy RAPI = GU";
     debug += "$";
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     ResponseMessage = "";
-    Serial.println(GU);
+    Serial2.println(GU);
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(50);
@@ -4365,18 +4376,18 @@ void TurnOn(){
     debug += "$";
     ChargeSetState = HIGH;
     ResponseStatus = LOW;
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     ResponseMessage = "";
     tmp = 2;
-    Serial.println(FE);
+    Serial2.println(FE);
     t1 = 0;
     SaveLastCurrents();
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
         ATMessage = ResponseMessage;
       }
       t1 = t1 + 1;
@@ -4494,17 +4505,17 @@ void TurnOff(){
     debug += "$";
     ChargeSetState = LOW;
     ResponseStatus = LOW;
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     tmp = 1;
     ResponseMessage = "";
-    Serial.println(FD);
+    Serial2.println(FD);
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
         ATMessage = ResponseMessage;
       }
       t1 = t1 + 1;
@@ -4617,17 +4628,17 @@ void TurnSleep(){
     debug += "$";
     ChargeSetState = LOW;
     ResponseStatus = LOW;
-    if(Serial.available() > 0){
+    if(Serial2.available() > 0){
       CatchStateChange();
     }
     ResponseMessage = "";
     tmp = 3;
-    Serial.println(FS);
+    Serial2.println(FS);
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
-      if(Serial.available()){
+      if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessage = Serial.readString();
+        ResponseMessage = Serial2.readString();
         ATMessage = ResponseMessage;
       }
       t1 = t1 + 1;
@@ -4778,7 +4789,7 @@ void SetMQTTCurrent(){
         debug += MQTTmax_current;
         debug += "$";
         ResponseStatus = LOW;
-        if(Serial.available() > 0){
+        if(Serial2.available() > 0){
           CatchStateChange();
         }
         if(MQTTmax_current >= min_current){
@@ -4786,12 +4797,12 @@ void SetMQTTCurrent(){
           TempValue = "";
           TempValue += SC;
           TempValue += MQTTmax_current;
-          Serial.println(TempValue);
+          Serial2.println(TempValue);
           t1 = 0;
           while(ResponseStatus == LOW && t1 < timer13){
-            if(Serial.available()){
+            if(Serial2.available()){
               ResponseStatus = HIGH;
-              ResponseMessage = Serial.readString();
+              ResponseMessage = Serial2.readString();
               ATMessage = ResponseMessage;
             }
             t1 = t1 + 1;
@@ -4896,7 +4907,7 @@ void SetCurrent(){
       debug += "$";
       ResponseStatus = LOW;
       c5 = 0;
-      if(Serial.available() > 0){
+      if(Serial2.available() > 0){
         CatchStateChange();
       }
       if(MQTTmax_current < max_current){
@@ -4907,12 +4918,12 @@ void SetCurrent(){
           TempValue = "";
           TempValue += SC;
           TempValue += max_current;
-          Serial.println(TempValue);
+          Serial2.println(TempValue);
           t1 = 0;
           while(ResponseStatus == LOW && t1 < timer13){
-            if(Serial.available()){
+            if(Serial2.available()){
               ResponseStatus = HIGH;
-              ResponseMessage = Serial.readString();
+              ResponseMessage = Serial2.readString();
               ATMessage = ResponseMessage;
             }
             t1 = t1 + 1;
@@ -5035,19 +5046,19 @@ void SetTimer(){
         debug += TimeLimit;
         debug += "$";
         ResponseStatus = LOW;
-        if(Serial.available() > 0){
+        if(Serial2.available() > 0){
           CatchStateChange();
         }
         ResponseMessage = "";
         TempValue = "";
         TempValue += ST;
         TempValue += TimeLimit;
-        Serial.println(TempValue);
+        Serial2.println(TempValue);
         t1 = 0;
         while(ResponseStatus == LOW && t1 < timer13){
-          if(Serial.available()){
+          if(Serial2.available()){
             ResponseStatus = HIGH;
-            ResponseMessage = Serial.readString();
+            ResponseMessage = Serial2.readString();
           }
           t1 = t1 + 1;
           delayMicroseconds(50);
@@ -5119,19 +5130,19 @@ void SetLimit(){
         debug += EnergyLimit;
         debug += "$";
         ResponseStatus = LOW;
-        if(Serial.available() > 0){
+        if(Serial2.available() > 0){
           CatchStateChange();
         }
         ResponseMessage = "";
         TempValue = "";
         TempValue += SH;
         TempValue += EnergyLimit;
-        Serial.println(TempValue);
+        Serial2.println(TempValue);
         t1 = 0;
         while(ResponseStatus == LOW && t1 < timer13){
-          if(Serial.available()){
+          if(Serial2.available()){
             ResponseStatus = HIGH;
-            ResponseMessage = Serial.readString();
+            ResponseMessage = Serial2.readString();
           }
           t1 = t1 + 1;
           delayMicroseconds(50);
@@ -5204,20 +5215,20 @@ void AskRAPIF(){
         debug += RAPI;
         debug += "$";
         ResponseStatus = LOW;
-        if(Serial.available() > 0){
+        if(Serial2.available() > 0){
           CatchStateChange();
         }
         ResponseMessage = "";
         TempValue = "";
         TempValue += "$";
         TempValue += RAPI;
-        Serial.println(TempValue);
-        Serial.flush();
+        Serial2.println(TempValue);
+        Serial2.flush();
         t1 = 0;
         while(ResponseStatus == LOW && t1 < timer13){
-          if(Serial.available()){
+          if(Serial2.available()){
             ResponseStatus = HIGH;
-            ResponseMessage = Serial.readString();
+            ResponseMessage = Serial2.readString();
           }
           t1 = t1 + 1;
           delayMicroseconds(50);
@@ -5500,8 +5511,8 @@ void SendDebugF2(){
 }
 
 void CatchStateChange(){
-  if(Serial.available()){
-    ResponseMessage = Serial.readString();
+  if(Serial2.available()){
+    ResponseMessage = Serial2.readString();
     ATMessage = ResponseMessage;
     int index = ATMessage.indexOf("$AT ");
     if(index >= 0){
