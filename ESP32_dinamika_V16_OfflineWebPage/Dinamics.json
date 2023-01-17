@@ -1,0 +1,8 @@
+{
+    "type": "Dinamics",
+    "version": "0.1.2",
+    "host": "lockit.pro",
+    "port": 80,
+    "bin": "/ota/Dinamics/DinamicsV1.bin",
+    "spiffs": "/ota/Dinamics/spiffs.bin"
+}

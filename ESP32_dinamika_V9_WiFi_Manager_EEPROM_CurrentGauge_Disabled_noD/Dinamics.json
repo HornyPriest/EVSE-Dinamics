@@ -3,5 +3,5 @@
     "version": 4,
     "host": "lockit.pro",
     "port": 80,
-    "bin": "/ota/Dinamics/DinamicsV4.bin"
+    "bin": "/ota/Dinamics/DinamicsV1.bin"
 }

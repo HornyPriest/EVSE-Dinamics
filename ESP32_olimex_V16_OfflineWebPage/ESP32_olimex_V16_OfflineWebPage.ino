@@ -3266,6 +3266,9 @@ void Dovoljen_Tok(){
   if(max_current < 0){
     max_current = 0;
   }
+  if(max_current > MQTTmax_current){
+    max_current = MQTTmax_current;
+  }
 }
 
 

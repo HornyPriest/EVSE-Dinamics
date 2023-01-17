@@ -27,8 +27,8 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder ESP32_dinamika_V14_NewWebPage
-Bin file DinamicsV4.bin
+Last version is in folder ESP32_dinamika_V16_OfflineWebPage
+Bin file DinamicsV1.bin
 
 ## Flashing
 
@@ -40,6 +40,8 @@ Make sure to add correct address before upload. Address for DinamicsV1.bin = 0x1
 At first start some settings have to be set over MQTT in order for Dinamics to work as supposed.
 
 Mandatory settings:
+- set_update
+- delete_settings
 - set_breaker
 - set_calibration
 - set_c_limit
@@ -59,6 +61,9 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 
 ## Changes
+
+V16: timers changed, LoRa communication optimized, Web page working
+
 
 V14: added debug set/get
      added JSON form for some answers (not complete)
@@ -99,21 +104,27 @@ Settings setable over MQTT:
 | set_c_min_limit   | 6-32[A] (default = 6)                      | set Plug and Charge mode, (1 = P&C is active, 0 = station automatically stops charge)           |
 | set_calibration   | 277(50A,1V), 544(100A,1V) (default = 277)  | set calibration value for CT sensors (depends on type of sensors)                               |
 | set_timer         | 1-500000 (default = 2000)                  | set time interval for sending Currents to MQTT                                                  |
-| set_timer1        | 1-500000 (default = 50000)                 | set time interval for auto stop charging if charge current is < 0.5A                            |
-| set_timer2        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if cable state is not connected                        |
+| set_timer1        | 1-500000 (default = 150)                   | set time interval for auto stop charging if charge current is < 0.5A                            |
+| set_timer2        | 1-500000 (default = 5)                     | set time interval for auto stop charging if cable state is not connected                        |
 | set_timer3        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if charging current > max. allowed current             |
-| set_timer4        | 1-500000 (default = 10000)                 | set time interval for auto stop charging if max. allowed current < 3A                           |
-| set_timer5        | 1-500000 (default = 50000)                 | set time interval for checking set max. allowed current from openEVSE                           |
+| set_timer4        | 1-500000 (default = 100)                   | set time interval for auto stop charging if max. allowed current < 3A                           |
+| set_timer5        | 1-500000 (default = 200000)                | set time interval for checking set max. allowed current from openEVSE                           |
 | set_timer6        | 1-500000 (default = 30000)                 | set time interval for checking cable state from openEVSE                                        |
-| set_timer7        | 1-500000 (default = 10000)                 | set time interval for checking charging current from openEVSE                                   |
-| set_timer8        | 1-500000 (default = 50000)                 | set time interval for checking charging status from openEVSE                                    |
-| set_timer9        | 1-500000 (default = 100000)                | set time interval for checking energy usage from openEVSE                                       |
-| set_timer10       | 1-500000 (default = 50000)                 | set time interval for checking Dinamics<->openEVSE connection status                            |
-| set_timer11       | 1-500000 (default = 50000)                 | set time interval for pause between WiFi recconnect attempts                                    |
+| set_timer7        | 1-500000 (default = 30000)                 | set time interval for checking charging current from openEVSE                                   |
+| set_timer8        | 1-500000 (default = 200000)                | set time interval for checking charging status from openEVSE                                    |
+| set_timer9        | 1-500000 (default = 120000)                | set time interval for checking energy usage from openEVSE                                       |
+| set_timer10       | 1-500000 (default = 5000)                  | set time interval for checking Dinamics<->openEVSE connection status                            |
+| set_timer11       | 1-500000 (default = 10000)                 | set time interval for pause between WiFi recconnect attempts                                    |
 | set_timer12       | 1-500000 (default = 100000)                | set time interval for sending timeSync to MQTT                                                  |
-| set_timer13       | 1-500000 (default = 6000)                  | set timeout for requests to EVSE                                                                |
-| set_plugandcharge | 0 or 1 (default = 0)                       | set Plug and Charge mode, (1 = P&C is active, 0 = station automatically stops charge)           |
+| set_timer13       | 1-500000 (default = 8000)                  | set timeout for requests to EVSE                                                                |
+| set_timer14       | 1-500000 (default = 10000)                 | set CON ERROR flag reset for requests to EVSE                                                   |
+| set_plugandcharge | 0 or 1 (default = 1)                       | set Plug and Charge mode, (1 = P&C is active, 0 = station automatically stops charge)           |
+| set_neg_amp       | 0 or 1 (default = 0)                       | set possible negative amperage, (1 = negative amps expected, 0 = no negative amps expected)     |
 | set_debug         | 40 digits with 0 or 1 (default = 40x0)     | set debug messages, (1 = debug is active, 0 = debug inactive), only valid if all 40 digits sent |
+| set_adjust        | 0 or 1 (default = 1)                       | set adjust, (1 = implera remote adjust(peakshaving) active, 0 = implera remote adjust inactive) |
+| set_autoupdate    | 0 or 1 (default = 1)                       | set automatic updates, (1 = auto update active, 0 = auto update inactive)                       |
+| set_TFO           | 0 - 1000 (default = 30)                    | set TFO(timers factor off, (factor timers5,7,8,9 when NOT charging AND timer6 when charging)    |
+| delete_settings   | 1                                          | restore settings to default predefined values                                                   |
 
 ## MessagesAndResponses
 
@@ -129,6 +140,9 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | max_charging_current | 0-32[A]                                         | calculated max available charging current in Amps                                                                                                            |
 | charging_current     | 0-32[A]                                         | actual charging current in Amps                                                                                                                              |
 | active_phases        | 1 to 3 digits (0,1,2,3,12,13,23,123,99)         | active phases on this charging session                                                                                                                       |
+| no_of_phases         | 1-3                                             | number of active phases                                                                                                                                      |
+| power                | 0-22000[W]                                      | charging power                                                                                                                                               |
+| energy               | 0-99999999[Wh]                                  | session delivered energy                                                                                                                                     |
 | enable               | 1-3                                             | enable charging status (1 - station turned off, 2 - charging enabled, 3 - station is asleep)                                                                 |
 | timeout              | timer13/2-timer13                               | time needed for response from EVSE (only posted if timer13/2 < value < timer13)                                                                              |
 | state                | 0,1,2                                           | status of charging plug (0 - vehicle not connected, 1 - vehicle connected, 2 - unknown)                                                                      |
@@ -139,6 +153,8 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | settings             | String (\\$variable=value$...)                  | string contain multiple individual settings each encapsuled in separators "$", each timer separated with ":"                                                 |
 | wifi                 | String (\\$variable=value$...)                  | string contain multiple individual wifi settings and credentials each encapsuled in separators "$"                                                           |
 | debug                | String (\\$Debugs=debug1:...:debug40$)          | string contain multiple individual debug messages switch settings, each debug switch(0 or 1) separated with ":"                                              |
+| plugandcharge        | 0 or 1                                          | set_plugandcharge response to confirm received setting                                                                                                       |
+| ip                   | ip form [xxx.xxx.xxx.xxx]                       | Dinamics local ip address                                                                                                                                    |
 | responseGC           | RAPI response from EVSE (String)                | EVSEs RAPI response for GC - get current capacity info (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)        |
 | responseG0           | RAPI response from EVSE (String)                | EVSEs RAPI response for G0 - get EV connect state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
 | responseGG           | RAPI response from EVSE (String)                | EVSEs RAPI response for GG - get charging current and voltage (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |

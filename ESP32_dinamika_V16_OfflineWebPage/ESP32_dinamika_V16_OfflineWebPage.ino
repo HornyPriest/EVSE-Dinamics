@@ -104,6 +104,8 @@ long timer12;
 long timer13;
 long timer14;
 
+uint8_t TimersFactorOff;
+
 long NegAmpTime;
 long nowNegAmp;
 
@@ -270,6 +272,8 @@ const char * charTimer13;
 String sub_Timer13Topic;
 const char * charTimer14;
 String sub_Timer14Topic;
+const char * charTFO;
+String sub_TFOTopic;
 const char * charDeleteSettings;
 String sub_DeleteSettingsTopic;
 const char * charPlugAndCharge;
@@ -366,6 +370,7 @@ String ST = "$S3 ";
 String SH = "$SH ";
 String ResponseMessage;
 String ATMessage;
+String LastCom;
 
 
 uint8_t State;
@@ -898,6 +903,17 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   vTaskDelay(20);
 
+
+  if (String(topic) == sub_TFOTopic) {
+    Serial.print("TFO value received ");
+    Serial.println(messageTemp);
+    temp_message = messageTemp;
+    TimersFactorOff = temp_message.toInt();
+    SetTimersFactor();
+  }
+
+  vTaskDelay(20);
+
   if (String(topic) == sub_DeleteSettingsTopic) {
     Serial.print("Delete settings received ");
     Serial.println(messageTemp);
@@ -1062,10 +1078,12 @@ void reconnect() {
       client.subscribe(charTimer13);
       client.subscribe(charTimer14);
       vTaskDelay(10);
+      client.subscribe(charTFO);
       client.subscribe(charPlugAndCharge);
       client.subscribe(charAdjust);
       client.subscribe(charAutoUpdate);
       client.subscribe(charGetSettings);
+      client.subscribe(charDeleteSettings);
       client.subscribe(charGetWiFi);
       client.subscribe(charGetDebug);
       client.subscribe(charNegativeAmperage);
@@ -1200,20 +1218,21 @@ void GetSettings(){
     breaker = preferences.getInt("breaker", breaker);
     calibration = preferences.getFloat("calibration", 27.7);
     timer = preferences.getLong("timer", 2000);
-    timer1 = preferences.getLong("timer1", 50000);
-    timer2 = preferences.getLong("timer2", 10000);
+    timer1 = preferences.getLong("timer1", 150);
+    timer2 = preferences.getLong("timer2", 5);
     timer3 = preferences.getLong("timer3", 10000);
     timer4 = preferences.getLong("timer4", 100);
-    timer5 = preferences.getLong("timer5", 50000);
+    timer5 = preferences.getLong("timer5", 200000);
     timer6 = preferences.getLong("timer6", 30000);
-    timer7 = preferences.getLong("timer7", 10000);
-    timer8 = preferences.getLong("timer8", 50000);
-    timer9 = preferences.getLong("timer9", 100000);
-    timer10 = preferences.getLong("timer10", 50000);
+    timer7 = preferences.getLong("timer7", 30000);
+    timer8 = preferences.getLong("timer8", 200000);
+    timer9 = preferences.getLong("timer9", 120000);
+    timer10 = preferences.getLong("timer10", 5000);
     timer11 = preferences.getLong("timer11", 10000);
     timer12 = preferences.getLong("timer12", 100000);
     timer13 = preferences.getLong("timer13", 8000);
     timer14 = preferences.getLong("timer14", 10000);
+    TimersFactorOff = preferences.getInt("TFO", 30);
     PAndC = preferences.getBool("pac", HIGH);
     MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
     min_current = preferences.getInt("min_current", 6);
@@ -1252,6 +1271,13 @@ void SetTimers(){
   preferences.putLong("timer14", timer14);
   preferences.end();
   debug += "$saving timers to preferences$";
+}
+
+void SetTimersFactor(){
+  preferences.begin("Settings", false);
+  preferences.putInt("TFO", TimersFactorOff);
+  preferences.end();
+  debug += "$saving timers factor off to preferences$";
 }
 
 void SetBreaker(){
@@ -1355,6 +1381,10 @@ void SendSettingsF(){
     TempValue += ":";
     TempValue += "\"";
     TempValue += AutoUpdate;
+    TempValue += "\"TFO\"";
+    TempValue += ":";
+    TempValue += "\"";
+    TempValue += TimersFactorOff;
     TempValue += "\",";
     TempValue += "\"T\"";
     TempValue += ":";
@@ -1888,7 +1918,12 @@ void setup() {
   charTimer14 = sub_Timer14Topic.c_str();
 
   vTaskDelay(20);
-  
+
+
+  sub_TFOTopic += prefix;
+  sub_TFOTopic += idTopic;
+  sub_TFOTopic += "/set_TFO";
+  charTFO = sub_TFOTopic.c_str();
   sub_PlugAndChargeTopic += prefix;
   sub_PlugAndChargeTopic += idTopic;
   sub_PlugAndChargeTopic += "/set_plugandcharge";
@@ -1909,6 +1944,10 @@ void setup() {
   sub_GetSettingsTopic += idTopic;
   sub_GetSettingsTopic += "/get_settings";
   charGetSettings = sub_GetSettingsTopic.c_str();
+  sub_DeleteSettingsTopic += prefix;
+  sub_DeleteSettingsTopic += idTopic;
+  sub_DeleteSettingsTopic += "/delete_settings";
+  charDeleteSettings = sub_DeleteSettingsTopic.c_str();
   sub_GetWiFiTopic += prefix;
   sub_GetWiFiTopic += idTopic;
   sub_GetWiFiTopic += "/get_wifi";
@@ -3090,7 +3129,7 @@ void loop() {
       digitalWrite(LED_GREEN, LOW);
     }
     long now5 = millis();
-    if (now5 - lastInfo5 > timer5) {    // 50000
+    if (((now5 - lastInfo5 > timer5) && PowerOn == HIGH) || (PowerOn == LOW && (now5 - lastInfo5 > timer5*TimersFactorOff*10))) {    // 200000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo5 = now5;
       vTaskDelay(20);
@@ -3098,7 +3137,7 @@ void loop() {
       digitalWrite(LED_GREEN, LOW);
     }
     long now6 = millis();
-    if (now6 - lastInfo6 > timer6) {     //30000
+    if (((now6 - lastInfo6 > timer6) && PowerOn == LOW) || (PowerOn == HIGH && (now6 - lastInfo6 > timer6*TimersFactorOff))) {     //30000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo6 = now6;
       vTaskDelay(20);
@@ -3106,7 +3145,7 @@ void loop() {
       digitalWrite(LED_GREEN, LOW);
     } 
     long now7 = millis();
-    if (now7 - lastInfo7 > timer7) {      //10000
+    if (((now7 - lastInfo7 > timer7) && PowerOn == HIGH) || (PowerOn == LOW && (now7 - lastInfo7 > timer7*TimersFactorOff*10))) {      //30000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo7 = now7;
       vTaskDelay(20);
@@ -3114,7 +3153,7 @@ void loop() {
       digitalWrite(LED_GREEN, LOW);
     }
     long now8 = millis();
-    if (now8 - lastInfo8 > timer8) {     //50000
+    if (((now8 - lastInfo8 > timer8) && PowerOn == HIGH) || (PowerOn == LOW && (now8 - lastInfo8 > timer8*TimersFactorOff*10))) {     //200000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo8 = now8;
       vTaskDelay(20);
@@ -3124,7 +3163,7 @@ void loop() {
     client.loop();
     vTaskDelay(100);
     long now9 = millis();
-    if (now9 - lastInfo9 > timer9) {    //100000
+    if (((now9 - lastInfo9 > timer9) && PowerOn == HIGH) || (PowerOn == LOW && (now9 - lastInfo9 > timer9*TimersFactorOff*10))) {    //120000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo9 = now9;
       vTaskDelay(20);
@@ -3132,7 +3171,7 @@ void loop() {
       digitalWrite(LED_GREEN, LOW);
     }
     long now10 = millis();
-    if (now10 - lastInfo10 > timer10) {   //500
+    if ((now10 - lastInfo10 > timer10) || (debug.length() > 190)) {   //2000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo10 = now10;
       vTaskDelay(20);
@@ -3254,6 +3293,9 @@ void Dovoljen_Tok(){
   }
   if(max_current < 0){
     max_current = 0;
+  }
+  if(max_current > MQTTmax_current){
+    max_current = MQTTmax_current;
   }
 }
 
@@ -3857,7 +3899,8 @@ void ConnectionAlert(){
       fullTopic += ConnectionTopic;
       topica = fullTopic.c_str();
       TempValue = "";
-      TempValue = "CON_ERROR";
+      TempValue = "CON_ERROR_FAILED_COM::";
+      TempValue += LastCom;
       TempValueChar = TempValue.c_str();    
       client.publish(topica, TempValueChar, true);
 //      delay(20);
@@ -3899,6 +3942,7 @@ void CheckState(){
     }
     ResponseMessage = "";
     Serial.println(G0);
+    LastCom = "CheckState($G0)";
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial.available()){
@@ -3978,12 +4022,6 @@ void CheckState(){
         ResponseMessage.remove(1);
         State = ResponseMessage.toInt();
 
-        if(State == 0){
-          PowerOn = LOW;
-          SetRuntimeSettings();
-          TurnSleep();
-        }
-
         if (client.connected()){
           if(OldState != State){
             OldState = State;
@@ -4013,6 +4051,7 @@ void CheckStatus(){
     }
     ResponseMessage = "";
     Serial.println(GS);
+    LastCom = "CheckStatus($GS)";
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial.available()){
@@ -4055,41 +4094,41 @@ void CheckStatus(){
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = LOW;
-    }
-    t1 = 0;
-    if(debug2 == 1){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-    //    epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-    //    dynamicTopic += "/";
-    //    dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += ResponseGSTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += ResponseMessage;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-  //      delay(20);
+        t1 = 0;
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseGSTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+      //      delay(20);
+          }
+        }
+        int index = ResponseMessage.indexOf(" ");
+        ResponseMessage.remove(0, index+1);
+        index = ResponseMessage.indexOf(" ");
+        ResponseMessage.remove(index);
+        uint8_t ChState = ResponseMessage.toInt();
+        if(ChState == 3 && PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW){
+          Serial.println("Izklop, stanje ne ustreza");
+          debug += "$";
+          debug += "Izklop, stanje ne ustreza";
+          debug += "$";
+          PowerOn = LOW;
+          SetRuntimeSettings();
+          TurnSleep();
+        }
       }
-    }
-    int index = ResponseMessage.indexOf(" ");
-    ResponseMessage.remove(0, index+1);
-    index = ResponseMessage.indexOf(" ");
-    ResponseMessage.remove(index);
-    uint8_t ChState = ResponseMessage.toInt();
-    if(ChState == 3 && PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW){
-      Serial.println("Izklop, stanje ne ustreza");
-      debug += "$";
-      debug += "Izklop, stanje ne ustreza";
-      debug += "$";
-      PowerOn = LOW;
-      SetRuntimeSettings();
-      TurnSleep();
-    }
   }
 }
 
@@ -4105,6 +4144,7 @@ void CheckSetAmps(){
     }
     ResponseMessage = "";
     Serial.println(GC);
+    LastCom = "CheckSetAmps($GC)";
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial.available()){
@@ -4147,7 +4187,6 @@ void CheckSetAmps(){
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = LOW;
-    }
     t1 = 0;
     if(debug2 == 1){
       if (client.connected()){
@@ -4166,8 +4205,9 @@ void CheckSetAmps(){
         TempValueChar = TempValue.c_str();
         client.publish(topica, TempValueChar);
   //      delay(20);
+        }
       }
-    }
+     }
   }
 }
 
@@ -4182,6 +4222,7 @@ void CheckCharge(){
     }
     ResponseMessage = "";
     Serial.println(GG);
+    LastCom = "CheckCharge($GG)";
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial.available()){
@@ -4224,52 +4265,57 @@ void CheckCharge(){
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = LOW;
-    }
-    t1 = 0;
-    if(debug2 == 1){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-    //    epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-    //    dynamicTopic += "/";
-    //    dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += ResponseGGTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += ResponseMessage;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-  //      delay(20);
-      }
-    }
-
-
-    int index = ResponseMessage.indexOf(" ");
-    ResponseMessage.remove(0, index+1);
-    index = ResponseMessage.indexOf(" ");
-    ResponseMessage.remove(index);
-    uint32_t charge_current_mA = ResponseMessage.toInt();
-    charge_current = charge_current_mA / 1000.0;
-
-//    Serial.print("C1 je :");
-//    Serial.println(c1);
-    if((PhaseInfo == LOW) && (c1 > 2)){
-//      Serial.println("Phase = LOW in c1 > 2");
-      if(charge_current > 5){
-        CheckPhaseChange();
-      }
-      if(c1 == 3){
-        c1 = 0;
-      }
-    }
-    c1 = c1+1;
-    if(c1 == 4){
-        c1 = 0;
-    }
-    CalcPower();
+  
+          t1 = 0;
+          if(debug2 == 1){
+            if (client.connected()){
+              topica = "";
+              dynamicTopic = "";
+          //    epochtimeTopic = getTime();
+              dynamicTopic += prefix;
+              dynamicTopic += idTopic;
+          //    dynamicTopic += "/";
+          //    dynamicTopic += epochtimeTopic;
+              fullTopic = dynamicTopic;
+              fullTopic += ResponseGGTopic;
+              topica = fullTopic.c_str();
+              TempValue = "";
+              TempValue += ResponseMessage;
+              TempValueChar = TempValue.c_str();
+              client.publish(topica, TempValueChar);
+        //      delay(20);
+            }
+          }
+      
+      
+          int index = ResponseMessage.indexOf(" ");
+          ResponseMessage.remove(0, index+1);
+          index = ResponseMessage.indexOf(" ");
+          ResponseMessage.remove(index);
+          uint32_t charge_current_mA = ResponseMessage.toInt();
+          charge_current = charge_current_mA / 1000.0;
+          if(charge_current > 0.05){
+            lastInfo6 = millis();
+            lastInfo8 = millis();
+          }
+      
+      //    Serial.print("C1 je :");
+      //    Serial.println(c1);
+          if((PhaseInfo == LOW) && (c1 > 2)){
+      //      Serial.println("Phase = LOW in c1 > 2");
+            if(charge_current > 5){
+              CheckPhaseChange();
+            }
+            if(c1 == 3){
+              c1 = 0;
+            }
+          }
+          c1 = c1+1;
+          if(c1 == 4){
+              c1 = 0;
+          }
+          CalcPower();
+        }
   }
 }
 
@@ -4284,6 +4330,7 @@ void CheckEnergy(){
     }
     ResponseMessage = "";
     Serial.println(GU);
+    LastCom = "CheckEnergy($GU)";
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial.available()){
@@ -4326,34 +4373,34 @@ void CheckEnergy(){
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = LOW;
-    }
-    t1 = 0;
-    if(debug2 == 1){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-    //    epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-    //    dynamicTopic += "/";
-    //    dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += ResponseGUTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += ResponseMessage;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-  //      delay(20);
+        t1 = 0;
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseGUTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+      //      delay(20);
+          }
+        }
+        int index = ResponseMessage.indexOf(" ");
+        ResponseMessage.remove(0, index+1);
+        index = ResponseMessage.indexOf(" ");
+        ResponseMessage.remove(index);
+        uint32_t energymid = ResponseMessage.toInt();
+        energy = energymid/3600;
+        CalcEnergy();
       }
-    }
-    int index = ResponseMessage.indexOf(" ");
-    ResponseMessage.remove(0, index+1);
-    index = ResponseMessage.indexOf(" ");
-    ResponseMessage.remove(index);
-    uint32_t energymid = ResponseMessage.toInt();
-    energy = energymid/3600;
-    CalcEnergy();
   }
 }
 
@@ -4371,6 +4418,7 @@ void TurnOn(){
     ResponseMessage = "";
     tmp = 2;
     Serial.println(FE);
+    LastCom = "Enable($FE)";
     t1 = 0;
     SaveLastCurrents();
     while(ResponseStatus == LOW && t1 < timer13){
@@ -4439,6 +4487,26 @@ void TurnOn(){
         }
         PhaseInfo = LOW;
         c1 = 0;
+
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseFETopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+      //      delay(20);
+          }
+        }
     }
     t1 = 0;
     
@@ -4447,25 +4515,7 @@ void TurnOn(){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
     }*/
-    if(debug2 == 1){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-    //    epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-    //    dynamicTopic += "/";
-    //    dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += ResponseFETopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += ResponseMessage;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-  //      delay(20);
-      }
-    }
+
 /*    if(index > 1){
       if (client.connected()){
         topica = "";
@@ -4500,6 +4550,7 @@ void TurnOff(){
     tmp = 1;
     ResponseMessage = "";
     Serial.println(FD);
+    LastCom = "Disable($FD)";
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial.available()){
@@ -4562,6 +4613,25 @@ void TurnOff(){
 //          delay(20);
         }
         active_phases = 0;
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseFDTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+      //      delay(20);
+          }
+        }
     }
     t1 = 0;
 
@@ -4570,25 +4640,7 @@ void TurnOff(){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
     }*/
-    if(debug2 == 1){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-    //    epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-    //    dynamicTopic += "/";
-    //    dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += ResponseFDTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += ResponseMessage;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-  //      delay(20);
-      }
-    }
+    
  /*   if(index > 1){
       if (client.connected()){
         topica = "";
@@ -4623,6 +4675,7 @@ void TurnSleep(){
     ResponseMessage = "";
     tmp = 3;
     Serial.println(FS);
+    LastCom = "Sleep($FS)";
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial.available()){
@@ -4686,6 +4739,26 @@ void TurnSleep(){
 //          delay(20);
         }
         active_phases = 0;
+        if(debug2 == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseFSTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+      //      delay(20);
+          }
+        }
+        CheckCharge();
     }
     t1 = 0;
 
@@ -4694,25 +4767,7 @@ void TurnSleep(){
       ATMessage.remove(0, index);
       ResponseMessage.remove(index);
     }*/
-    if(debug2 == 1){
-      if (client.connected()){
-        topica = "";
-        dynamicTopic = "";
-    //    epochtimeTopic = getTime();
-        dynamicTopic += prefix;
-        dynamicTopic += idTopic;
-    //    dynamicTopic += "/";
-    //    dynamicTopic += epochtimeTopic;
-        fullTopic = dynamicTopic;
-        fullTopic += ResponseFSTopic;
-        topica = fullTopic.c_str();
-        TempValue = "";
-        TempValue += ResponseMessage;
-        TempValueChar = TempValue.c_str();
-        client.publish(topica, TempValueChar);
-  //      delay(20);
-      }
-    }
+    
  /*   if(index > 1){
       if (client.connected()){
         topica = "";
@@ -4787,6 +4842,9 @@ void SetMQTTCurrent(){
           TempValue += SC;
           TempValue += MQTTmax_current;
           Serial.println(TempValue);
+          LastCom = "SetCurrentMQTT(";
+          LastCom += TempValue;
+          LastCom += ")";
           t1 = 0;
           while(ResponseStatus == LOW && t1 < timer13){
             if(Serial.available()){
@@ -4908,6 +4966,9 @@ void SetCurrent(){
           TempValue += SC;
           TempValue += max_current;
           Serial.println(TempValue);
+          LastCom = "SetCurrent(";
+          LastCom += TempValue;
+          LastCom += ")";
           t1 = 0;
           while(ResponseStatus == LOW && t1 < timer13){
             if(Serial.available()){
@@ -4953,11 +5014,16 @@ void SetCurrent(){
             ConnectionTimeoutFlag = LOW;
             t1 = 0;
     
-    /*        int index = ATMessage.indexOf("$AT");
-            if(index > 1){
-              ATMessage.remove(0, index);
-              ResponseMessage.remove(index);
-            }*/
+            int index = ATMessage.indexOf("OK ");
+            if(index > 0.5){
+              ATMessage.remove(0, index+3);
+              index = ATMessage.indexOf("^");
+              ATMessage.remove(index);
+              int ATcurrent = ATMessage.toInt();
+              if(ATcurrent == max_current){
+                lastInfo5 = millis();
+              }
+            }
             if(debug2 == 1){
               if (client.connected()){
                 topica = "";
@@ -5043,6 +5109,9 @@ void SetTimer(){
         TempValue += ST;
         TempValue += TimeLimit;
         Serial.println(TempValue);
+        LastCom = "SetTimer(";
+        LastCom += TempValue;
+        LastCom += ")";
         t1 = 0;
         while(ResponseStatus == LOW && t1 < timer13){
           if(Serial.available()){
@@ -5127,6 +5196,9 @@ void SetLimit(){
         TempValue += SH;
         TempValue += EnergyLimit;
         Serial.println(TempValue);
+        LastCom = "SetLimit(";
+        LastCom += TempValue;
+        LastCom += ")";
         t1 = 0;
         while(ResponseStatus == LOW && t1 < timer13){
           if(Serial.available()){
@@ -5213,6 +5285,9 @@ void AskRAPIF(){
         TempValue += RAPI;
         Serial.println(TempValue);
         Serial.flush();
+        LastCom = "AskRAPI(";
+        LastCom += TempValue;
+        LastCom += ")";
         t1 = 0;
         while(ResponseStatus == LOW && t1 < timer13){
           if(Serial.available()){
@@ -5272,7 +5347,11 @@ void AskRAPIF(){
             fullTopic += RAPI;
             topica = fullTopic.c_str();
             TempValue = "";
-            TempValue += ResponseMessage;
+            if(ConnectionTimeoutFlag == LOW){
+              TempValue += ResponseMessage;
+            }else{
+              TempValue += "No response from EVSE";
+            }
             TempValueChar = TempValue.c_str();
             client.publish(topica, TempValueChar);
     //        delay(20);
@@ -5399,7 +5478,7 @@ void CheckPhaseChange(){
 
 void StopCharge(){
   if(ConnectionTimeoutFlag == LOW){
-    if(ChargeSetState == HIGH && PAndC == LOW){
+    if((ChargeSetState == HIGH || PowerOn == HIGH) && PAndC == LOW){
       if((State != 0) && (State != 2)){
         c6 = 0;
       }else{
@@ -5414,8 +5493,6 @@ void StopCharge(){
           TurnSleep();
         }
       }
-    }
-    if(ChargeSetState == HIGH){
       if(charge_current > 0.3){
         c2 = 0;
       }else{
@@ -5430,6 +5507,8 @@ void StopCharge(){
           TurnSleep();
         }
       }
+    }
+    if(ChargeSetState == HIGH && PowerOn == HIGH){
       if(charge_current <= max_current + 0.5){
         c3 = 0; 
       }else{
@@ -5457,7 +5536,7 @@ void StopCharge(){
         }
       }
     }
-    if(PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW && charge_current > 0){
+    if(PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW && (charge_current > 0.3)){
       Serial.println("Izklop, stanje ne ustreza");
       debug += "$";
       debug += "Izklop, stanje ne ustreza";
@@ -5505,7 +5584,23 @@ void CatchStateChange(){
     ATMessage = ResponseMessage;
     int index = ATMessage.indexOf("$AT ");
     if(index >= 0){
-      if (client.connected()){
+      ATMessage.remove(0, index+4);
+      ATMessage.remove(5);
+      Serial.print("Catch state izrez je : ");
+      Serial.println(ATMessage);
+      if(PAndC == LOW){
+        if(ATMessage != "03 03"){
+          PowerOn = LOW;
+          SetRuntimeSettings();
+          TurnSleep();
+          State = 2;
+        }
+        if(ATMessage == "00 00"){
+          State = 0;
+        }
+      }
+    }
+    if (client.connected()){
             topica = "";
             dynamicTopic = "";
         //    epochtimeTopic = getTime();
@@ -5520,19 +5615,7 @@ void CatchStateChange(){
             TempValue += ResponseMessage;
             TempValueChar = TempValue.c_str();
             client.publish(topica, TempValueChar);
-      }
-    ATMessage.remove(0, index+4);
-    ATMessage.remove(5);
-    Serial.print("Catch state izrez je : ");
-    Serial.println(ATMessage);
-    if(PAndC == LOW){
-      if(ATMessage != "03 03"){
-        PowerOn = LOW;
-        SetRuntimeSettings();
-        TurnSleep();
-      }
-    }
-    }
+     }
   }
 }
 
