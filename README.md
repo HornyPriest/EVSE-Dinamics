@@ -170,7 +170,12 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 
 ## Issues
 
-- Web UI on server over AP does not work on last version, somewhat works on previous version ESP32_dinamika_V10_TaskWiFi
+- Timers might need to be additionally calibrated
+- Restart when paused because too little current is available
+- LoRa communication with E220 has some interference; E32 works fine
+- Negative amperage expectation is not tested enough
+- WiFi reconnection sometimes does not reconnect when WiFi is lost
+- Ports must be opened for MQTT[31883] and auto update[80] features
 
 
 ## Features
@@ -182,8 +187,8 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
   - Energy Limit
   - Adjust charging current
   - more
-- Smart dynamic power adjustment in real-time
-- MQTT view & control dynamic management settings
+  - Smart dynamic power adjustment in real-time
+  - MQTT view & control dynamic management settings
   - Sensor calibration
   - Breakers value
   - Timers
