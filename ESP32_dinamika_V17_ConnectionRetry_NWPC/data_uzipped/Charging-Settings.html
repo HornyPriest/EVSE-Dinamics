@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+	<head>
+		<title>Implera Dynamics</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- Local Implera css-->
+		<link rel="stylesheet" type="text/css" href="main.css">
+	</head>
+
+<body>
+	<!-- Start of Navbar -->
+	<header>
+		<nav class="center-navigation">
+			<a style="display:inline-block;" class="mt" href="http://www.implera.com">
+				<img src="logo.png" alt="IMPLERA DINAMICS">
+			</a>
+			<ul class="navalign">
+				<li><a class="first-navtxt" href="/">Home</a></li>
+				<li><a class="first-navtxt active" href="#">Settings</a>
+				<!-- First Tier Drop Down -->
+				<ul class="center=navigation">
+					<li><a class="second-navtxt active-sub" href="charging-settings">Charging Settings</a></li>
+					<li><a class="second-navtxt" href="wifi-settings">WiFi Settings</a></li>
+					<li><a class="second-navtxt" href="system-settings">System Settings</a></li>
+				</ul>        
+				</li>
+				<li><a class="first-navtxt" href="about">About</a></li>
+			</ul>
+		</nav>
+	</header>
+	<div class="mid-body" style="margin-bottom: 30px;">
+		<table style="width: 100%;">
+			<form action="/setCharge" method="POST">
+				<tr>
+					<td class="text-size-body-set">
+						<span class="text-size-body-cell">
+							PLUG&CHARGE
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
+							<input name="PandC" id="PandC" type="checkbox">
+							<span class="toggle"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-bodyset">
+						<span class="text-size-body-cell">
+							MAXIMUM CHARGING CURRENT
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
+							<input name="rVMax" id="rVMax" type="range" min="6" max="32" value="6" oninput="ValueMax.innerText = this.value">
+							<p id="ValueMax" >6</p>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-cell">
+						<span class="text-size-body-cell">
+							BREAKERS
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
+							<input name="rVB" id="rVB" type="range" min="6" max="64" value="6" oninput="ValueBreaker.innerText = this.value">
+							<p id="ValueBreaker" >6</p>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-cell">
+						<span class="text-size-body-cell">
+							MINIMUM CHARGING CURRENT
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div class="slider" style="margin-top: 1px; margin-bottom: 20px;">
+							<input name="rVMin" id="rVMin" type="range" min="6" max="32" value="6" oninput="ValueMin.innerText = this.value">
+							<p id="ValueMin" >6</p>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-cell">
+						<span class="text-size-body-cell">
+							EXPECT NEGATIVE AMPERAGE (!might burn your breakers)
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
+							<input name="NegAmp" id="NegAmp" type="checkbox">
+							<span class="toggle"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-cell">
+						<span class="text-size-body-cell">
+							ALLOW IMPLERA TO ADJUST CHARGING POWER
+						</span>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
+							<input name="Adj" id="Adj" type="checkbox">
+							<span class="toggle"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<button type="submit" class="button-update">SAVE</button>
+					</td>
+				</tr>
+			</form>
+			<form action="/restoreCharge" method="GET">
+				<tr>
+					<td>
+						<button type="submit" class="button-factory">RESTORE TO DEFAULT</button>
+					</td>
+				</tr>
+			</form>
+		</table>
+	</div>
+	<footer>
+		<div class="container-footer">
+			<a href="https://www.facebook.com/elevat.eu">
+				<button class="button-round-social btn-facebook">
+					<img src="facebook-f-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<a href="https://twitter.com/home">
+				<button class="button-round-social btn-twitter">
+					<img src="twitter-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<a href="https://www.google.com/search?q=implera&sxsrf=ALiCzsbplZnT1wJMO1Pd3WO6vHnJptuIxw%3A1664185835399&source=hp&ei=63UxY5nIFYvP7_UPv6aD4A8&iflsig=AJiK0e8AAAAAYzGD-35fapw6mkFHFxqwgKEa11A3npnn&gs_ssp=eJzj4tVP1zc0TDM0tSgwiC8yYLRSMagwMTdLM081NjBPSzVPNklKsjKoSDQ3MbFMMTMwNDcztTQ282LPzC3ISS1KBAAIOxEa&oq=Implera&gs_lcp=Cgdnd3Mtd2l6EAEYADILCC4QgAQQxwEQrwEyBwgAEAoQywEyBAgAEB4yBggAEB4QCjIGCAAQHhAKMgQIABAeMgIIJjoHCCMQ6gIQJzoECCMQJzoLCAAQgAQQsQMQgwE6EQguEIAEELEDEIMBEMcBENEDOgUILhCABDoFCAAQgAQ6CAguEIAEENQCOgoIABCABBDJAxAKOgUIABCSAzoICC4QsQMQgwE6CwguEIAEELEDEIMBOg0ILhCxAxCDARDUAhAKOgsILhCxAxCDARDUAjoICAAQgAQQsQM6CAguEIAEELEDOgcIABCxAxAKOgoILhDHARCvARAKOgUIABDLAVD4BVjZGWDWKGgCcAB4AoAB1ASIAaAQkgELMi41LjAuMS4xLjGYAQCgAQGwAQo&sclient=gws-wiz">
+				<button class="button-round-social btn-google">
+					<img src="google-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<a href="https://www.linkedin.com/">
+				<button class="button-round-social btn-linkedin">
+					<img src="linkedin-in-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<div class="info-footer">
+				<table style="width: 100%;">
+					<tr class="text-size-footer">
+						<td>
+							<a href="tel:+38648400800">
+								<img style="padding-top: 5px" src="phone-solid.svg" height="20px" width="20px">
+							</a>
+						</td>
+						<td>
+							<a style="margin-left: 0.5rem; text-decoration: none; color:rgb(248, 248, 248)" href="tel:+38648400800">+386 48 400 800</a>
+						</td>
+					</tr>
+					<tr class="text-size-footer">
+						<td>
+							<a href="mailto: info@implera.com?subject = Support Request: Dinamics">
+								<img style="padding-top: 5px" src="envelope-solid.svg" height="20px" width="20px">
+							</a>
+						</td>
+						<td>
+							<a style="margin-left: 0.5rem; text-decoration: none; color:rgb(248, 248, 248)" href="mailto:info@implera.com?subject = Support Request: Dinamics">info@implera.com</a>
+						</td>
+					</tr>
+					<tr class="text-size-footer">
+						<td>
+							<a href="https://www.google.com/maps/dir//IMPLERA+d.o.o.,+Trg+svobode+26,+2310+Slovenska+Bistrica/@46.3919741,15.570481,15.79z/data=!4m8!4m7!1m0!1m5!1m1!1s0x476f7e307fe7c4bb:0xa7449d601765936!2m2!1d15.5727162!2d46.3924037">
+								<img style="padding-top: 5px" src="map-location-solid.svg" height="20px" width="20px">
+							</a>
+						</td>
+						<td>
+							<a style="margin-left: 0.5rem; text-decoration: none; color:rgb(248, 248, 248)" href="hhttps://www.google.com/maps/dir//IMPLERA+d.o.o.,+Trg+svobode+26,+2310+Slovenska+Bistrica/@46.3919741,15.570481,15.79z/data=!4m8!4m7!1m0!1m5!1m1!1s0x476f7e307fe7c4bb:0xa7449d601765936!2m2!1d15.5727162!2d46.3924037">Trg Svobode 26</a>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="container-footer-darker">
+				<div class="text-footer">
+					© 2022 Copyright:
+					<a class="text-footer" href="http://www.implera.com/">Implera d.o.o.</a>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script>
+
+		function getPandC() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("PandC").checked = true;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/pandc", true);
+		  xhttp.send();
+		}
+
+		function getMax() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("ValueMax").textContent = this.responseText;
+			  	document.getElementById("rVMax").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/max", true);
+		  xhttp.send();
+		}
+		
+		function getBreaker() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("ValueBreaker").textContent = this.responseText;
+			  	document.getElementById("rVB").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/breaker", true);
+		  xhttp.send();
+		}
+
+		function getMin() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("ValueMin").textContent = this.responseText;
+			  	document.getElementById("rVMin").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/min", true);
+		  xhttp.send();
+		}
+
+		function getNegativeAmperage() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("NegAmp").checked = true;
+				}else if(this.responseText != 1){
+					document.getElementById("NegAmp").checked = false;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/neg_amp", true);
+		  xhttp.send();
+		}
+
+		function getAdjust() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == 1){
+					document.getElementById("Adj").checked = true;
+				}else if(this.responseText != 1){
+					document.getElementById("Adj").checked = false;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/adjust", true);
+		  xhttp.send();
+		}
+
+		window.onload=getPandC();
+		window.onload=getMax();
+		window.onload=getBreaker();
+		window.onload=getMin();
+		window.onload=getAdjust();
+		window.onload=getNegativeAmperage();
+
+  	</script>
+
+</body>
+</html>

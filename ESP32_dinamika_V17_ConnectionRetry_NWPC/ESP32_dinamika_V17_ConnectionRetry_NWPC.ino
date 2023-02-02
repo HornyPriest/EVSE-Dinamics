@@ -105,6 +105,8 @@ long timer13;
 long timer14;
 
 uint8_t TimersFactorOff;
+uint8_t LoRaCERetries = 3;
+uint8_t LoraCERetryCount;
 
 long NegAmpTime;
 long nowNegAmp;
@@ -278,6 +280,8 @@ const char * charDeleteSettings;
 String sub_DeleteSettingsTopic;
 const char * charPlugAndCharge;
 String sub_PlugAndChargeTopic;
+const char * charNoWANPandC;
+String sub_NoWANPandCTopic;
 const char * charNegativeAmperage;
 String sub_NegativeAmperageTopic;
 const char * charAdjust;
@@ -409,6 +413,8 @@ boolean SetWiFiCredsFlag;
 boolean DeleteWiFiCredsFlag;
 boolean SetAutoUpdateFlag;
 boolean NegAmpOnceFlag = LOW;
+boolean NoWANPandCActive = LOW;
+boolean NoWANPandC;
 
 int PowerStatus;
 
@@ -1031,6 +1037,22 @@ void callback(char* topic, byte* message, unsigned int length) {
     }
   }
 
+  if (String(topic) == sub_NoWANPandCTopic) {
+    if(debug3 == 1){
+      Serial.print("No WAN Plug and Charge setting update received ");
+      Serial.println(messageTemp);
+    }
+    temp_message = messageTemp;
+    vmesna = temp_message.toInt();
+    if(vmesna == 1){
+      NoWANPandC = HIGH;
+      SetNWPC();
+    }else{
+      NoWANPandC = LOW;
+      SetNWPC();
+    }
+  }
+
   vTaskDelay(20);
 
   if (String(topic) == sub_NegativeAmperageTopic) {
@@ -1188,6 +1210,7 @@ void reconnect() {
       vTaskDelay(10);
       client.subscribe(charTFO);
       client.subscribe(charPlugAndCharge);
+      client.subscribe(charNoWANPandC);
       client.subscribe(charAdjust);
       client.subscribe(charAutoUpdate);
       client.subscribe(charGetSettings);
@@ -1344,6 +1367,7 @@ void GetSettings(){
     timer14 = preferences.getLong("timer14", 10000);
     TimersFactorOff = preferences.getInt("TFO", 30);
     PAndC = preferences.getBool("pac", HIGH);
+    NoWANPandC = preferences.getBool("nwpc", LOW);
     MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
     min_current = preferences.getInt("min_current", 6);
     NegativeAmperage = preferences.getBool("NegativeAmperage", LOW);
@@ -1418,6 +1442,13 @@ void SetPAC(){
   debug += "$saving PAC setting to preferences$";
 }
 
+void SetNWPC(){
+  preferences.begin("Settings", false);
+  preferences.putBool("nwpc", NoWANPandC);
+  preferences.end();
+  debug += "$saving NWPC setting to preferences$";
+}
+
 void SetNegativeAmperage(){
   preferences.begin("Settings", false);
   preferences.putBool("NegativeAmperage", NegativeAmperage);
@@ -1480,6 +1511,11 @@ void SendSettingsF(){
     TempValue += ":";
     TempValue += "\"";
     TempValue += PAndC;
+    TempValue += "\",";
+    TempValue += "\"NWPC\"";
+    TempValue += ":";
+    TempValue += "\"";
+    TempValue += NoWANPandC;
     TempValue += "\",";
     TempValue += "\"Neg_Amp\"";
     TempValue += ":";
@@ -1627,23 +1663,23 @@ void GetDebug(){
     debug1 = preferences.getBool("debug1", 0);
     debug1_MQTT = preferences.getBool("debug1_MQTT", 1);
     debug2 = preferences.getBool("debug2", 1);
-    debug2_MQTT = preferences.getBool("debug2_MQTT", 0);
+    debug2_MQTT = preferences.getBool("debug2_MQTT", 1);
     debug3 = preferences.getBool("debug3", 0);
-    debug3_MQTT = preferences.getBool("debug3_MQTT", 0);
+    debug3_MQTT = preferences.getBool("debug3_MQTT", 1);
     debug4 = preferences.getBool("debug4", 0);
-    debug4_MQTT = preferences.getBool("debug4_MQTT", 0);
+    debug4_MQTT = preferences.getBool("debug4_MQTT", 1);
     debug5 = preferences.getBool("debug5", 0);
-    debug5_MQTT = preferences.getBool("debug5_MQTT", 0);
+    debug5_MQTT = preferences.getBool("debug5_MQTT", 1);
     debug6 = preferences.getBool("debug6", 0);
-    debug6_MQTT = preferences.getBool("debug6_MQTT", 0);
+    debug6_MQTT = preferences.getBool("debug6_MQTT", 1);
     debug7 = preferences.getBool("debug7", 0);
-    debug7_MQTT = preferences.getBool("debug7_MQTT", 0);
+    debug7_MQTT = preferences.getBool("debug7_MQTT", 1);
     debug8 = preferences.getBool("debug8", 0);
-    debug8_MQTT = preferences.getBool("debug8_MQTT", 0);
+    debug8_MQTT = preferences.getBool("debug8_MQTT", 1);
     debug9 = preferences.getBool("debug9", 0);
-    debug9_MQTT = preferences.getBool("debug9_MQTT", 0);
+    debug9_MQTT = preferences.getBool("debug9_MQTT", 1);
     debug10 = preferences.getBool("debug10", 0);
-    debug10_MQTT = preferences.getBool("debug10_MQTT", 0);
+    debug10_MQTT = preferences.getBool("debug10_MQTT", 1);
     debug11 = preferences.getBool("debug11", 0);
     debug11_MQTT = preferences.getBool("debug11_MQTT", 0);
     debug12 = preferences.getBool("debug12", 0);
@@ -2052,6 +2088,10 @@ void setup() {
   sub_PlugAndChargeTopic += idTopic;
   sub_PlugAndChargeTopic += "/set_plugandcharge";
   charPlugAndCharge = sub_PlugAndChargeTopic.c_str();
+  sub_NoWANPandCTopic += prefix;
+  sub_NoWANPandCTopic += idTopic;
+  sub_NoWANPandCTopic += "/set_nwpc";
+  charNoWANPandC = sub_NoWANPandCTopic.c_str();
   sub_NegativeAmperageTopic += prefix;
   sub_NegativeAmperageTopic += idTopic;
   sub_NegativeAmperageTopic += "/set_neg_amp";
@@ -2273,7 +2313,7 @@ void setup() {
           // HTTP POST ssid value
           const char* PARAM_INPUT_1 = "PandC";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
-            PAndC = p->value().c_str();
+            PAndC = p->value().toInt();
             if(debug5 == 1){
               Serial.print("PandC set to: ");
               Serial.println(PAndC);
@@ -2319,7 +2359,7 @@ void setup() {
           // HTTP POST subnet value
           const char* PARAM_INPUT_5 = "NegAmp";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
-            NegativeAmperage = p->value().c_str();
+            NegativeAmperage = p->value().toInt();
             if(debug5 == 1){
               Serial.print("Negative Amperage set to: ");
               Serial.println(NegativeAmperage);
@@ -2330,7 +2370,7 @@ void setup() {
           // HTTP POST subnet value
           const char* PARAM_INPUT_6 = "Adj";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_6) {
-            ImpleraAdjust = p->value().c_str();
+            ImpleraAdjust = p->value().toInt();
             if(debug5 == 1){
               Serial.print("Adjust set to: ");
               Serial.println(ImpleraAdjust);
@@ -2727,7 +2767,7 @@ void setup() {
           // HTTP POST ssid value
           const char* PARAM_INPUT_1 = "PandC";                  // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_1) {
-            PAndC = p->value().c_str();
+            PAndC = p->value().toInt();
 //            Serial.print("PandC set to: ");
 //            Serial.println(PAndC);
             // Write file to save value
@@ -2765,7 +2805,7 @@ void setup() {
           // HTTP POST subnet value
           const char* PARAM_INPUT_5 = "NegAmp";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_5) {
-            NegativeAmperage = p->value().c_str();
+            NegativeAmperage = p->value().toInt();
 //            Serial.print("Negative Amperage set to: ");
 //            Serial.println(NegativeAmperage);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
@@ -2774,7 +2814,7 @@ void setup() {
           // HTTP POST subnet value
           const char* PARAM_INPUT_6 = "Adj";               // Search for parameter in HTTP POST request
           if (p->name() == PARAM_INPUT_6) {
-            ImpleraAdjust = p->value().c_str();
+            ImpleraAdjust = p->value().toInt();
 //            Serial.print("Adjust set to: ");
 //            Serial.println(ImpleraAdjust);
 //            writeFile(SPIFFS, subnetPath, subnet.c_str());            // Write file to save value
@@ -3074,6 +3114,10 @@ void loop() {
   if(!client.connected()){
       digitalWrite(LED_RED, HIGH);
       digitalWrite(LED_GREEN, LOW);
+      if(NoWANPandC == HIGH){
+        PAndC = HIGH;
+        NoWANPandCActive = HIGH;
+      }
 //      Serial.println("client not connected");
       if(WiFi.status() != WL_CONNECTED){
 //        Serial.println("wifi not connected");      
@@ -3088,6 +3132,10 @@ void loop() {
   }else{
     if(ip == "0.0.0.0"){
       ip = WiFi.localIP().toString();
+    }
+    if(NoWANPandCActive == HIGH){
+      NoWANPandCActive = LOW;
+      PAndC = LOW;
     }
     client.loop();
     vTaskDelay(20);
@@ -4144,6 +4192,7 @@ void CheckState(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
           Serial.print("timeout flag ON, t1 = ");
           Serial.println(t1);
@@ -4162,6 +4211,10 @@ void CheckState(){
           }
         }
       }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+     }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
           Serial.print("timeout flag OFF, t1 = ");
           Serial.println(t1);
@@ -4253,12 +4306,17 @@ void CheckStatus(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
           Serial.print("timeout flag ON, t1 = ");
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+    }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
           Serial.print("timeout flag OFF, t1 = ");
           Serial.println(t1);
@@ -4348,12 +4406,17 @@ void CheckSetAmps(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
           Serial.print("timeout flag ON, t1 = ");
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+    }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
           Serial.print("timeout flag OFF, t1 = ");
           Serial.println(t1);
@@ -4426,12 +4489,17 @@ void CheckCharge(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
           Serial.print("timeout flag ON, t1 = ");
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+    }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
           Serial.print("timeout flag OFF, t1 = ");
           Serial.println(t1);
@@ -4534,12 +4602,17 @@ void CheckEnergy(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
           Serial.print("timeout flag ON, t1 = ");
           Serial.println(t1);
         }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+    }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
           Serial.print("timeout flag OFF, t1 = ");
           Serial.println(t1);
@@ -4624,12 +4697,17 @@ void TurnOn(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
-              Serial.print("timeout flag ON, t1 = ");
-              Serial.println(t1);
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
         }
         ConnectionTimeoutFlag = HIGH;
+      }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
     }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);
@@ -4755,12 +4833,17 @@ void TurnOff(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
-              Serial.print("timeout flag ON, t1 = ");
-              Serial.println(t1);
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
         }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+    }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);
@@ -4880,12 +4963,17 @@ void TurnSleep(){
       }
     }
     if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
         if(debug1 == 1){
-              Serial.print("timeout flag ON, t1 = ");
-              Serial.println(t1);
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
         }
         ConnectionTimeoutFlag = HIGH;
       }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+    }else{
+        LoRaCERetries = 0;
         if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);
@@ -5048,13 +5136,18 @@ void SetMQTTCurrent(){
               }
             }
           }
-          if(t1 > timer13 - 1){
+        if(t1 > timer13 - 1){
+          if(LoRaCERetryCount == LoRaCERetries){
             if(debug1 == 1){
               Serial.print("timeout flag ON, t1 = ");
               Serial.println(t1);
             }
             ConnectionTimeoutFlag = HIGH;
           }else{
+            LoRaCERetries = LoRaCERetries + 1;
+          }
+        }else{
+            LoRaCERetries = 0;
             if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);
@@ -5173,12 +5266,17 @@ void SetCurrent(){
             }
           }
           if(t1 > timer13 - 1){
-            if(debug1 == 1){
-              Serial.print("timeout flag ON, t1 = ");
-              Serial.println(t1);
+            if(LoRaCERetryCount == LoRaCERetries){
+              if(debug1 == 1){
+                Serial.print("timeout flag ON, t1 = ");
+                Serial.println(t1);
+              }
+              ConnectionTimeoutFlag = HIGH;
+            }else{
+              LoRaCERetries = LoRaCERetries + 1;
             }
-            ConnectionTimeoutFlag = HIGH;
           }else{
+            LoRaCERetries = 0;
             if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);
@@ -5317,12 +5415,17 @@ void SetTimer(){
           }
         }
         if(t1 > timer13 - 1){
-          if(debug1 == 1){
+          if(LoRaCERetryCount == LoRaCERetries){
+            if(debug1 == 1){
               Serial.print("timeout flag ON, t1 = ");
               Serial.println(t1);
+            }
+            ConnectionTimeoutFlag = HIGH;
+          }else{
+            LoRaCERetries = LoRaCERetries + 1;
           }
-          ConnectionTimeoutFlag = HIGH;
         }else{
+          LoRaCERetries = 0;
           if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);
@@ -5404,12 +5507,17 @@ void SetLimit(){
           }
         }
         if(t1 > timer13 - 1){
-          if(debug1 == 1){
+          if(LoRaCERetryCount == LoRaCERetries){
+            if(debug1 == 1){
               Serial.print("timeout flag ON, t1 = ");
               Serial.println(t1);
+            }
+            ConnectionTimeoutFlag = HIGH;
+          }else{
+            LoRaCERetries = LoRaCERetries + 1;
           }
-          ConnectionTimeoutFlag = HIGH;
         }else{
+          LoRaCERetries = 0;
           if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);
@@ -5495,12 +5603,17 @@ void AskRAPIF(){
           }
         }
         if(t1 > timer13 - 1){
-          if(debug1 == 1){
+          if(LoRaCERetryCount == LoRaCERetries){
+            if(debug1 == 1){
               Serial.print("timeout flag ON, t1 = ");
               Serial.println(t1);
+            }
+            ConnectionTimeoutFlag = HIGH;
+          }else{
+            LoRaCERetries = LoRaCERetries + 1;
           }
-          ConnectionTimeoutFlag = HIGH;
         }else{
+          LoRaCERetries = 0;
           if(debug1 == 1){
               Serial.print("timeout flag OFF, t1 = ");
               Serial.println(t1);

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+	<head>
+		<title>Implera Dynamics</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- Latest compiled jquery -->
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+		<!-- Local Latest compiled jquery -->
+		<script src="jquery-3.6.0.min.js"></script>
+		<!-- Local Implera css-->
+		<link rel="stylesheet" type="text/css" href="main.css">
+	</head>
+
+<body>
+	<!-- Start of Navbar -->
+	<header>
+		<nav class="center-navigation">
+			<a style="display:inline-block;" class="mt" href="www.implera.com">
+				<img src="logo.png" alt="IMPLERA DINAMICS">
+			</a>
+			<ul class="navalign">
+				<li><a class="first-navtxt" href="/">Home</a></li>
+				<li><a class="first-navtxt active" href="#">Settings</a>
+				<!-- First Tier Drop Down -->
+				<ul class="center=navigation">
+					<li><a class="second-navtxt" href="charging-settings">Charging Settings</a></li>
+					<li><a class="second-navtxt active-sub" href="wifi-settings">WiFi Settings</a></li>
+					<li><a class="second-navtxt" href="system-settings">System Settings</a></li>
+				</ul>        
+				</li>
+				<li><a class="first-navtxt" href="about">About</a></li>
+			</ul>
+		</nav>
+	</header>
+	<div class="mid-body" style="margin-bottom: 30px;">
+		<table style="width: 100%;">
+			<form action="/setWiFi" method="POST">
+				<tr>
+					<td class="text-size-body-set">
+						<label for="ssid">SSID</label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="text" class="input-text" name="ssid" id="ssid" autocapitalize="none" placeholder="Enter your home WiFi SSID">
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-set">
+						<label for="pass">PASSWORD</label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="password" class="input-text" name="pass" id="pass" autocapitalize="none" placeholder="Enter your home WiFi password">
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-set">
+						<label class="text-size-body-cell" for="dhcp">
+							DHCP
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<label class="switch" style="margin-top: 1px; margin-bottom: 20px;">
+							<input type="checkbox" name="dhcp" id="dhcp" checked>
+							<span class="toggle"></span>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-set">
+						<label for="ip">IP ADDRESS</label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="text" class="input-text" name="ip" id="ip" placeholder="192.168.1.100" disabled="disabled">
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-set">
+						<label for="gwip">GATEWAY IP</label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="text" class="input-text" name="gwip" id="gwip" placeholder="192.168.1.1" disabled="disabled">
+					</td>
+				</tr>
+				<tr>
+					<td class="text-size-body-set">
+						<label for="subnet">SUBNET MASK</label>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<input type="text" class="input-text" name="subnet" id="subnet" placeholder="255.255.255.255" disabled="disabled">
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<button type="submit" class="button-update">SAVE</button>
+					</td>
+				</tr>
+			</form>
+			<form action="/restoreWiFi" method="GET">
+				<tr>
+					<td>
+						<button type="submit" class="button-factory">RESTORE TO DEFAULT</button>
+					</td>
+				</tr>
+			</form>
+		</table>
+	</div>
+	<footer>
+		<div class="container-footer">
+			<a href="https://www.facebook.com/elevat.eu">
+				<button class="button-round-social btn-facebook">
+					<img src="facebook-f-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<a href="https://twitter.com/home">
+				<button class="button-round-social btn-twitter">
+					<img src="twitter-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<a href="https://www.google.com/search?q=implera&sxsrf=ALiCzsbplZnT1wJMO1Pd3WO6vHnJptuIxw%3A1664185835399&source=hp&ei=63UxY5nIFYvP7_UPv6aD4A8&iflsig=AJiK0e8AAAAAYzGD-35fapw6mkFHFxqwgKEa11A3npnn&gs_ssp=eJzj4tVP1zc0TDM0tSgwiC8yYLRSMagwMTdLM081NjBPSzVPNklKsjKoSDQ3MbFMMTMwNDcztTQ282LPzC3ISS1KBAAIOxEa&oq=Implera&gs_lcp=Cgdnd3Mtd2l6EAEYADILCC4QgAQQxwEQrwEyBwgAEAoQywEyBAgAEB4yBggAEB4QCjIGCAAQHhAKMgQIABAeMgIIJjoHCCMQ6gIQJzoECCMQJzoLCAAQgAQQsQMQgwE6EQguEIAEELEDEIMBEMcBENEDOgUILhCABDoFCAAQgAQ6CAguEIAEENQCOgoIABCABBDJAxAKOgUIABCSAzoICC4QsQMQgwE6CwguEIAEELEDEIMBOg0ILhCxAxCDARDUAhAKOgsILhCxAxCDARDUAjoICAAQgAQQsQM6CAguEIAEELEDOgcIABCxAxAKOgoILhDHARCvARAKOgUIABDLAVD4BVjZGWDWKGgCcAB4AoAB1ASIAaAQkgELMi41LjAuMS4xLjGYAQCgAQGwAQo&sclient=gws-wiz">
+				<button class="button-round-social btn-google">
+					<img src="google-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<a href="https://www.linkedin.com/">
+				<button class="button-round-social btn-linkedin">
+					<img src="linkedin-in-brands.svg" height="20px" width="20px">
+				</button>
+			</a>
+			<div class="info-footer">
+				<table style="width: 100%;">
+					<tr class="text-size-footer">
+						<td>
+							<a href="tel:+38648400800">
+								<img style="padding-top: 5px" src="phone-solid.svg" height="20px" width="20px">
+							</a>
+						</td>
+						<td>
+							<a style="margin-left: 0.5rem; text-decoration: none; color:rgb(248, 248, 248)" href="tel:+38648400800">+386 48 400 800</a>
+						</td>
+					</tr>
+					<tr class="text-size-footer">
+						<td>
+							<a href="mailto: info@implera.com?subject = Support Request: Dinamics">
+								<img style="padding-top: 5px" src="envelope-solid.svg" height="20px" width="20px">
+							</a>
+						</td>
+						<td>
+							<a style="margin-left: 0.5rem; text-decoration: none; color:rgb(248, 248, 248)" href="mailto:info@implera.com?subject = Support Request: Dinamics">info@implera.com</a>
+						</td>
+					</tr>
+					<tr class="text-size-footer">
+						<td>
+							<a href="https://www.google.com/maps/dir//IMPLERA+d.o.o.,+Trg+svobode+26,+2310+Slovenska+Bistrica/@46.3919741,15.570481,15.79z/data=!4m8!4m7!1m0!1m5!1m1!1s0x476f7e307fe7c4bb:0xa7449d601765936!2m2!1d15.5727162!2d46.3924037">
+								<img style="padding-top: 5px" src="map-location-solid.svg" height="20px" width="20px">
+							</a>
+						</td>
+						<td>
+							<a style="margin-left: 0.5rem; text-decoration: none; color:rgb(248, 248, 248)" href="hhttps://www.google.com/maps/dir//IMPLERA+d.o.o.,+Trg+svobode+26,+2310+Slovenska+Bistrica/@46.3919741,15.570481,15.79z/data=!4m8!4m7!1m0!1m5!1m1!1s0x476f7e307fe7c4bb:0xa7449d601765936!2m2!1d15.5727162!2d46.3924037">Trg Svobode 26</a>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<div class="container-footer-darker">
+				<div class="text-footer">
+					© 2022 Copyright:
+					<a class="text-footer" href="http://www.implera.com/">Implera d.o.o.</a>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script>
+		$( document ).ready(function() {
+			$('#DHCPCheck').click(function () {
+				if($(this).is(':checked')){
+					//Enable the submit button.
+					$('#ip').attr("disabled", true);
+					$('#gwip').attr("disabled", true);
+					$('#subnet').attr("disabled", true);
+					$('#ip').attr("type", text);
+					$('#gwip').attr("type", text);
+					$('#subnet').attr("type", text);
+					$('#ip').attr("value", "Automatic");
+					$('#gwip').attr("value", "Automatic");
+					$('#subnet').attr("value", "Automatic");
+				}else{
+					//If it is not checked, disable the button.
+					$('#ip').attr("disabled", false);
+					$('#gwip').attr("disabled", false);
+					$('#subnet').attr("disabled", false); 
+					$('#ip').attr("type", text);
+					$('#gwip').attr("type", text);
+					$('#subnet').attr("type", text);
+					$('#ip').attr("value", "");
+					$('#gwip').attr("value", "");
+					$('#subnet').attr("value", "");
+				}
+			});
+		});
+
+
+		function getSSID() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				document.getElementById("ssid").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/SSID", true);
+		  xhttp.send();
+		}
+
+		function getPASS() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("pass").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/PASS", true);
+		  xhttp.send();
+		}
+
+		function getDHCP() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+				if(this.responseText == "on"){
+					document.getElementById("dhcp").checked = true;
+				}else{
+					document.getElementById("dhcp").checked = false;
+				}
+			}
+		  };
+		  xhttp.open("GET", "/DHCP", true);
+		  xhttp.send();
+		}
+
+		function getIP() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("ip").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/IP", true);
+		  xhttp.send();
+		}
+
+		function getGWIP() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("gwip").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/GWIP", true);
+		  xhttp.send();
+		}
+
+		function getSUBNET() {
+		  var xhttp = new XMLHttpRequest();
+		  xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(this.responseText);
+			  	document.getElementById("subnet").value = this.responseText;
+			}
+		  };
+		  xhttp.open("GET", "/SUBNET", true);
+		  xhttp.send();
+		}
+
+		window.onload=getSSID();
+		window.onload=getPASS();
+		window.onload=getDHCP();
+		window.onload=getIP();
+		window.onload=getGWIP();
+		window.onload=getSUBNET();
+
+		</script>
+
+</body>
+</html>

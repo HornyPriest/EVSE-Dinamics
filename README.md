@@ -27,7 +27,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder ESP32_dinamika_V16_OfflineWebPage
+Last version is in folder ESP32_dinamika_V17_ConnectionRetry_NWPC
 Bin file DinamicsV1.bin
 
 ## Flashing
@@ -61,6 +61,9 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 
 ## Changes
+
+V17: added 3 retries before connection error is activated, added auto P&C if no internet connection
+
 
 V16: timers changed, LoRa communication optimized, Web page working
 
@@ -119,6 +122,7 @@ Settings setable over MQTT:
 | set_timer13       | 1-500000 (default = 8000)                  | set timeout for requests to EVSE                                                                |
 | set_timer14       | 1-500000 (default = 10000)                 | set CON ERROR flag reset for requests to EVSE                                                   |
 | set_plugandcharge | 0 or 1 (default = 1)                       | set Plug and Charge mode, (1 = P&C is active, 0 = station automatically stops charge)           |
+| set_nwpc          | 0 or 1 (default = 0)                       | set auto Plug and Charge mode if no internet, (1 = nwpc is active, 0 = nwpc is inactive)        |
 | set_neg_amp       | 0 or 1 (default = 0)                       | set possible negative amperage, (1 = negative amps expected, 0 = no negative amps expected)     |
 | set_debug         | 40 digits with 0 or 1 (default = 40x0)     | set debug messages, (1 = debug is active, 0 = debug inactive), only valid if all 40 digits sent |
 | set_adjust        | 0 or 1 (default = 1)                       | set adjust, (1 = implera remote adjust(peakshaving) active, 0 = implera remote adjust inactive) |
