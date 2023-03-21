@@ -134,7 +134,7 @@ long lastInfo2 = 0;
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-String FW_versionStr = "0.1.7";
+String FW_versionStr = "0.1.8";
 
 #define FOTA_URL "http://lockit.pro/ota/Dinamics/Dinamics.json"
 const char *firmware_name = "Dinamics";
