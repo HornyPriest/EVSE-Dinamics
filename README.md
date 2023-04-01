@@ -27,7 +27,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder ESP32_dinamika_V17_ConnectionRetry_NWPC
+Last version is in folder ESP32_dinamika_V18_AsyncState_LCD
 Bin file DinamicsV1.bin
 
 ## Flashing
@@ -62,6 +62,9 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 ## Changes
 
+V18: added support for LCD
+
+
 V17: added 3 retries before connection error is activated, added auto P&C if no internet connection
 
 
@@ -88,7 +91,8 @@ Requests available over MQTT:
 | get_settings      | 1                             | request active settings           | settings                                                                                                     |
 | get_wifi          | 1                             | request active wifi settings      | wifi                                                                                                         |
 | get_debug         | 1                             | request active debug settings     | debug                                                                                                        |
-| rapi_request      | RAPI commands without "$"     | send direct RAPI command to EVSE  | rapi_response (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |                                                                                  |
+| rapi_request      | RAPI commands without "$"     | send direct RAPI command to EVSE  | rapi_response (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |
+| get_timers        | 1                             | request active timers value       | all timers in JSON format                                                                                    |
 
 ## Settings
 
@@ -129,6 +133,8 @@ Settings setable over MQTT:
 | set_autoupdate    | 0 or 1 (default = 1)                       | set automatic updates, (1 = auto update active, 0 = auto update inactive)                       |
 | set_TFO           | 0 - 1000 (default = 30)                    | set TFO(timers factor off, (factor timers5,7,8,9 when NOT charging AND timer6 when charging)    |
 | delete_settings   | 1                                          | restore settings to default predefined values                                                   |
+| set_lcd           | String                                     | Write this string on LCD                                                                        |
+| erase_lcd         | 1                                          | clear whole LCD                                                                                 |
 
 ## MessagesAndResponses
 
@@ -148,17 +154,19 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | power                | 0-22000[W]                                      | charging power                                                                                                                                               |
 | energy               | 0-99999999[Wh]                                  | session delivered energy                                                                                                                                     |
 | enable               | 1-3                                             | enable charging status (1 - station turned off, 2 - charging enabled, 3 - station is asleep)                                                                 |
-| timeout              | timer13/2-timer13                               | time needed for response from EVSE (only posted if timer13/2 < value < timer13)                                                                              |
+| timeout              | if timeout > timer13/2-timer13                  | time needed for response from EVSE (only posted if timer13/2 < value < timer13)                                                                              |
 | state                | 0,1,2                                           | status of charging plug (0 - vehicle not connected, 1 - vehicle connected, 2 - unknown)                                                                      |
 | connection           | OK or CON_ERROR                                 | status of connection between Dinamics <---> EVSE                                                                                                             |
 | debug_log            | \\$message1$$message2$...etc                    | one or more debug messages each encapsuled in separators "$"                                                                                                 |
 | synctime             | current epoch timestamp                         | actual epochtime in the moment of sending this message (meant for time syncing)                                                                              |
 | state_change         | RAPI message from EVSE ($AT...)                 | automatic message from EVSE when charging state is changed (cable unpluged, battery full, etc.)                                                              |
 | settings             | String (\\$variable=value$...)                  | string contain multiple individual settings each encapsuled in separators "$", each timer separated with ":"                                                 |
+| timers               | String/JSON (\\$variable=value$...)             | string contain multiple individual timers in JSON format                                                                                                     |
 | wifi                 | String (\\$variable=value$...)                  | string contain multiple individual wifi settings and credentials each encapsuled in separators "$"                                                           |
 | debug                | String (\\$Debugs=debug1:...:debug40$)          | string contain multiple individual debug messages switch settings, each debug switch(0 or 1) separated with ":"                                              |
 | plugandcharge        | 0 or 1                                          | set_plugandcharge response to confirm received setting                                                                                                       |
 | ip                   | ip form [xxx.xxx.xxx.xxx]                       | Dinamics local ip address                                                                                                                                    |
+| responseEraseLCD     | RAPI response from EVSE (String)                | EVSEs RAPI response for FP 0 0 - erase chars on LCD                                                 |
 | responseGC           | RAPI response from EVSE (String)                | EVSEs RAPI response for GC - get current capacity info (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)        |
 | responseG0           | RAPI response from EVSE (String)                | EVSEs RAPI response for G0 - get EV connect state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
 | responseGG           | RAPI response from EVSE (String)                | EVSEs RAPI response for GG - get charging current and voltage (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |
@@ -197,6 +205,7 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
   - Breakers value
   - Timers
   - Plug&Charge or Controlled Start&Stop
+  - LCD control
 
 
 ## Requirements
