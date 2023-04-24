@@ -27,7 +27,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder ESP32_dinamika_V18_AsyncState_LCD
+Last version is in folder "Pošta Hrvatske"/"ESP32_Posta_V20_AsyncATFix"
 Bin file DinamicsV1.bin
 
 ## Flashing
@@ -46,6 +46,11 @@ Mandatory settings:
 - set_calibration
 - set_c_limit
 - set_plugandcharge
+- set_cte
+- set_dinamics
+
+if maximum current limit is over 16A:
+- rapi_request = "SL 2"
 
 (look in [Settings](#setting) for details)
 
@@ -61,6 +66,9 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 
 ## Changes
+
+V20: Catch async messages from EVSE fix, added CT On/Off switch, added dinamic mode toggle
+
 
 V18: added support for LCD
 
@@ -135,6 +143,8 @@ Settings setable over MQTT:
 | delete_settings   | 1                                          | restore settings to default predefined values                                                   |
 | set_lcd           | String                                     | Write this string on LCD                                                                        |
 | erase_lcd         | 1                                          | clear whole LCD                                                                                 |
+| set_cte           | 1,12,123,23,13,0 (default=0)               | set CT active and measuring (set which CTs are active)                                                                                |
+| set_dinamics      | 0 or 1 (default = 0)                       | set enable dinamics mode (1 = on, 0 = off)                                                                                |
 
 ## MessagesAndResponses
 
@@ -166,6 +176,7 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | debug                | String (\\$Debugs=debug1:...:debug40$)          | string contain multiple individual debug messages switch settings, each debug switch(0 or 1) separated with ":"                                              |
 | plugandcharge        | 0 or 1                                          | set_plugandcharge response to confirm received setting                                                                                                       |
 | ip                   | ip form [xxx.xxx.xxx.xxx]                       | Dinamics local ip address                                                                                                                                    |
+| freeRAM              | Free SRAM in kbytes                             | Free HEAP size on ESP32                                                                                                                                    |
 | responseEraseLCD     | RAPI response from EVSE (String)                | EVSEs RAPI response for FP 0 0 - erase chars on LCD                                                 |
 | responseGC           | RAPI response from EVSE (String)                | EVSEs RAPI response for GC - get current capacity info (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)        |
 | responseG0           | RAPI response from EVSE (String)                | EVSEs RAPI response for G0 - get EV connect state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
@@ -184,9 +195,8 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 
 - Timers might need to be additionally calibrated
 - Restart when paused because too little current is available
-- LoRa communication with E220 has some interference; E32 works fine
 - Negative amperage expectation is not tested enough
-- WiFi reconnection sometimes does not reconnect when WiFi is lost
+- WiFi reconnection sometimes does not always reconnect fast enough (timers)
 - Ports must be opened for MQTT[31883] and auto update[80] features
 
 
@@ -206,6 +216,7 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
   - Timers
   - Plug&Charge or Controlled Start&Stop
   - LCD control
+  - Control LCD
 
 
 ## Requirements

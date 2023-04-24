@@ -18,8 +18,8 @@
 
 
 
-#define RXD2 17
-#define TXD2 16
+#define RXD2 25
+#define TXD2 33
  
 
 // Initiate Preferences to save WiFi credentials to EEPROM
@@ -137,7 +137,7 @@ long lastInfo2 = 0;
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-String FW_versionStr = "0.1.9";
+String FW_versionStr = "0.2.1";
 
 #define FOTA_URL "http://lockit.pro/ota/HP/CR/CR.json"
 const char *firmware_name = "CR";
@@ -145,8 +145,8 @@ const bool check_signature = false;
 const bool disable_security = true;
 
 int firmware_version_major = 0;
-int firmware_version_minor = 1;
-int firmware_version_patch = 9;
+int firmware_version_minor = 2;
+int firmware_version_patch = 1;
 
 
 // Add your MQTT Broker IP address, example:
@@ -222,6 +222,7 @@ String RapiTopic = "/rapi_response";
 String PandCTopic = "/plugandcharge";
 String ipTopic = "/ip";
 String ResponseLCDEraseTopic = "/responseEraseLCD";
+String FreeRAMTopic = "/freeRAM";
 
 
 const char * topica;
@@ -375,6 +376,7 @@ float power;
 String debug;
 String RAPI;
 uint16_t CTEnable;
+uint16_t EnableState;
 
 
 String GC = "$GC";
@@ -3285,6 +3287,7 @@ void setup() {
     TurnSleep();
   }
   
+  
   SetupComplete = HIGH;
 }
 
@@ -3593,7 +3596,7 @@ void Averaging(){
           vTaskDelay(5);
 
           average2 = total2 / NoRead2;
-          average1 = average2;
+          average1 = charge_current;
           average3 = average2;
           break;
         case 3:
@@ -3609,7 +3612,7 @@ void Averaging(){
           vTaskDelay(5);
 
           average3 = total3 / NoRead3;
-          average1 = average3;
+          average1 = charge_current;
           average2 = average3;
           break;
         case 12:
@@ -3637,7 +3640,7 @@ void Averaging(){
 
           average1 = total1 / NoRead1;
           average2 = total2 / NoRead2;
-          average3 = average1;
+          average3 = average2;
           break;
         case 23:
           total2 = total2 - branja2[readindex2];
@@ -3664,7 +3667,7 @@ void Averaging(){
 
           average2 = total2 / NoRead2;
           average3 = total3 / NoRead3;
-          average1 = average2;
+          average1 = charge_current;
           break;
         case 13:
           total1 = total1 - branja1[readindex1];
@@ -3691,7 +3694,7 @@ void Averaging(){
 
           average1 = total1 / NoRead1;
           average3 = total3 / NoRead3;
-          average2 = average1;
+          average2 = average3;
           break;
         case 123:
           total1 = total1 - branja1[readindex1];
@@ -4496,6 +4499,23 @@ void SENDSyncClock(){
     topica = fullTopic.c_str();
     TempValue = "";
     TempValue += epochtimeTopic;
+    TempValueChar = TempValue.c_str();
+    client.publish(topica, TempValueChar);
+    delay(10);
+
+    int FreeRAM = ESP.getFreeHeap();
+    topica = "";
+    dynamicTopic = "";
+//    epochtimeTopic = getTime();
+    dynamicTopic += prefix;
+    dynamicTopic += idTopic;
+    //  dynamicTopic += "/";
+    //  dynamicTopic += epochtimeTopic;
+    fullTopic = dynamicTopic;
+    fullTopic += FreeRAMTopic;
+    topica = fullTopic.c_str();
+    TempValue = "";
+    TempValue += FreeRAM;
     TempValueChar = TempValue.c_str();
     client.publish(topica, TempValueChar);
   }
@@ -5528,6 +5548,7 @@ void TurnOn(){
         }
         lastInfo7 = lastInfo7 + 200;
         lastInfo7 = lastInfo7 - timer7;
+        EnableState = 2;
     }
     t1 = 0;
     
@@ -5689,6 +5710,7 @@ void TurnOff(){
       //      delay(20);
           }
         }
+        EnableState = 1;
     }
     t1 = 0;
 
@@ -5853,6 +5875,7 @@ void TurnSleep(){
         }
         lastInfo7 = lastInfo7 + 200;
         lastInfo7 = lastInfo7 - timer7;
+        EnableState = 3;
     }
     t1 = 0;
 
@@ -6756,7 +6779,7 @@ void CheckPhaseChange(){
 
 void PACChargeCheck(){
   if(PAndC == HIGH){
-    if(State == 1 && charge_current > 3){
+    if(State == 1 && (charge_current > 3 || EnableState == 2)){
       PowerOn = HIGH;
     }else{
       PowerOn = LOW;
