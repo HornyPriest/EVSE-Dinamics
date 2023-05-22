@@ -27,30 +27,32 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder "Pošta Hrvatske"/"ESP32_Posta_V20_AsyncATFix"
-Bin file DinamicsV1.bin
+Last version is in folder "ESP32_dinamika_V21_United"
+Bin file CR2.bin
 
 ## Flashing
 
-To flash use "flash_download_tool_3.9.2.rar". Open app after unrar. You must upload two files .bin (DinamicsV1.bin and spiffs.bin). See example picture.
-Make sure to add correct address before upload. Address for DinamicsV1.bin = 0x10000 and address for spiffs.bin = 0x290000
+To flash use "flash_download_tool_3.9.2.rar". Open app after unrar. You must upload 4 files .bin (CR2.bin, Dinamics.spiffs.bin, Dinamics.partitions.bin, Dinamics.bootloader.bin). See example picture.
+Make sure to add correct address before upload. Addresses for bin files are CR2.bin = 0x10000, Dinamics.spiffs.bin = 0x290000, Dinamics.partitions.bin = 0x8000, Dinamics.bootloader.bin = 0x1000
 
 ## SetUp
 
 At first start some settings have to be set over MQTT in order for Dinamics to work as supposed.
 
-Mandatory settings:
-- set_update
-- delete_settings
-- set_breaker
-- set_calibration
-- set_c_limit
-- set_plugandcharge
-- set_cte
-- set_dinamics
+Mandatory check and set settings:
+- set_breaker (default 6A)
+- set_calibration (default 277 - CT=50A)
+- set_c_limit (max current; default 6A)
+- set_plugandcharge (default 1 = ON)
+- set_cte (default 0 - no CT sensors)
+- set_dinamics (default 0 - disabled dynamic power management)
 
-if maximum current limit is over 16A:
-- rapi_request = "SL 2"
+Optional settings:
+- set_update (if version is not last available)
+- delete_settings (if version is not last available)
+- set_lora (default 0 = cable connection)
+- rapi_request = SL 2 (if maximum current limit "set_c_limit" is over 16A)
+
 
 (look in [Settings](#setting) for details)
 
@@ -66,6 +68,9 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 
 ## Changes
+
+V21: Posta united with other versions, added lora toggle
+
 
 V20: Catch async messages from EVSE fix, added CT On/Off switch, added dinamic mode toggle
 
@@ -143,8 +148,9 @@ Settings setable over MQTT:
 | delete_settings   | 1                                          | restore settings to default predefined values                                                   |
 | set_lcd           | String                                     | Write this string on LCD                                                                        |
 | erase_lcd         | 1                                          | clear whole LCD                                                                                 |
-| set_cte           | 1,12,123,23,13,0 (default=0)               | set CT active and measuring (set which CTs are active)                                                                                |
-| set_dinamics      | 0 or 1 (default = 0)                       | set enable dinamics mode (1 = on, 0 = off)                                                                                |
+| set_cte           | 1,12,123,23,13,0 (default=0)               | set CT active and measuring (set which CTs are active)                                          |
+| set_dinamics      | 0 or 1 (default = 0)                       | set enable dinamics mode (1 = on, 0 = off)                                                      |
+| set_lora          | 0 or 1 (default = 0)                       | activate communication between EVSE and Dinamics over LoRa (1 = LoRa active, 0 = Cable active)  |
 
 ## MessagesAndResponses
 
@@ -216,7 +222,9 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
   - Timers
   - Plug&Charge or Controlled Start&Stop
   - LCD control
-  - Control LCD
+  - Toggle between LoRa and cable communication
+  - Toggle between Dynamic and Static power settings
+  - Connect and activate up to 3 CT sensors
 
 
 ## Requirements
@@ -224,8 +232,6 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 ### EVSE by Implera d.o.o. charging station
 
 - Purchase via www.implera.com
-- OpenEVSE FW [V7.1.3+ recommended](https://github.com/OpenEVSE/open_evse/releases)
-- All new EVSE units are shipped with V7.1.3 pre-loaded (April 2021 onwards)
 
 ### Dinamics by Implera d.o.o. smart dynamic management device based on ESP32
 - Purchase via www.implera.com
