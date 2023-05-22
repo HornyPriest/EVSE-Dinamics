@@ -203,6 +203,7 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 Responses that contain more that one variable are in JSON format. Variable names are shortened to save space for more useful informations.
 Glossary of JSON variables:
 | Abbrevation | Description |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
 | B | breakers |
 | MAXC | max allowed charging current |
 | MINC | min allowed charging current |
