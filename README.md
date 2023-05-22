@@ -16,6 +16,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 - [Requests](#requests)
 - [Settings](#settings)
 - [MessagesAndResponses](#messagesandresponses)
+- [ResponseDataFormat](#responsedataformat)
 - [Issues](#issues)
 - [Features](#features)
 - [Requirements](#requirements)
@@ -105,7 +106,7 @@ Requests available over MQTT:
 | get_wifi          | 1                             | request active wifi settings      | wifi                                                                                                         |
 | get_debug         | 1                             | request active debug settings     | debug                                                                                                        |
 | rapi_request      | RAPI commands without "$"     | send direct RAPI command to EVSE  | rapi_response (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |
-| get_timers        | 1                             | request active timers value       | all timers in JSON format                                                                                    |
+| get_timers        | 1                             | request active timers value       | timers                                                                                    |
 
 ## Settings
 
@@ -197,12 +198,31 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | responseSH           | RAPI response from EVSE (String)                | EVSEs RAPI response for SH - set cHarge limit to kWh (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)          |
 | rapi_response        | RAPI response from EVSE (String)                | EVSEs RAPI response for rapi_request (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)                          |
 
+## ResponseDataFormat
+
+Responses that contain more that one variable are in JSON format. Variable names are shortened to save space for more useful informations.
+Glossary of JSON variables:
+B = breakers
+MAXC = max allowed charging current
+MINC = min allowed charging current
+C = CT sensors calibration value
+P&C = plug and charge setting
+NWPC = no wan plug and charge (if no internet connection --> turn on plug and charge)
+NA = negative amperage (device expect negative amperage in case user is producing more electricity then he/she consumes)
+A = allows Implera to change MAXC and MINC settings
+AU = auto update
+LCD = LCD enabled or disabled
+TFO = not charging timers factor (to lower communications when charging is not active)
+CTE = which CTs are enabled
+DA = dynamic or static power mode
+
+
 ## Issues
 
-- Timers might need to be additionally calibrated
-- Restart when paused because too little current is available
-- Negative amperage expectation is not tested enough
-- WiFi reconnection sometimes does not always reconnect fast enough (timers)
+- Timers might need to be additionally calibrated in some cases
+- Restart when paused because too little current is available is not happening
+- Negative amperage expectation is not tested enough, might not work
+- WiFi reconnection sometimes does not always reconnect fast enough (timers?!)
 - Ports must be opened for MQTT[31883] and auto update[80] features
 
 
