@@ -18,8 +18,8 @@
 
 
 
-#define RXD2 25
-#define TXD2 33
+#define RXD2 17
+#define TXD2 16
 
  
 

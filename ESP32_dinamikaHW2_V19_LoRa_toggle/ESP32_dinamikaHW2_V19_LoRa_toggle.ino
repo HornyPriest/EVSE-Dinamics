@@ -18,14 +18,17 @@
 
 
 
-#define RXD2 25
-#define TXD2 33
+#define RXD2 17
+#define TXD2 16
+
+#define RX2LORA 25
+#define TX2LORA 33
  
 
 // Initiate Preferences to save WiFi credentials to EEPROM
 Preferences preferences;
-bool SavedWiFi = LOW;
-bool SavedCalibration = LOW;
+boolean SavedWiFi = LOW;
+boolean SavedCalibration = LOW;
 
 // Create AsyncWebServer object on port 80
 AsyncWebServer server(80);
@@ -117,7 +120,7 @@ long nowNegAmp;
 long now11;
 
 long TimeoutTime;
-bool TimeoutTimeSet = LOW;
+boolean TimeoutTimeSet = LOW;
 
 int vmesna;
 
@@ -137,16 +140,16 @@ long lastInfo2 = 0;
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-String FW_versionStr = "0.2.1";
+String FW_versionStr = "0.1.8";
 
-#define FOTA_URL "http://lockit.pro/ota/HP/CR/CR.json"
-const char *firmware_name = "CR";
+#define FOTA_URL "http://lockit.pro/ota/DinamicsHW2/DinamicsHW2.json"
+const char *firmware_name = "DinamicsHW2";
 const bool check_signature = false;
 const bool disable_security = true;
 
 int firmware_version_major = 0;
-int firmware_version_minor = 2;
-int firmware_version_patch = 1;
+int firmware_version_minor = 1;
+int firmware_version_patch = 8;
 
 
 // Add your MQTT Broker IP address, example:
@@ -162,9 +165,9 @@ const char* mqtt_server = "mqshare.napolni.me";
 #define LED_RED 14
 
 
-#define ct_sensor_1 32 // ESP32 Wroom
+#define ct_sensor_1 34 // ESP32 Wroom
 #define ct_sensor_2 35
-#define ct_sensor_3 34
+#define ct_sensor_3 32
 
 
 volatile float Irms_1;
@@ -181,48 +184,47 @@ const char * chardeviceName;
 char charid[23];
 String idTopic;
 String epochtimeTopic;
-const char* prefix = "Dinamics/";
+String prefix = "Dinamics/";
 String fullTopic;
 String dynamicTopic;
-const char* BreakerTopic = "/breaker";
-const char* FWversionTopic = "/fwversion";
-const char* I1Topic = "/current1";
-const char* I2Topic = "/current2";
-const char* I3Topic = "/current3";
-const char* Max_ITopic = "/max_charging_current";
-const char* Charge_ITopic = "/charging_current";
-const char* PowerTopic = "/power";
-const char* EnergyTopic = "/energy";
-const char* PhasesTopic = "/active_phases";
-const char* NoOfPhasesTopic = "/no_of_phases";
-const char* EnableTopic = "/enable";
+String BreakerTopic = "/breaker";
+String FWversionTopic = "/fwversion";
+String I1Topic = "/current1";
+String I2Topic = "/current2";
+String I3Topic = "/current3";
+String Max_ITopic = "/max_charging_current";
+String Charge_ITopic = "/charging_current";
+String PowerTopic = "/power";
+String EnergyTopic = "/energy";
+String PhasesTopic = "/active_phases";
+String NoOfPhasesTopic = "/no_of_phases";
+String EnableTopic = "/enable";
 
-const char* TimeoutTopic = "/timeout";
-const char* ResponseGCTopic = "/responseGC";
-const char* ResponseG0Topic = "/responseG0";
-const char* ResponseGGTopic = "/responseGG";
-const char* ResponseGSTopic = "/responseGS";
-const char* ResponseGUTopic = "/responseGU";
-const char* ResponseFDTopic = "/responseFD";
-const char* ResponseFETopic = "/responseFE";
-const char* ResponseFSTopic = "/responseFS";
-const char* ResponseSCTopic = "/responseSC";
-const char* ResponseSTTopic = "/responseST";
-const char* ResponseSHTopic = "/responseSH";
-const char* StateTopic = "/state";
-const char* ConnectionTopic = "/connection";
-const char* DebugTopic = "/debug_log";
-const char* SyncTimeTopic = "/synctime";
-const char* StateChangeTopic = "/state_change";
-const char* SendSettingsTopic = "/settings";
-const char* SendTimersTopic = "/timers";
-const char* SendWiFiTopic = "/wifi";
-const char* SendDebugTopic = "/debug";
-const char* RapiTopic = "/rapi_response";
-const char* PandCTopic = "/plugandcharge";
-const char* ipTopic = "/ip";
-const char* ResponseLCDEraseTopic = "/responseEraseLCD";
-const char* FreeRAMTopic = "/freeRAM";
+String TimeoutTopic = "/timeout";
+String ResponseGCTopic = "/responseGC";
+String ResponseG0Topic = "/responseG0";
+String ResponseGGTopic = "/responseGG";
+String ResponseGSTopic = "/responseGS";
+String ResponseGUTopic = "/responseGU";
+String ResponseFDTopic = "/responseFD";
+String ResponseFETopic = "/responseFE";
+String ResponseFSTopic = "/responseFS";
+String ResponseSCTopic = "/responseSC";
+String ResponseSTTopic = "/responseST";
+String ResponseSHTopic = "/responseSH";
+String StateTopic = "/state";
+String ConnectionTopic = "/connection";
+String DebugTopic = "/debug_log";
+String SyncTimeTopic = "/synctime";
+String StateChangeTopic = "/state_change";
+String SendSettingsTopic = "/settings";
+String SendTimersTopic = "/timers";
+String SendWiFiTopic = "/wifi";
+String SendDebugTopic = "/debug";
+String RapiTopic = "/rapi_response";
+String PandCTopic = "/plugandcharge";
+String ipTopic = "/ip";
+String ResponseLCDEraseTopic = "/responseEraseLCD";
 
 
 const char * topica;
@@ -306,59 +308,57 @@ const char * charLCDon;
 String sub_LCDonTopic;
 const char * charLCDErase;
 String sub_LCDEraseTopic;
-const char * charCTEnable;
-String sub_CTEnableTopic;
-const char * charDinamicsEnable;
-String sub_DinamicsEnableTopic;
+const char * charLoRa;
+String sub_LoRaTopic;
 
 
 float calibration = 54.4;
 
-bool SS1;
-bool SS2;
-bool SS3;
-bool SS4;
+boolean SS1;
+boolean SS2;
+boolean SS3;
+boolean SS4;
 
-bool debug1;
-bool debug1_MQTT;
-bool debug2;
-bool debug2_MQTT;
-bool debug3;
-bool debug3_MQTT;
-bool debug4;
-bool debug4_MQTT;
-bool debug5;
-bool debug5_MQTT;
-bool debug6;
-bool debug6_MQTT;
-bool debug7;
-bool debug7_MQTT;
-bool debug8;
-bool debug8_MQTT;
-bool debug9;
-bool debug9_MQTT;
-bool debug10;
-bool debug10_MQTT;
-bool debug11;
-bool debug11_MQTT;
-bool debug12;
-bool debug12_MQTT;
-bool debug13;
-bool debug13_MQTT;
-bool debug14;
-bool debug14_MQTT;
-bool debug15;
-bool debug15_MQTT;
-bool debug16;
-bool debug16_MQTT;
-bool debug17;
-bool debug17_MQTT;
-bool debug18;
-bool debug18_MQTT;
-bool debug19;
-bool debug19_MQTT;
-bool debug20;
-bool debug20_MQTT;
+boolean debug1;
+boolean debug1_MQTT;
+boolean debug2;
+boolean debug2_MQTT;
+boolean debug3;
+boolean debug3_MQTT;
+boolean debug4;
+boolean debug4_MQTT;
+boolean debug5;
+boolean debug5_MQTT;
+boolean debug6;
+boolean debug6_MQTT;
+boolean debug7;
+boolean debug7_MQTT;
+boolean debug8;
+boolean debug8_MQTT;
+boolean debug9;
+boolean debug9_MQTT;
+boolean debug10;
+boolean debug10_MQTT;
+boolean debug11;
+boolean debug11_MQTT;
+boolean debug12;
+boolean debug12_MQTT;
+boolean debug13;
+boolean debug13_MQTT;
+boolean debug14;
+boolean debug14_MQTT;
+boolean debug15;
+boolean debug15_MQTT;
+boolean debug16;
+boolean debug16_MQTT;
+boolean debug17;
+boolean debug17_MQTT;
+boolean debug18;
+boolean debug18_MQTT;
+boolean debug19;
+boolean debug19_MQTT;
+boolean debug20;
+boolean debug20_MQTT;
 
 float charge_current;
 int16_t max_current;
@@ -375,24 +375,20 @@ uint32_t energy;
 float power;
 String debug;
 String RAPI;
-uint16_t CTEnable;
-uint16_t EnableState;
 
 
-const char* GC = "$GC";
-const char* G0 = "$G0";
-const char* GG = "$GG";
-const char* GS = "$GS";
-const char* GU = "$GU";
-const char* FD = "$FD";
-const char* FE = "$FE";
-const char* FS = "$FS";
-const char* SC = "$SC ";
-const char* ST = "$S3 ";
-const char* SH = "$SH ";
+String GC = "$GC";
+String G0 = "$G0";
+String GG = "$GG";
+String GS = "$GS";
+String GU = "$GU";
+String FD = "$FD";
+String FE = "$FE";
+String FS = "$FS";
+String SC = "$SC ";
+String ST = "$S3 ";
+String SH = "$SH ";
 String ResponseMessage;
-String ResponseMessageTemp;
-String ResponseMessageAsync;
 String ATMessage;
 String LastCom;
 
@@ -400,46 +396,45 @@ String LastCom;
 uint8_t State;
 uint8_t OldState;
 
-bool SetChargeFlag = HIGH;
-bool ChargeSetState;
-bool SetMQTTCurrentFlag;
-bool SetCurrentFlag;
-bool SetMQTTbreakerFlag;
-bool ConnectionTimeoutFlag = HIGH;
-bool ActiveTimeoutFlag = LOW;
-bool SetTimerFlag;
-bool SetEnergyLimitFlag;
-bool PhaseInfo;
-bool PAndC;
-bool SendSettings = LOW;
-bool SendTimers = LOW;
-bool SendWiFi = LOW;
-bool SendDebug = LOW;
-bool TranslateDebug = LOW;
-bool UpdateStart = LOW;
-bool UpdateSpiffs = LOW;
-bool ResponseStatus;
-bool SetupComplete = LOW;
-bool FWSentFlag = LOW;
-bool ipSentFlag = LOW;
-bool AskRAPI = LOW;
-bool PowerOn=LOW;
-bool ImpleraAdjust;
-bool NegativeAmperage;
-bool NegAmpFlag = LOW;
-bool AutoUpdate;
-bool SetChargeSettingsFlag;
-bool RestoreChargeSettingsFlag;
-bool SetWiFiCredsFlag;
-bool DeleteWiFiCredsFlag;
-bool SetAutoUpdateFlag;
-bool NegAmpOnceFlag = LOW;
-bool NoWANPandCActive = LOW;
-bool NoWANPandC;
-bool LCDon;
-bool LCDEraseFlag;
-bool DinamicsActive;
-bool ResponseAsyncFlag;
+boolean SetChargeFlag = HIGH;
+boolean ChargeSetState;
+boolean SetMQTTCurrentFlag;
+boolean SetCurrentFlag;
+boolean SetMQTTbreakerFlag;
+boolean ConnectionTimeoutFlag = HIGH;
+boolean ActiveTimeoutFlag = LOW;
+boolean SetTimerFlag;
+boolean SetEnergyLimitFlag;
+boolean PhaseInfo;
+boolean PAndC;
+boolean SendSettings = LOW;
+boolean SendTimers = LOW;
+boolean SendWiFi = LOW;
+boolean SendDebug = LOW;
+boolean TranslateDebug = LOW;
+boolean UpdateStart = LOW;
+boolean UpdateSpiffs = LOW;
+boolean ResponseStatus;
+boolean SetupComplete = LOW;
+boolean FWSentFlag = LOW;
+boolean ipSentFlag = LOW;
+boolean AskRAPI = LOW;
+boolean PowerOn=LOW;
+boolean ImpleraAdjust;
+boolean NegativeAmperage;
+boolean NegAmpFlag = LOW;
+boolean AutoUpdate;
+boolean SetChargeSettingsFlag;
+boolean RestoreChargeSettingsFlag;
+boolean SetWiFiCredsFlag;
+boolean DeleteWiFiCredsFlag;
+boolean SetAutoUpdateFlag;
+boolean NegAmpOnceFlag = LOW;
+boolean NoWANPandCActive = LOW;
+boolean NoWANPandC;
+boolean LCDon;
+boolean LCDEraseFlag;
+boolean LoRa;
 
 int PowerStatus;
 
@@ -1225,22 +1220,13 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   vTaskDelay(10);
 
-  if (String(topic) == sub_CTEnableTopic) {
+  if (String(topic) == sub_LoRaTopic) {
     if(debug3 == 1){
-      Serial.print("CT enable received ");
+      Serial.print("LoRa settings received ");
       Serial.println(messageTemp);
+      LoRa = messageTemp.toInt();
     }
-    CTEnable = messageTemp.toInt();
-    SetCTEnable();
-  }
-
-  if (String(topic) == sub_DinamicsEnableTopic) {
-    if(debug3 == 1){
-      Serial.print("Dinamics enable received ");
-      Serial.println(messageTemp);
-    }
-    DinamicsActive = messageTemp.toInt();
-    SetDinamicsEnable();
+    SetLoRa();
   }
 }
 
@@ -1307,8 +1293,7 @@ void reconnect() {
       client.subscribe(charLCDon);
       client.subscribe(charLCDErase);
       client.subscribe(charGetTimers);
-      client.subscribe(charCTEnable);
-      client.subscribe(charDinamicsEnable);
+      client.subscribe(charLoRa);
     } else {
       if(debug2 == 1){
         Serial.print("failed, rc=");
@@ -1465,8 +1450,7 @@ void GetSettings(){
     ImpleraAdjust = preferences.getBool("ImpleraAdjust", HIGH);
     AutoUpdate = preferences.getBool("AutoUpdate", HIGH);
     LCDon = preferences.getBool("LCDon", HIGH);
-    CTEnable = preferences.getInt("CTEnable", 3);
-    DinamicsActive = preferences.getBool("DinamicsActive", 0);
+    LoRa = preferences.getBool("LoRa", LOW);
     preferences.end();
     debug += "$read settings from preferences$";
   }
@@ -1506,20 +1490,6 @@ void SetTimersFactor(){
   preferences.putInt("TFO", TimersFactorOff);
   preferences.end();
   debug += "$saving timers factor off to preferences$";
-}
-
-void SetCTEnable(){
-  preferences.begin("Settings", false);
-  preferences.putInt("CTEnable", CTEnable);
-  preferences.end();
-  debug += "$saving active CTs to preferences$";
-}
-
-void SetDinamicsEnable(){
-  preferences.begin("Settings", false);
-  preferences.putBool("DinamicsActive", DinamicsActive);
-  preferences.end();
-  debug += "$saving dinamics toggle to preferences$";
 }
 
 void SetBreaker(){
@@ -1583,6 +1553,14 @@ void SetLCDon(){
   preferences.putFloat("LCDon", LCDon);
   preferences.end();
   debug += "$saving LCD presence to preferences$";
+}
+
+void SetLoRa(){
+  preferences.begin("Settings", false);
+  preferences.putBool("LoRa", LoRa);
+  preferences.end();
+  debug += "$saving LoRa setting to preferences$";
+  ESP.restart();
 }
 
 void DeleteSettings(){
@@ -1657,15 +1635,10 @@ void SendSettingsF(){
     TempValue += "\"";
     TempValue += TimersFactorOff;
     TempValue += "\",";
-    TempValue += "\"CTE\"";
+    TempValue += "\"LoRa\"";
     TempValue += ":";
     TempValue += "\"";
-    TempValue += CTEnable;
-    TempValue += "\",";
-    TempValue += "\"DA\"";
-    TempValue += ":";
-    TempValue += "\"";
-    TempValue += DinamicsActive;
+    TempValue += LoRa;
     TempValue += "\"";
     TempValue += "}";
     
@@ -1798,7 +1771,6 @@ void SendWiFiF(){
     TempValue += ":";
     TempValue += "\"";
     TempValue += dhcpcheck;
-    TempValue += "\"";
     TempValue += "\"}";
     
     topica = "";
@@ -2082,24 +2054,6 @@ void setup() {
   // put your setup code here, to run once:
 
   Serial.begin(115200);
-  Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
-  delay(50);
-//  Serial2.println("$F0 0");
-//  delay(50);
-////  Serial.println("$FP 0 0       ");
-////  delay(50);
-////  Serial.println("$FP 6 0       ");
-////  delay(50);
-////  Serial.println("$FP 11 0      ");
-////  Serial.flush();
-////  delay(60);
-////  Serial.println("$FP 0 1       ");
-////  delay(50);
-////  Serial.println("$FP 6 1       ");
-////  delay(50);
-////  Serial.println("$FP 11 1      ");
-//  LCDEraseFlag = HIGH;
-//  EraseLCDText();
   
 
   xTaskCreatePinnedToCore(
@@ -2309,14 +2263,10 @@ void setup() {
   sub_LCDEraseTopic += idTopic;
   sub_LCDEraseTopic += "/erase_lcd";
   charLCDErase = sub_LCDEraseTopic.c_str();
-  sub_CTEnableTopic += prefix;
-  sub_CTEnableTopic += idTopic;
-  sub_CTEnableTopic += "/set_cte";
-  charCTEnable = sub_CTEnableTopic.c_str();
-  sub_DinamicsEnableTopic += prefix;
-  sub_DinamicsEnableTopic += idTopic;
-  sub_DinamicsEnableTopic += "/set_dinamics";
-  charDinamicsEnable = sub_DinamicsEnableTopic.c_str();
+  sub_LoRaTopic += prefix;
+  sub_LoRaTopic += idTopic;
+  sub_LoRaTopic += "/set_lora";
+  charLoRa = sub_LoRaTopic.c_str();
 
 
 
@@ -2392,6 +2342,16 @@ void setup() {
   GetSettings();
   GetDebug();
   GetRuntimeSettings();
+
+
+  if(LoRa == HIGH){
+    Serial2.begin(115200, SERIAL_8N1, RX2LORA, TX2LORA);
+    timer13 = timer13*1.5;
+    delay(50);
+  }else{
+    Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
+    delay(50);
+  }
 
 
 /*  WiFi.onEvent(WiFiStationConnected, SYSTEM_EVENT_STA_CONNECTED);
@@ -3287,7 +3247,6 @@ void setup() {
     TurnSleep();
   }
   
-  
   SetupComplete = HIGH;
 }
 
@@ -3332,7 +3291,6 @@ void loop() {
         reconnect();
       }
   }else{
-    wifi_reconnects = 0;
     if(ip == "0.0.0.0"){
       ip = WiFi.localIP().toString();
     }
@@ -3348,7 +3306,7 @@ void loop() {
   
   if(UpdateStart == HIGH){
     if((WiFi.status() == WL_CONNECTED)) {
-      bool updatedNeeded = esp32FOTA.execHTTPcheck();
+      boolean updatedNeeded = esp32FOTA.execHTTPcheck();
       if(updatedNeeded == HIGH){
         if(debug6 == 1){
           Serial.print("najden update");
@@ -3367,7 +3325,7 @@ void loop() {
         if(debug6 == 1){
           Serial.println("checking for wp update");
         }
-        bool updatedNeeded = esp32FOTA.execHTTPcheck();
+        boolean updatedNeeded = esp32FOTA.execHTTPcheck();
         if(updatedNeeded == HIGH){
           server.end();
 //          SPIFFS.end();
@@ -3431,7 +3389,55 @@ void loop() {
   }
 
 
-  Averaging();
+  if(calibration > 5){
+    total1 = total1 - branja1[readindex1];
+    branja1[readindex1] = Irms_1;
+    total1 = total1 + branja1[readindex1];
+    readindex1 = readindex1 + 1;
+  
+    if (readindex1 >= NoRead1){
+      readindex1 = 0;
+    }
+  
+    vTaskDelay(5);
+  
+    
+  
+    total2 = total2 - branja2[readindex2];
+    branja2[readindex2] = Irms_2;
+    total2 = total2 + branja2[readindex2];
+    readindex2 = readindex2 + 1;
+  
+    if (readindex2 >= NoRead2){
+      readindex2 = 0;
+    }
+  
+    vTaskDelay(5);
+  
+  
+    total3 = total3 - branja3[readindex3];
+    branja3[readindex3] = Irms_3;
+    total3 = total3 + branja3[readindex3];
+    readindex3 = readindex3 + 1;
+  
+    if (readindex3 >= NoRead3){
+      readindex3 = 0;
+    }
+  
+    vTaskDelay(5);
+  
+  
+    average1 = total1 / NoRead1;
+    average2 = total2 / NoRead2;
+    average3 = total3 / NoRead3;
+  
+    if(NegAmpFlag == HIGH){
+      average1 = -average1;
+      average2 = -average2;
+      average3 = -average3;
+    }
+    vTaskDelay(5);
+  }
 
 
   if(SetChargeSettingsFlag == HIGH){
@@ -3488,7 +3494,6 @@ void loop() {
   NegativeAmperageSet();
   vTaskDelay(5);
   EraseLCDText();
-  PACChargeCheck();
   
 
   CatchStateChange();
@@ -3564,185 +3569,6 @@ void loop() {
 
 }
 
-void Averaging(){
-  if(calibration > 5){
-      switch (CTEnable){
-        case 1:
-          total1 = total1 - branja1[readindex1];
-          branja1[readindex1] = Irms_1;
-          total1 = total1 + branja1[readindex1];
-          readindex1 = readindex1 + 1;
-        
-          if (readindex1 >= NoRead1){
-            readindex1 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          average1 = total1 / NoRead1;
-          average2 = average1;
-          average3 = average1;
-          break;
-        case 2:
-          total2 = total2 - branja2[readindex2];
-          branja2[readindex2] = Irms_2;
-          total2 = total2 + branja2[readindex2];
-          readindex2 = readindex2 + 1;
-        
-          if (readindex2 >= NoRead2){
-            readindex2 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          average2 = total2 / NoRead2;
-          average1 = charge_current;
-          average3 = average2;
-          break;
-        case 3:
-          total3 = total3 - branja3[readindex3];
-          branja3[readindex3] = Irms_3;
-          total3 = total3 + branja3[readindex3];
-          readindex3 = readindex3 + 1;
-        
-          if (readindex3 >= NoRead3){
-            readindex3 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          average3 = total3 / NoRead3;
-          average1 = charge_current;
-          average2 = average3;
-          break;
-        case 12:
-          total1 = total1 - branja1[readindex1];
-          branja1[readindex1] = Irms_1;
-          total1 = total1 + branja1[readindex1];
-          readindex1 = readindex1 + 1;
-        
-          if (readindex1 >= NoRead1){
-            readindex1 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          total2 = total2 - branja2[readindex2];
-          branja2[readindex2] = Irms_2;
-          total2 = total2 + branja2[readindex2];
-          readindex2 = readindex2 + 1;
-        
-          if (readindex2 >= NoRead2){
-            readindex2 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          average1 = total1 / NoRead1;
-          average2 = total2 / NoRead2;
-          average3 = average2;
-          break;
-        case 23:
-          total2 = total2 - branja2[readindex2];
-          branja2[readindex2] = Irms_2;
-          total2 = total2 + branja2[readindex2];
-          readindex2 = readindex2 + 1;
-        
-          if (readindex2 >= NoRead2){
-            readindex2 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          total3 = total3 - branja3[readindex3];
-          branja3[readindex3] = Irms_3;
-          total3 = total3 + branja3[readindex3];
-          readindex3 = readindex3 + 1;
-        
-          if (readindex3 >= NoRead3){
-            readindex3 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          average2 = total2 / NoRead2;
-          average3 = total3 / NoRead3;
-          average1 = charge_current;
-          break;
-        case 13:
-          total1 = total1 - branja1[readindex1];
-          branja1[readindex1] = Irms_1;
-          total1 = total1 + branja1[readindex1];
-          readindex1 = readindex1 + 1;
-        
-          if (readindex1 >= NoRead1){
-            readindex1 = 0;
-          }
-        
-          vTaskDelay(5);
-         
-          total3 = total3 - branja3[readindex3];
-          branja3[readindex3] = Irms_3;
-          total3 = total3 + branja3[readindex3];
-          readindex3 = readindex3 + 1;
-        
-          if (readindex3 >= NoRead3){
-            readindex3 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          average1 = total1 / NoRead1;
-          average3 = total3 / NoRead3;
-          average2 = average3;
-          break;
-        case 123:
-          total1 = total1 - branja1[readindex1];
-          branja1[readindex1] = Irms_1;
-          total1 = total1 + branja1[readindex1];
-          readindex1 = readindex1 + 1;
-        
-          if (readindex1 >= NoRead1){
-            readindex1 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          total2 = total2 - branja2[readindex2];
-          branja2[readindex2] = Irms_2;
-          total2 = total2 + branja2[readindex2];
-          readindex2 = readindex2 + 1;
-        
-          if (readindex2 >= NoRead2){
-            readindex2 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          total3 = total3 - branja3[readindex3];
-          branja3[readindex3] = Irms_3;
-          total3 = total3 + branja3[readindex3];
-          readindex3 = readindex3 + 1;
-        
-          if (readindex3 >= NoRead3){
-            readindex3 = 0;
-          }
-        
-          vTaskDelay(5);
-
-          average1 = total1 / NoRead1;
-          average2 = total2 / NoRead2;
-          average3 = total3 / NoRead3;
-          break;
-      }
-      if(NegAmpFlag == HIGH){
-        average1 = -average1;
-        average2 = -average2;
-        average3 = -average3;
-      }
-  }
-}
-
 void EraseLCDText(){
   if(LCDEraseFlag == HIGH){
     if(ConnectionTimeoutFlag == LOW){
@@ -3761,22 +3587,7 @@ void EraseLCDText(){
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessageTemp = Serial2.readString();
-        int startIndex = -1;
-        for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-          if (ResponseMessageTemp.charAt(i) == '$') {
-            if (startIndex >= 0) {
-              ResponseMessage = ResponseMessageTemp.substring(startIndex, i);
-              // do something with the single message
-            }
-            startIndex = i;
-          }
-        }
-        if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-          ResponseMessageAsync = ResponseMessageTemp.substring(startIndex);
-          CatchStateChange();
-          // do something with the last single message
-        }
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(5);
@@ -3788,22 +3599,7 @@ void EraseLCDText(){
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessageTemp = Serial2.readString();
-        int startIndex = -1;
-        for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-          if (ResponseMessageTemp.charAt(i) == '$') {
-            if (startIndex >= 0) {
-              ResponseMessage = ResponseMessageTemp.substring(startIndex, i);
-              // do something with the single message
-            }
-            startIndex = i;
-          }
-        }
-        if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-          ResponseMessageAsync = ResponseMessageTemp.substring(startIndex);
-          CatchStateChange();
-          // do something with the last single message
-        }
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(5);
@@ -3814,22 +3610,7 @@ void EraseLCDText(){
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessageTemp = Serial2.readString();
-        int startIndex = -1;
-        for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-          if (ResponseMessageTemp.charAt(i) == '$') {
-            if (startIndex >= 0) {
-              ResponseMessage = ResponseMessageTemp.substring(startIndex, i);
-              // do something with the single message
-            }
-            startIndex = i;
-          }
-        }
-        if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-          ResponseMessageAsync = ResponseMessageTemp.substring(startIndex);
-          CatchStateChange();
-          // do something with the last single message
-        }
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(5);
@@ -3840,22 +3621,7 @@ void EraseLCDText(){
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessageTemp = Serial2.readString();
-        int startIndex = -1;
-        for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-          if (ResponseMessageTemp.charAt(i) == '$') {
-            if (startIndex >= 0) {
-              ResponseMessage = ResponseMessageTemp.substring(startIndex, i);
-              // do something with the single message
-            }
-            startIndex = i;
-          }
-        }
-        if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-          ResponseMessageAsync = ResponseMessageTemp.substring(startIndex);
-          CatchStateChange();
-          // do something with the last single message
-        }
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(5);
@@ -3866,22 +3632,7 @@ void EraseLCDText(){
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessageTemp = Serial2.readString();
-        int startIndex = -1;
-        for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-          if (ResponseMessageTemp.charAt(i) == '$') {
-            if (startIndex >= 0) {
-              ResponseMessage = ResponseMessageTemp.substring(startIndex, i);
-              // do something with the single message
-            }
-            startIndex = i;
-          }
-        }
-        if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-          ResponseMessageAsync = ResponseMessageTemp.substring(startIndex);
-          CatchStateChange();
-          // do something with the last single message
-        }
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(5);
@@ -3893,22 +3644,7 @@ void EraseLCDText(){
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
         ResponseStatus = HIGH;
-        ResponseMessageTemp = Serial2.readString();
-        int startIndex = -1;
-        for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-          if (ResponseMessageTemp.charAt(i) == '$') {
-            if (startIndex >= 0) {
-              ResponseMessage = ResponseMessageTemp.substring(startIndex, i);
-              // do something with the single message
-            }
-            startIndex = i;
-          }
-        }
-        if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-          ResponseMessageAsync = ResponseMessageTemp.substring(startIndex);
-          CatchStateChange();
-          // do something with the last single message
-        }
+        ResponseMessage = Serial2.readString();
       }
       t1 = t1 + 1;
       delayMicroseconds(5);
@@ -4050,40 +3786,37 @@ void NegativeAmperageSet(){
 
 
 void Dovoljen_Tok(){
-  if(DinamicsActive == HIGH){
-    if(active_phases != 1 && active_phases != 2 && active_phases != 13){  
-      if((average1 >= average2)&&(average1 >= average3)){
-        max_current = (((breaker) - (average1) + (charge_current))/**0.98*/);
-      }else if((average2 > average1)&&(average2 >= average3)){
-        max_current = (((breaker) - (average2) + (charge_current))/**0.98*/);
-      }else if((average3 > average1)&&(average3 > average2)){
-        max_current = (((breaker) - (average3) + (charge_current))/**0.98*/);
-      }
-    }
-    if(active_phases == 1){
+  
+  if(active_phases != 1 && active_phases != 2 && active_phases != 13){  
+    if((average1 >= average2)&&(average1 >= average3)){
       max_current = (((breaker) - (average1) + (charge_current))/**0.98*/);
+    }else if((average2 > average1)&&(average2 >= average3)){
+      max_current = (((breaker) - (average2) + (charge_current))/**0.98*/);
+    }else if((average3 > average1)&&(average3 > average2)){
+      max_current = (((breaker) - (average3) + (charge_current))/**0.98*/);
     }
-    if(active_phases == 2){
-      if(average1 >= average2){
-        max_current = (((breaker) - (average1) + (charge_current))/**0.98*/);
-      }else if(average2 > average1){
-        max_current = (((breaker) - (average2) + (charge_current))/**0.98*/);
-      }
+  }
+  if(active_phases == 1){
+    max_current = (((breaker) - (average1) + (charge_current))/**0.98*/);
+  }
+  if(active_phases == 2){
+    if(average1 >= average2){
+      max_current = (((breaker) - (average1) + (charge_current))/**0.98*/);
+    }else if(average2 > average1){
+      max_current = (((breaker) - (average2) + (charge_current))/**0.98*/);
     }
-    if(active_phases == 13){
-      if(average1 >= average3){
-        max_current = (((breaker) - (average1) + (charge_current))/**0.98*/);
-      }else if(average3 > average1){
-        max_current = (((breaker) - (average3) + (charge_current))/**0.98*/);
-      }
+  }
+  if(active_phases == 13){
+    if(average1 >= average3){
+      max_current = (((breaker) - (average1) + (charge_current))/**0.98*/);
+    }else if(average3 > average1){
+      max_current = (((breaker) - (average3) + (charge_current))/**0.98*/);
     }
-    if(max_current < 0){
-      max_current = 0;
-    }
-    if(max_current > MQTTmax_current){
-      max_current = MQTTmax_current;
-    }
-  }else{
+  }
+  if(max_current < 0){
+    max_current = 0;
+  }
+  if(max_current > MQTTmax_current){
     max_current = MQTTmax_current;
   }
 }
@@ -4229,7 +3962,7 @@ void SENDFWversion(){
     TempValue = "";
     TempValue += FW_versionStr;
     TempValue += " ";
-    TempValue += "Posta";
+    TempValue += "HW2";
     TempValueChar = TempValue.c_str();
     client.publish(topica, TempValueChar);
 //    delay(20);
@@ -4501,23 +4234,6 @@ void SENDSyncClock(){
     TempValue += epochtimeTopic;
     TempValueChar = TempValue.c_str();
     client.publish(topica, TempValueChar);
-    delay(10);
-
-    int FreeRAM = ESP.getFreeHeap();
-    topica = "";
-    dynamicTopic = "";
-//    epochtimeTopic = getTime();
-    dynamicTopic += prefix;
-    dynamicTopic += idTopic;
-    //  dynamicTopic += "/";
-    //  dynamicTopic += epochtimeTopic;
-    fullTopic = dynamicTopic;
-    fullTopic += FreeRAMTopic;
-    topica = fullTopic.c_str();
-    TempValue = "";
-    TempValue += FreeRAM;
-    TempValueChar = TempValue.c_str();
-    client.publish(topica, TempValueChar);
   }
 }
 
@@ -4756,41 +4472,9 @@ void CheckState(){
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -4902,41 +4586,9 @@ void CheckStatus(){
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -5034,41 +4686,9 @@ void CheckSetAmps(){
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -5155,41 +4775,9 @@ void CheckCharge(){
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -5300,41 +4888,9 @@ void CheckEnergy(){
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -5426,41 +4982,10 @@ void TurnOn(){
     SaveLastCurrents();
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+        ATMessage = ResponseMessage;
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -5548,7 +5073,6 @@ void TurnOn(){
         }
         lastInfo7 = lastInfo7 + 200;
         lastInfo7 = lastInfo7 - timer7;
-        EnableState = 2;
     }
     t1 = 0;
     
@@ -5596,41 +5120,10 @@ void TurnOff(){
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+        ATMessage = ResponseMessage;
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -5710,7 +5203,6 @@ void TurnOff(){
       //      delay(20);
           }
         }
-        EnableState = 1;
     }
     t1 = 0;
 
@@ -5758,41 +5250,10 @@ void TurnSleep(){
     t1 = 0;
     while(ResponseStatus == LOW && t1 < timer13){
       if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+        ResponseStatus = HIGH;
+        ResponseMessage = Serial2.readString();
+        ATMessage = ResponseMessage;
+      }
       t1 = t1 + 1;
       delayMicroseconds(50);
     }
@@ -5875,7 +5336,6 @@ void TurnSleep(){
         }
         lastInfo7 = lastInfo7 + 200;
         lastInfo7 = lastInfo7 - timer7;
-        EnableState = 3;
     }
     t1 = 0;
 
@@ -5965,40 +5425,9 @@ void SetMQTTCurrent(){
           t1 = 0;
           while(ResponseStatus == LOW && t1 < timer13){
             if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
+              ResponseStatus = HIGH;
+              ResponseMessage = Serial2.readString();
+              ATMessage = ResponseMessage;
             }
             t1 = t1 + 1;
             delayMicroseconds(50);
@@ -6125,40 +5554,9 @@ void SetCurrent(){
           t1 = 0;
           while(ResponseStatus == LOW && t1 < timer13){
             if(Serial2.available()){
-            ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
+              ResponseStatus = HIGH;
+              ResponseMessage = Serial2.readString();
+              ATMessage = ResponseMessage;
             }
             t1 = t1 + 1;
             delayMicroseconds(50);
@@ -6307,40 +5705,8 @@ void SetTimer(){
         while(ResponseStatus == LOW && t1 < timer13){
           if(Serial2.available()){
             ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+            ResponseMessage = Serial2.readString();
+          }
           t1 = t1 + 1;
           delayMicroseconds(50);
         }
@@ -6431,40 +5797,8 @@ void SetLimit(){
         while(ResponseStatus == LOW && t1 < timer13){
           if(Serial2.available()){
             ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+            ResponseMessage = Serial2.readString();
+          }
           t1 = t1 + 1;
           delayMicroseconds(50);
         }
@@ -6559,40 +5893,8 @@ void AskRAPIF(){
         while(ResponseStatus == LOW && t1 < timer13){
           if(Serial2.available()){
             ResponseStatus = HIGH;
-            ResponseMessageTemp = Serial2.readString();
-            int startIndex = -1;
-            String ResponseMid1 = "";
-            String ResponseMid2 = "";
-            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
-              if (ResponseMessageTemp.charAt(i) == '$') {
-                if (startIndex >= 0) {
-                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
-                  if (ResponseMid1.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid1;
-                    CatchStateChange();
-                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid1;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                  }
-                  // do something with the single message
-                }
-                startIndex = i;
-              }
-            }
-            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
-              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
-              if (ResponseMid2.startsWith("$AT")) {
-                    ResponseMessageAsync = ResponseMid2;
-                    CatchStateChange();
-                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
-                    ResponseMessage = ResponseMid2;
-                    ATMessage = ResponseMessage;
-                    // do something with the message
-                }
-                // do something with the last single message
-              }
-            }
+            ResponseMessage = Serial2.readString();
+          }
           t1 = t1 + 1;
           delayMicroseconds(50);
         }
@@ -6777,16 +6079,6 @@ void CheckPhaseChange(){
   }
 }
 
-void PACChargeCheck(){
-  if(PAndC == HIGH){
-    if(State == 1 && (charge_current > 3 || EnableState == 2)){
-      PowerOn = HIGH;
-    }else{
-      PowerOn = LOW;
-    }
-  }
-}
-
 
 void StopCharge(){
   if(ConnectionTimeoutFlag == LOW){
@@ -6903,11 +6195,9 @@ void SendDebugF2(){
 }
 
 void CatchStateChange(){
-  if (ResponseMessageAsync == "" && Serial2.available()) {
-    ResponseMessageAsync = Serial2.readString();
-  }
-  if(ResponseMessageAsync != ""){
-    ATMessage = ResponseMessageAsync;
+  if(Serial2.available()){
+    ResponseMessage = Serial2.readString();
+    ATMessage = ResponseMessage;
     int index = ATMessage.indexOf("$AT ");
     if(index >= 0){
       ATMessage.remove(0, index+4);
@@ -6915,67 +6205,6 @@ void CatchStateChange(){
       if(debug6 == 1){
         Serial.print("Catch state izrez je : ");
         Serial.println(ATMessage);
-      }
-      if(ATMessage == "01 01"){
-        State = 0;
-        if (client.connected()){
-          if(OldState != State){
-            OldState = State;
-            fullTopic = dynamicTopic;
-            fullTopic += StateTopic;
-            topica = fullTopic.c_str();
-            TempValue = "";
-            TempValue += State;
-            TempValueChar = TempValue.c_str();
-            client.publish(topica, TempValueChar, true);
-  //          delay(20);
-          }
-        }
-      }else if(ATMessage == "02 02"){
-        State = 1;
-        if (client.connected()){
-          if(OldState != State){
-            OldState = State;
-            fullTopic = dynamicTopic;
-            fullTopic += StateTopic;
-            topica = fullTopic.c_str();
-            TempValue = "";
-            TempValue += State;
-            TempValueChar = TempValue.c_str();
-            client.publish(topica, TempValueChar, true);
-  //          delay(20);
-          }
-        }
-      }else if(ATMessage == "03 03"){
-        State = 1;
-        if (client.connected()){
-          if(OldState != State){
-            OldState = State;
-            fullTopic = dynamicTopic;
-            fullTopic += StateTopic;
-            topica = fullTopic.c_str();
-            TempValue = "";
-            TempValue += State;
-            TempValueChar = TempValue.c_str();
-            client.publish(topica, TempValueChar, true);
-  //          delay(20);
-          }
-        }
-      }else if(ATMessage == "02 03"){
-        State = 1;
-        if (client.connected()){
-          if(OldState != State){
-            OldState = State;
-            fullTopic = dynamicTopic;
-            fullTopic += StateTopic;
-            topica = fullTopic.c_str();
-            TempValue = "";
-            TempValue += State;
-            TempValueChar = TempValue.c_str();
-            client.publish(topica, TempValueChar, true);
-  //          delay(20);
-          }
-        }
       }
       String ChargeStatevmesna;
       uint8_t ChargeState;
@@ -7004,11 +6233,10 @@ void CatchStateChange(){
             fullTopic += StateChangeTopic;
             topica = fullTopic.c_str();
             TempValue = "";
-            TempValue += ResponseMessageAsync;
+            TempValue += ResponseMessage;
             TempValueChar = TempValue.c_str();
             client.publish(topica, TempValueChar);
      }
-     ResponseMessageAsync = "";
   }
 }
 
@@ -7022,10 +6250,10 @@ void WiFiReconnect(){
       Serial.println("reconnect timer");
       Serial.println(wifi_reconnects);
     }
-    if(300 > wifi_reconnects > 25){
+    if(wifi_reconnects > 25){
       initWiFi();
-      wifi_reconnects = wifi_reconnects*2;
-    }else if(ssidlength > 0 && wifi_reconnects < 25){
+      wifi_reconnects = 100;
+    }else if(ssidlength > 0){
       if(debug6 == 1){
         Serial.println("Reconnecting to user WiFi...");
       }
@@ -7033,8 +6261,6 @@ void WiFiReconnect(){
       debug += "Reconnecting to user WiFi...";
       debug += "$";
       WiFiConnect();
-    }else if(ssidlength > 0 && wifi_reconnects > 300){
-      ESP.restart();
     }
     lastInfo11 = now11;
   }
@@ -7061,39 +6287,11 @@ void Task1code( void * pvParameters ){
   pinMode(ct_sensor_2, INPUT_PULLUP);
   pinMode(ct_sensor_3, INPUT_PULLUP);
   if(calibration > 5){
-    switch (CTEnable){
-      case 1:
-        emon1.current(ct_sensor_1, calibration); // Current: input pin, calibration 102.1 = Arduino pro mini
-        break;
-      case 2:
-        emon2.current(ct_sensor_2, calibration);
-        break;
-      case 3:
-        emon3.current(ct_sensor_3, calibration);
-        break;
-      case 12:
-        emon1.current(ct_sensor_1, calibration);
-        vTaskDelay(50);
-        emon2.current(ct_sensor_2, calibration);
-        break;
-      case 23:
-        emon2.current(ct_sensor_2, calibration);
-        vTaskDelay(50);
-        emon3.current(ct_sensor_3, calibration);
-        break;
-      case 13:
-        emon1.current(ct_sensor_1, calibration);
-        vTaskDelay(50);
-        emon3.current(ct_sensor_3, calibration);
-        break;
-      case 123:
-        emon1.current(ct_sensor_1, calibration);
-        vTaskDelay(50);
-        emon2.current(ct_sensor_2, calibration);
-        vTaskDelay(50);
-        emon3.current(ct_sensor_3, calibration);
-        break;
-    }
+    emon1.current(ct_sensor_1, calibration); // Current: input pin, calibration 102.1 = Arduino pro mini
+    vTaskDelay(50);
+    emon2.current(ct_sensor_2, calibration);
+    vTaskDelay(50);
+    emon3.current(ct_sensor_3, calibration);
   }
   OldState = State;
 
@@ -7103,34 +6301,6 @@ void Task1code( void * pvParameters ){
       Irms_1 = emon1.calcIrms(1480);  // Calculate Irms only  1480
       Irms_2 = emon2.calcIrms(1480);
       Irms_3 = emon3.calcIrms(1480);
-      switch (CTEnable){
-        case 1:
-          Irms_1 = emon1.calcIrms(1480);  // Calculate Irms only  1480
-          break;
-        case 2:
-          Irms_2 = emon2.calcIrms(1480);
-          break;
-        case 3:
-          Irms_3 = emon3.calcIrms(1480);
-          break;
-        case 12:
-          Irms_1 = emon1.calcIrms(1480);
-          Irms_2 = emon2.calcIrms(1480);
-          break;
-        case 23:
-          Irms_2 = emon2.calcIrms(1480);
-          Irms_3 = emon3.calcIrms(1480);
-          break;
-        case 13:
-          Irms_1 = emon1.calcIrms(1480);
-          Irms_3 = emon3.calcIrms(1480);
-          break;
-        case 123:
-          Irms_1 = emon1.calcIrms(1480);
-          Irms_2 = emon2.calcIrms(1480);
-          Irms_3 = emon3.calcIrms(1480);
-          break;
-      }
     }
     vTaskDelay(1000);
   } 

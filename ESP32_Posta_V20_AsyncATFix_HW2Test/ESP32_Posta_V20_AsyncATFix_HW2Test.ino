@@ -139,7 +139,7 @@ esp32FOTA esp32FOTA;
 
 String FW_versionStr = "0.2.1";
 
-#define FOTA_URL "http://lockit.pro/ota/HP/CR/CR.json"
+#define FOTA_URL "http://lockit.pro/ota/HW3/CR/CR.json"
 const char *firmware_name = "CR";
 const bool check_signature = false;
 const bool disable_security = true;
@@ -4229,7 +4229,7 @@ void SENDFWversion(){
     TempValue = "";
     TempValue += FW_versionStr;
     TempValue += " ";
-    TempValue += "Posta";
+    TempValue += "HW3";
     TempValueChar = TempValue.c_str();
     client.publish(topica, TempValueChar);
 //    delay(20);
