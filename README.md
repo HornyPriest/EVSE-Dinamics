@@ -31,6 +31,8 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 Last version is in folder "ESP32_dinamika_V21_United"
 Bin file CR2.bin
 
+Older versions are placed in archive
+
 ## Flashing
 
 To flash use "flash_download_tool_3.9.2.rar". Open app after unrar. You must upload 4 files .bin (CR2.bin, Dinamics.spiffs.bin, Dinamics.partitions.bin, Dinamics.bootloader.bin). See example picture.
