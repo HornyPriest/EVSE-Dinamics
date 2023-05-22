@@ -202,20 +202,21 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 
 Responses that contain more that one variable are in JSON format. Variable names are shortened to save space for more useful informations.
 Glossary of JSON variables:
-B = breakers
-MAXC = max allowed charging current
-MINC = min allowed charging current
-C = CT sensors calibration value
-P&C = plug and charge setting
-NWPC = no wan plug and charge (if no internet connection --> turn on plug and charge)
-NA = negative amperage (device expect negative amperage in case user is producing more electricity then he/she consumes)
-A = allows Implera to change MAXC and MINC settings
-AU = auto update
-LCD = LCD enabled or disabled
-TFO = not charging timers factor (to lower communications when charging is not active)
-CTE = which CTs are enabled
-DA = dynamic or static power mode
-L = Lora on or off
+| Abbrevation | Description |
+| B | breakers |
+| MAXC | max allowed charging current |
+| MINC | min allowed charging current |
+| C | CT sensors calibration value |
+| P&C | plug and charge setting |
+| NWPC | no wan plug and charge (if no internet connection --> turn on plug and charge) |
+| NA | negative amperage (device expect negative amperage in case user is producing more electricity then he/she consumes) |
+| A | allows Implera to change MAXC and MINC settings |
+| AU | auto update |
+| LCD | LCD enabled or disabled |
+| TFO | not charging timers factor (to lower communications when charging is not active) |
+| CTE | which CTs are enabled |
+| DA | dynamic or static power mode |
+| L | Lora on or off |
 
 
 ## Issues
