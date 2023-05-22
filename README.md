@@ -215,6 +215,7 @@ LCD = LCD enabled or disabled
 TFO = not charging timers factor (to lower communications when charging is not active)
 CTE = which CTs are enabled
 DA = dynamic or static power mode
+L = Lora on or off
 
 
 ## Issues
