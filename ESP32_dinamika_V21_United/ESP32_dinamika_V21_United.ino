@@ -1257,8 +1257,8 @@ void callback(char* topic, byte* message, unsigned int length) {
     if(debug3 == 1){
       Serial.print("LoRa settings received ");
       Serial.println(messageTemp);
-      LoRa = messageTemp.toInt();
     }
+    LoRa = messageTemp.toInt();
     SetLoRa();
   }
 }
@@ -2434,9 +2434,11 @@ void setup() {
     Serial2.begin(115200, SERIAL_8N1, RX2LORA, TX2LORA);
     timer13 = timer13*1.5;
     delay(50);
+    Serial.println("LoRa communication enabled");
   }else{
     Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);
     delay(50);
+    Serial.println("Cable communication enabled");
   }
   
 
@@ -4942,7 +4944,7 @@ void CheckStatus(){
         uint8_t ChState = ResponseMessage.toInt();
         if(ChState == 3 && PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW){
           if(debug6 == 1){
-            Serial.println("Izklop, stanje ne ustreza");
+            Serial.println("Izklop, stanje ne ustreza 1");
           }
           debug += "$";
           debug += "Izklop, stanje ne ustreza";
@@ -6795,10 +6797,10 @@ void StopCharge(){
     }
     if(PAndC == LOW && PowerOn == LOW && ChargeSetState == LOW && (charge_current > 0.3)){
       if(debug6 == 1){
-        Serial.println("Izklop, stanje ne ustreza");
+        Serial.println("Izklop, stanje ne ustreza 2");
       }
       debug += "$";
-      debug += "Izklop, stanje ne ustreza";
+      debug += "Izklop, stanje ne ustreza 2";
       debug += "$";
       PowerOn = LOW;
       SetRuntimeSettings();
@@ -6865,7 +6867,7 @@ void CatchStateChange(){
             TempValue += State;
             TempValueChar = TempValue.c_str();
             client.publish(topica, TempValueChar, true);
-  //          delay(20);
+            delay(20);
           }
         }
       }else if(ATMessage == "02 02"){
@@ -6880,7 +6882,7 @@ void CatchStateChange(){
             TempValue += State;
             TempValueChar = TempValue.c_str();
             client.publish(topica, TempValueChar, true);
-  //          delay(20);
+            delay(20);
           }
         }
       }else if(ATMessage == "03 03"){
@@ -6920,8 +6922,9 @@ void CatchStateChange(){
       ChargeStatevmesna.remove(3);
       ChargeState = ChargeStatevmesna.toInt();
       if(PAndC == LOW){
-        if(ChargeState != 2){
+        if(ChargeState != 2 && ChargeState != 3){
           PowerOn = LOW;
+          Serial.println("Charging state is not 2 or 3");
           SetRuntimeSettings();
           TurnSleep();
         }
