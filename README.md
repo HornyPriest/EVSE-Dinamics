@@ -28,7 +28,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder "ESP32_dinamika_V21_United"
+Last version is in folder "ESP32_dinamika_V22_WiFi_Recconect_Fix"
 Bin file CR2.bin
 
 Older versions are placed in archive
@@ -71,6 +71,9 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 
 ## Changes
+
+v22: Fixed bug when P&C==0, wifi reconnecting time is lowered
+
 
 V21: Posta united with other versions, added lora toggle
 
