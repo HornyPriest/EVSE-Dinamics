@@ -6975,7 +6975,7 @@ void WiFiReconnect(){
       Serial.println("reconnect timer");
       Serial.println(wifi_reconnects);
     }
-    if(wifi_reconnects > 25 && wifi_reconnects < 10000){
+    if(wifi_reconnects > 25 && wifi_reconnects < 10000 && ssidlength > 1){
 //      initWiFi();
       Serial.println("First reconnect function");
       WiFiConnect();
