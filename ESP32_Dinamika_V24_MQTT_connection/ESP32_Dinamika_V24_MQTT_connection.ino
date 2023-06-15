@@ -123,6 +123,7 @@ long TimeoutTime;
 bool TimeoutTimeSet = LOW;
 
 int vmesna;
+uint16_t r = 0;
 
 
 
@@ -140,10 +141,10 @@ long lastInfo2 = 0;
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-String FW_versionStr = "0.2.3";
+String FW_versionStr = "0.2.4";
 
-#define FOTA_URL "http://lockit.pro/ota/HP/CR/CR.json"
-const char *firmware_name = "CR";
+#define FOTA_URL "http://lockit.pro/ota/DinamicsHW2/DinamicsHW2.json"
+const char *firmware_name = "DinamicsHW2";
 const bool check_signature = false;
 const bool disable_security = true;
 
@@ -466,7 +467,7 @@ uint16_t c5 = 0;
 uint16_t c6 = 0;
 
 
-int wifi_reconnects = 0;
+uint32_t wifi_reconnects = 0;
 
 
 float average1Old;
@@ -1271,6 +1272,7 @@ void reconnect() {
       Serial.print("Attempting MQTT connection...");
     }
     i=i+1;
+    r=r+1;
     vTaskDelay(300);
     // Attempt to connect
     if(i==10){
@@ -1463,7 +1465,7 @@ void GetSettings(){
     calibration = preferences.getFloat("calibration", 27.7);
     timer = preferences.getLong("timer", 2000);
     timer1 = preferences.getLong("timer1", 150);
-    timer2 = preferences.getLong("timer2", 5);
+    timer2 = preferences.getLong("timer2", 1000);
     timer3 = preferences.getLong("timer3", 10000);
     timer4 = preferences.getLong("timer4", 100);
     timer5 = preferences.getLong("timer5", 200000);
@@ -2114,7 +2116,7 @@ void TranslateDebugF(){
 
 void setup() {
   // put your setup code here, to run once:
-
+  delay(1000);
   Serial.begin(115200);
 
 //  Serial2.println("$F0 0");
@@ -2134,7 +2136,7 @@ void setup() {
 //  LCDEraseFlag = HIGH;
 //  EraseLCDText();
   
-
+  delay(500);
   xTaskCreatePinnedToCore(
                   Task1code,   /* Task function. */
                   "Task1",     /* name of task. */
@@ -2358,6 +2360,7 @@ void setup() {
 
 
   vTaskDelay(20);
+  delay(200);
 
 
 
@@ -2440,6 +2443,8 @@ void setup() {
     delay(50);
     Serial.println("Cable communication enabled");
   }
+
+  delay(200);
   
 
   // Set GPIO ledPin as an OUTPUT
@@ -3304,7 +3309,7 @@ void setup() {
   }
 
 
-  
+  delay(200);
   vTaskDelay(300);
   client.setServer(mqtt_server, 31883);
   client.setCallback(callback);
@@ -3325,6 +3330,8 @@ void setup() {
   if(debug2 == 1){
     Serial.println(FW_versionStr);
   }
+
+  delay(100);
   
   if(PAndC == LOW && PowerOn == LOW){
     TurnSleep();
@@ -3332,6 +3339,7 @@ void setup() {
   
   
   SetupComplete = HIGH;
+  delay(100);
 }
 
 void loop() {
@@ -4168,7 +4176,7 @@ void SENDFWversion(){
     TempValue = "";
     TempValue += FW_versionStr;
     TempValue += " ";
-    TempValue += "Posta";
+    TempValue += "HW2";
     TempValueChar = TempValue.c_str();
     client.publish(topica, TempValueChar);
 //    delay(20);
@@ -6960,17 +6968,19 @@ void WiFiReconnect(){
   now11 = millis();
   // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
 //  Serial.println("WiFi reconnect was called");
+  int ssidlength = ssid.length();
   if ((WiFi.status() != WL_CONNECTED) && (now11 - lastInfo11 >= timer11/*wifi_reconnects*/)) {
     int ssidlength = ssid.length();
     if(debug6 == 1){
       Serial.println("reconnect timer");
       Serial.println(wifi_reconnects);
     }
-    if(1000 > wifi_reconnects > 25){
+    if(wifi_reconnects > 25 && wifi_reconnects < 10000){
 //      initWiFi();
+      Serial.println("First reconnect function");
       WiFiConnect();
-      wifi_reconnects = wifi_reconnects*2;
-    }else if(ssidlength > 0 && wifi_reconnects < 25){
+      wifi_reconnects = wifi_reconnects*1.2;
+    }else if(ssidlength > 1 && wifi_reconnects < 25){
       if(debug6 == 1){
         Serial.println("Reconnecting to user WiFi...");
       }
@@ -6978,17 +6988,26 @@ void WiFiReconnect(){
       debug += "Reconnecting to user WiFi...";
       debug += "$";
       WiFiConnect();
-    }else if(ssidlength > 0 && wifi_reconnects > 1000){
+    }else if(ssidlength > 1 && wifi_reconnects > 10000){
       ESP.restart();
     }
     lastInfo11 = now11;
+  }else if(WiFi.status() == WL_CONNECTED){
+    int ssidlength = ssid.length();
+    if(ssidlength > 1 && r >= 100){
+      ESP.restart(); 
+      r = 0;
+    }
   }
 }
 
 void WiFiConnect(){
+  Serial.println("Try reconnect");
   WiFi.disconnect();
+  delay(500);
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), pass.c_str());
-  vTaskDelay(50);
+  delay(500);
   ip = WiFi.localIP().toString();
   gateway = WiFi.gatewayIP().toString();
   if(ip.length()>1 && WiFi.status() == WL_CONNECTED){
