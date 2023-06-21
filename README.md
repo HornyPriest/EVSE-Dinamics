@@ -28,32 +28,32 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder "ESP32_dinamika_V22_WiFi_Recconect_Fix"
-Bin file CR2.bin
+Last version is in folder "ESP32_dinamika_V26_SplittinDebug"
 
 Older versions are placed in archive
+PROPERLY TESTED IS VERSION V24!!!!
 
 ## Flashing
 
-To flash use "flash_download_tool_3.9.2.rar". Open app after unrar. You must upload 4 files .bin (CR2.bin, Dinamics.spiffs.bin, Dinamics.partitions.bin, Dinamics.bootloader.bin). See example picture.
-Make sure to add correct address before upload. Addresses for bin files are CR2.bin = 0x10000, Dinamics.spiffs.bin = 0x290000, Dinamics.partitions.bin = 0x8000, Dinamics.bootloader.bin = 0x1000
+To flash use "flash_download_tool_3.9.2.rar". Open app after unrar. You must upload 4 files .bin (DinamicsHW2.bin, Dinamics.spiffs.bin, Dinamics.partitions.bin, Dinamics.bootloader.bin). See example picture.
+Make sure to add correct address before upload. Addresses for bin files are DinamicsHW2.bin = 0x10000, Dinamics.spiffs.bin = 0x290000, Dinamics.partitions.bin = 0x8000, Dinamics.bootloader.bin = 0x1000
 
 ## SetUp
 
 At first start some settings have to be set over MQTT in order for Dinamics to work as supposed.
 
 Mandatory check and set settings:
-- set_breaker (default 6A)
+- set_breaker (default 16A)
 - set_calibration (default 277 - CT=50A)
-- set_c_limit (max current; default 6A)
+- set_c_limit (max current; default 16A)
 - set_plugandcharge (default 1 = ON)
 - set_cte (default 0 - no CT sensors)
 - set_dinamics (default 0 - disabled dynamic power management)
 
 Optional settings:
-- set_update (if version is not last available)
-- delete_settings (if version is not last available)
-- set_lora (default 0 = cable connection)
+- set_update (if running FW version is not the last available)
+- delete_settings (if running FW version is not last available. Restores settings to default)
+- set_lora (default 0 = cable connection active)
 - rapi_request = SL 2 (if maximum current limit "set_c_limit" is over 16A)
 
 
@@ -71,6 +71,18 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 
 ## Changes
+
+v26: Added "debug" string spliting because MQTT message maximum length is 200 chars.
+
+
+v25: Outgoing JSON messages are now in correct JSON format
+
+
+v24: MQTT reconnection update
+
+
+v23: This Number is retired (version v23 does not exist)
+
 
 v22: Fixed bug when P&C==0, wifi reconnecting time is lowered
 
@@ -152,6 +164,7 @@ Settings setable over MQTT:
 | set_autoupdate    | 0 or 1 (default = 1)                       | set automatic updates, (1 = auto update active, 0 = auto update inactive)                       |
 | set_TFO           | 0 - 1000 (default = 30)                    | set TFO(timers factor off, (factor timers5,7,8,9 when NOT charging AND timer6 when charging)    |
 | delete_settings   | 1                                          | restore settings to default predefined values                                                   |
+| delete_wifi       | 1                                          | delete wifi credentials                                                                         |
 | set_lcd           | String                                     | Write this string on LCD                                                                        |
 | erase_lcd         | 1                                          | clear whole LCD                                                                                 |
 | set_cte           | 1,12,123,23,13,0 (default=0)               | set CT active and measuring (set which CTs are active)                                          |
@@ -178,7 +191,7 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | enable               | 1-3                                             | enable charging status (1 - station turned off, 2 - charging enabled, 3 - station is asleep)                                                                 |
 | timeout              | if timeout > timer13/2-timer13                  | time needed for response from EVSE (only posted if timer13/2 < value < timer13)                                                                              |
 | state                | 0,1,2                                           | status of charging plug (0 - vehicle not connected, 1 - vehicle connected, 2 - unknown)                                                                      |
-| connection           | OK or CON_ERROR                                 | status of connection between Dinamics <---> EVSE                                                                                                             |
+| connection           | OK or CON_ERROR_FAILED_COM :                    | status of connection between Dinamics <---> EVSE (failed communication returs rapi message that was not answered                                             |
 | debug_log            | \\$message1$$message2$...etc                    | one or more debug messages each encapsuled in separators "$"                                                                                                 |
 | synctime             | current epoch timestamp                         | actual epochtime in the moment of sending this message (meant for time syncing)                                                                              |
 | state_change         | RAPI message from EVSE ($AT...)                 | automatic message from EVSE when charging state is changed (cable unpluged, battery full, etc.)                                                              |
@@ -188,8 +201,8 @@ Messages and responses from Dinamics to MQTT server. Topic prefix is "Dinamics/[
 | debug                | String (\\$Debugs=debug1:...:debug40$)          | string contain multiple individual debug messages switch settings, each debug switch(0 or 1) separated with ":"                                              |
 | plugandcharge        | 0 or 1                                          | set_plugandcharge response to confirm received setting                                                                                                       |
 | ip                   | ip form [xxx.xxx.xxx.xxx]                       | Dinamics local ip address                                                                                                                                    |
-| freeRAM              | Free SRAM in kbytes                             | Free HEAP size on ESP32                                                                                                                                    |
-| responseEraseLCD     | RAPI response from EVSE (String)                | EVSEs RAPI response for FP 0 0 - erase chars on LCD                                                 |
+| freeRAM              | Free SRAM in kbytes                             | Free HEAP size on ESP32                                                                                                                                      |
+| responseEraseLCD     | RAPI response from EVSE (String)                | EVSEs RAPI response for FP 0 0 - erase chars on LCD                                                                                                          |
 | responseGC           | RAPI response from EVSE (String)                | EVSEs RAPI response for GC - get current capacity info (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)        |
 | responseG0           | RAPI response from EVSE (String)                | EVSEs RAPI response for G0 - get EV connect state (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h)             |
 | responseGG           | RAPI response from EVSE (String)                | EVSEs RAPI response for GG - get charging current and voltage (details on: https://github.com/OpenEVSE/open_evse/blob/stable/firmware/open_evse/rapi_proc.h) |
@@ -245,14 +258,14 @@ Glossary of JSON variables:
   - more
   - Smart dynamic power adjustment in real-time
   - MQTT view & control dynamic management settings
-  - Sensor calibration
-  - Breakers value
+  - CT sensors calibration
+  - Adjustable breakers value
   - Timers
   - Plug&Charge or Controlled Start&Stop
   - LCD control
   - Toggle between LoRa and cable communication
   - Toggle between Dynamic and Static power settings
-  - Connect and activate up to 3 CT sensors
+  - Connect and activate reading of up to 3 CT sensors
 
 
 ## Requirements

@@ -141,7 +141,7 @@ long lastInfo2 = 0;
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-String FW_versionStr = "0.2.4";
+String FW_versionStr = "0.2.6";
 
 #define FOTA_URL "http://lockit.pro/ota/DinamicsHW2/DinamicsHW2.json"
 const char *firmware_name = "DinamicsHW2";
@@ -288,6 +288,8 @@ const char * charTFO;
 String sub_TFOTopic;
 const char * charDeleteSettings;
 String sub_DeleteSettingsTopic;
+const char * charDeleteWifi;
+String sub_DeleteWifiTopic;
 const char * charPlugAndCharge;
 String sub_PlugAndChargeTopic;
 const char * charNoWANPandC;
@@ -1052,6 +1054,20 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   vTaskDelay(10);
 
+  if (String(topic) == sub_DeleteWifiTopic) {
+    if(debug3 == 1){
+      Serial.print("Delete wifi credentials received ");
+      Serial.println(messageTemp);
+    }
+    temp_message = messageTemp;
+    int vmesna = temp_message.toInt();
+    if(vmesna == 1){
+      DeleteWiFiCredsFlag = HIGH;
+    }
+  }
+
+  vTaskDelay(10);
+
   if (String(topic) == sub_PlugAndChargeTopic) {
     if(debug3 == 1){
       Serial.print("Plug and Charge setting update received ");
@@ -1321,6 +1337,7 @@ void reconnect() {
       client.subscribe(charAutoUpdate);
       client.subscribe(charGetSettings);
       client.subscribe(charDeleteSettings);
+      client.subscribe(charDeleteWifi);
       client.subscribe(charGetWiFi);
       client.subscribe(charGetDebug);
       vTaskDelay(10);
@@ -1431,8 +1448,8 @@ void SetChargeSettings(){
 
 void RestoreChargeSettings(){
   PAndC = HIGH;
-  MQTTmax_current = 6;
-  breaker = 6;
+  MQTTmax_current = 16;
+  breaker = 16;
   min_current = 6;
   NegativeAmperage = LOW;
   ImpleraAdjust = HIGH;
@@ -1461,10 +1478,10 @@ void CheckSettings(){
 void GetSettings(){
   if(SavedCalibration == HIGH){
     preferences.begin("Settings", true);
-    breaker = preferences.getInt("breaker", breaker);
+    breaker = preferences.getInt("breaker", 16);
     calibration = preferences.getFloat("calibration", 27.7);
     timer = preferences.getLong("timer", 2000);
-    timer1 = preferences.getLong("timer1", 150);
+    timer1 = preferences.getLong("timer1", 1000);
     timer2 = preferences.getLong("timer2", 1000);
     timer3 = preferences.getLong("timer3", 10000);
     timer4 = preferences.getLong("timer4", 100);
@@ -1480,14 +1497,14 @@ void GetSettings(){
     timer14 = preferences.getLong("timer14", 10000);
     TimersFactorOff = preferences.getInt("TFO", 30);
     PAndC = preferences.getBool("pac", HIGH);
-    NoWANPandC = preferences.getBool("nwpc", LOW);
-    MQTTmax_current = preferences.getInt("MQTTmax_current", 6);
+    NoWANPandC = preferences.getBool("nwpc", HIGH);
+    MQTTmax_current = preferences.getInt("MQTTmax_current", 16);
     min_current = preferences.getInt("min_current", 6);
     NegativeAmperage = preferences.getBool("NegativeAmperage", LOW);
     ImpleraAdjust = preferences.getBool("ImpleraAdjust", HIGH);
     AutoUpdate = preferences.getBool("AutoUpdate", HIGH);
     LCDon = preferences.getBool("LCDon", HIGH);
-    CTEnable = preferences.getInt("CTEnable", 3);
+    CTEnable = preferences.getInt("CTEnable", 0);
     DinamicsActive = preferences.getBool("DinamicsActive", 0);
     LoRa = preferences.getBool("LoRa", LOW);
     preferences.end();
@@ -1697,7 +1714,7 @@ void SendSettingsF(){
     TempValue += ":";
     TempValue += "\"";
     TempValue += DinamicsActive;
-    TempValue += "\"";
+    TempValue += "\",";
     TempValue += "\"LoRa\"";
     TempValue += ":";
     TempValue += "\"";
@@ -1835,7 +1852,7 @@ void SendWiFiF(){
     TempValue += "\"";
     TempValue += dhcpcheck;
     TempValue += "\"";
-    TempValue += "\"}";
+    TempValue += "}";
     
     topica = "";
       dynamicTopic = "";
@@ -2328,6 +2345,10 @@ void setup() {
   sub_DeleteSettingsTopic += idTopic;
   sub_DeleteSettingsTopic += "/delete_settings";
   charDeleteSettings = sub_DeleteSettingsTopic.c_str();
+  sub_DeleteWifiTopic += prefix;
+  sub_DeleteWifiTopic += idTopic;
+  sub_DeleteWifiTopic += "/delete_wifi";
+  charDeleteWifi = sub_DeleteWifiTopic.c_str();
   sub_GetWiFiTopic += prefix;
   sub_GetWiFiTopic += idTopic;
   sub_GetWiFiTopic += "/get_wifi";
@@ -3556,12 +3577,18 @@ void loop() {
     }
     long now10 = millis();
     if ((now10 - lastInfo10 > timer10) || (debug.length() > 190)) {   //2000
+      String debugWhole = debug;
       digitalWrite(LED_GREEN, HIGH);
+      while(debugWhole.length() > 195){
+        debug = debugWhole.substring(0, 195);
+        debugWhole.remove(0, 195);
+        SendDebugF2();
+      }
       lastInfo10 = now10;
       vTaskDelay(20);
       SendDebugF2();
       digitalWrite(LED_GREEN, LOW);
-    }    
+    }
     long now12 = millis();
     if (now12 - lastInfo12 > timer12) {   //100000
       digitalWrite(LED_GREEN, HIGH);
@@ -4656,7 +4683,7 @@ void ConnectionAlert(){
       fullTopic += ConnectionTopic;
       topica = fullTopic.c_str();
       TempValue = "";
-      TempValue = "CON_ERROR_FAILED_COM::";
+      TempValue = "CON_ERROR_FAILED_COM :";
       TempValue += LastCom;
       TempValueChar = TempValue.c_str();    
       client.publish(topica, TempValueChar, true);
@@ -5362,6 +5389,13 @@ void TurnOn(){
     debug += "$";
     ChargeSetState = HIGH;
     ResponseStatus = LOW;
+    long now = millis();
+    lastInfo5 = now;
+    lastInfo7 = now;
+    lastInfo8 = now;
+    lastInfo9 = now - 80000;
+    lastInfo10 = now;
+    lastInfo12 = now;
     if(Serial2.available() > 0){
       CatchStateChange();
     }
@@ -6934,7 +6968,7 @@ void CatchStateChange(){
       ChargeStatevmesna.remove(3);
       ChargeState = ChargeStatevmesna.toInt();
       if(PAndC == LOW){
-        if(ChargeState != 2 && ChargeState != 3){
+        if(ChargeState != 2 && ChargeState != 3 && ChargeStatevmesna != "fe"){
           PowerOn = LOW;
           Serial.println("Charging state is not 2 or 3");
           SetRuntimeSettings();
