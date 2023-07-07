@@ -18,8 +18,8 @@
 
 
 
-#define RXD2 17
-#define TXD2 16
+#define RXD2 16
+#define TXD2 32
 
 #define RX2LORA 25
 #define TX2LORA 33
@@ -143,14 +143,14 @@ esp32FOTA esp32FOTA;
 
 String FW_versionStr = "0.2.6";
 
-#define FOTA_URL "http://lockit.pro/ota/DinamicsHW2/DinamicsHW2.json"
-const char *firmware_name = "DinamicsHW2";
+#define FOTA_URL "http://lockit.pro/ota/Olimex/Olimex.json"
+const char *firmware_name = "Olimex";
 const bool check_signature = false;
 const bool disable_security = true;
 
 int firmware_version_major = 0;
 int firmware_version_minor = 2;
-int firmware_version_patch = 1;
+int firmware_version_patch = 6;
 
 
 // Add your MQTT Broker IP address, example:
@@ -166,9 +166,9 @@ const char* mqtt_server = "mqshare.napolni.me";
 #define LED_RED 14
 
 
-#define ct_sensor_1 32 // ESP32 Wroom
+#define ct_sensor_1 34 // ESP32 Wroom
 #define ct_sensor_2 35
-#define ct_sensor_3 34
+#define ct_sensor_3 36
 
 
 volatile float Irms_1;
