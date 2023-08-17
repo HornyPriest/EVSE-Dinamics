@@ -28,10 +28,10 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 
 ## Versions
 
-Last version is in folder "ESP32_dinamika_V26_SplittinDebug"
+Last version is in folder "ESP32_dinamika_V28_wifiscan"
 
 Older versions are placed in archive
-PROPERLY TESTED IS VERSION V24!!!!
+PROPERLY TESTED IS VERSION V28!!!!
 
 ## Flashing
 
@@ -39,6 +39,11 @@ To flash use "flash_download_tool_3.9.2.rar". Open app after unrar. You must upl
 Make sure to add correct address before upload. Addresses for bin files are DinamicsHW2.bin = 0x10000, Dinamics.spiffs.bin = 0x290000, Dinamics.partitions.bin = 0x8000, Dinamics.bootloader.bin = 0x1000
 
 ## SetUp
+
+Charging station looks for 2 wifi networks on boot.
+1. User save wifi network
+2. System default ssid: "Implera" password: "AdminSettings"
+If either is found it connects to it, if none found charging station makes unprotected access point/hotspot (AP) with ssid: "Dinamics-SN".
 
 At first start some settings have to be set over MQTT in order for Dinamics to work as supposed.
 
@@ -71,6 +76,12 @@ more info on https://github.com/openenergymonitor/open_evse/blob/master/firmware
 
 
 ## Changes
+
+v28: add wifi scan before connecting for more robust set-up environment
+
+
+v27: Repaired AT async message parsing
+
 
 v26: Added "debug" string spliting because MQTT message maximum length is 200 chars.
 
@@ -222,6 +233,7 @@ Responses that contain more that one variable are in JSON format. Variable names
 Glossary of JSON variables:
 | Abbrevation | Description |
 | ----------- | ---------------------------------------------------------------------------------------------------------- |
+| FW | Firmware version |
 | B | breakers |
 | MAXC | max allowed charging current |
 | MINC | min allowed charging current |
