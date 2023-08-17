@@ -1553,6 +1553,7 @@ void SetCTEnable(){
   preferences.putInt("CTEnable", CTEnable);
   preferences.end();
   debug += "$saving active CTs to preferences$";
+  ESP.restart();
 }
 
 void SetDinamicsEnable(){
@@ -1650,6 +1651,11 @@ void SendSettingsF(){
       Serial.println("Sending Settings");
     }
     TempValue = "{";
+    TempValue += "\"FW\"";
+    TempValue += ":";
+    TempValue += "\"";
+    TempValue += FW_versionStr;
+    TempValue += "\",";
     TempValue += "\"B\"";
     TempValue += ":";
     TempValue += "\"";
