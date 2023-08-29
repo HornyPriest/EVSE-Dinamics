@@ -3423,6 +3423,7 @@ void loop() {
       }else if(WiFi.status() == WL_CONNECTED){
         vTaskDelay(20);
         reconnect();
+        r = r+1;
       }
   }else{
     wifi_reconnects = 0;
@@ -7066,7 +7067,7 @@ void WiFiReconnect(){
   // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
 //  Serial.println("WiFi reconnect was called");
   int ssidlength = ssid.length();
-  if ((WiFi.status() != WL_CONNECTED) && (now11 - lastInfo11 >= timer11/*wifi_reconnects*/)) {
+  if ((WiFi.status() != WL_CONNECTED) && (now11 - lastInfo11 >= timer11) && (networkFound == true || networkFound1 == true)) {
     int ssidlength = ssid.length();
     if(debug6 == 1){
       Serial.println("reconnect timer");
@@ -7077,7 +7078,7 @@ void WiFiReconnect(){
       Serial.println("First reconnect function");
       WiFiConnect();
       wifi_reconnects = wifi_reconnects*1.2;
-    }else if(ssidlength > 1 && wifi_reconnects < 25){
+    }else if(ssidlength > 2 && wifi_reconnects < 25){
       if(debug6 == 1){
         Serial.println("Reconnecting to user WiFi...");
       }
@@ -7091,7 +7092,7 @@ void WiFiReconnect(){
     lastInfo11 = now11;
   }else if(WiFi.status() == WL_CONNECTED){
     int ssidlength = ssid.length();
-    if((networkFound == true || networkFound1 == true) && r >= 100){
+    if((networkFound == true || networkFound1 == true) && r >= 100 && !client.connected()){
       ESP.restart(); 
       r = 0;
     }
@@ -7100,20 +7101,22 @@ void WiFiReconnect(){
 
 void WiFiConnect(){
   Serial.println("Try reconnect");
-  WiFi.disconnect();
-  delay(500);
-  WiFi.mode(WIFI_STA);
-  if(networkFound == true){
-    WiFi.begin(ssid.c_str(), pass.c_str());
-  }else if(networkFound1 == true){
-    WiFi.begin(ssid1, pass1);
-  }
-  delay(500);
-  ip = WiFi.localIP().toString();
-  gateway = WiFi.gatewayIP().toString();
-  if(ip.length()>1 && WiFi.status() == WL_CONNECTED){
-    wifi_reconnects = 0;
-    ipSentFlag = LOW;
+  if(networkFound == true || networkFound1 == true){
+    WiFi.disconnect();
+    delay(500);
+    WiFi.mode(WIFI_STA);
+    if(networkFound == true){
+      WiFi.begin(ssid.c_str(), pass.c_str());
+    }else if(networkFound1 == true){
+      WiFi.begin(ssid1, pass1);
+    }
+    delay(500);
+    ip = WiFi.localIP().toString();
+    gateway = WiFi.gatewayIP().toString();
+    if(ip.length()>1 && WiFi.status() == WL_CONNECTED){
+      wifi_reconnects = 0;
+      ipSentFlag = LOW;
+    }
   }
 }
 
