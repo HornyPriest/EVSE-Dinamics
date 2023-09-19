@@ -117,7 +117,7 @@ uint8_t LoRaCERetryCount = 3;
 long NegAmpTime;
 long nowNegAmp;
 
-
+long now11;
 
 long TimeoutTime;
 bool TimeoutTimeSet = LOW;
@@ -143,8 +143,8 @@ esp32FOTA esp32FOTA;
 
 String FW_versionStr = "0.2.8";
 
-#define FOTA_URL "http://lockit.pro/ota/DinamicsHW2/DinamicsHW2.json"
-const char *firmware_name = "DinamicsHW2";
+#define FOTA_URL "http://lockit.pro/ota/HP/CR/CR.json"
+const char *firmware_name = "CR";
 const bool check_signature = false;
 const bool disable_security = true;
 
@@ -621,6 +621,9 @@ bool initWiFi() {
       networkFound1 = true;
       break;
     }
+  }
+  if(ssid.length()>1){
+    networkFound = true;
   }
   
   if(networkFound == true){
@@ -1670,6 +1673,7 @@ void SendSettingsF(){
     TempValue += ":";
     TempValue += "\"";
     TempValue += FW_versionStr;
+    TempValue += "-Posta";
     TempValue += "\",";
     TempValue += "\"B\"";
     TempValue += ":";
@@ -3555,50 +3559,50 @@ void loop() {
       SENDCurrents();
       digitalWrite(LED_GREEN, LOW);
     }
-    now = millis();
-    if (((now - lastInfo5 > timer5) && PowerOn == HIGH) || (PowerOn == LOW && (now - lastInfo5 > timer5*TimersFactorOff*10))) {    // 200000
+    long now5 = millis();
+    if (((now5 - lastInfo5 > timer5) && PowerOn == HIGH) || (PowerOn == LOW && (now5 - lastInfo5 > timer5*TimersFactorOff*10))) {    // 200000
       digitalWrite(LED_GREEN, HIGH);
-      lastInfo5 = now;
+      lastInfo5 = now5;
       vTaskDelay(20);
       CheckSetAmps();
       digitalWrite(LED_GREEN, LOW);
     }
-    now = millis();
-    if (((now - lastInfo6 > timer6) && PowerOn == LOW) || (PowerOn == HIGH && (now - lastInfo6 > timer6*TimersFactorOff))) {     //30000
+    long now6 = millis();
+    if (((now6 - lastInfo6 > timer6) && PowerOn == LOW) || (PowerOn == HIGH && (now6 - lastInfo6 > timer6*TimersFactorOff))) {     //30000
       digitalWrite(LED_GREEN, HIGH);
-      lastInfo6 = now;
+      lastInfo6 = now6;
       vTaskDelay(20);
       CheckState();
       digitalWrite(LED_GREEN, LOW);
     } 
-    now = millis();
-    if (((now - lastInfo7 > timer7) && PowerOn == HIGH) || (PowerOn == LOW && (now - lastInfo7 > timer7*TimersFactorOff*10))) {      //30000
+    long now7 = millis();
+    if (((now7 - lastInfo7 > timer7) && PowerOn == HIGH) || (PowerOn == LOW && (now7 - lastInfo7 > timer7*TimersFactorOff*10))) {      //30000
       digitalWrite(LED_GREEN, HIGH);
-      lastInfo7 = now;
+      lastInfo7 = now7;
       vTaskDelay(20);
       CheckCharge();
       digitalWrite(LED_GREEN, LOW);
     }
-    now = millis();
-    if (((now - lastInfo8 > timer8) && PowerOn == HIGH) || (PowerOn == LOW && (now - lastInfo8 > timer8*TimersFactorOff*10))) {     //200000
+    long now8 = millis();
+    if (((now8 - lastInfo8 > timer8) && PowerOn == HIGH) || (PowerOn == LOW && (now8 - lastInfo8 > timer8*TimersFactorOff*10))) {     //200000
       digitalWrite(LED_GREEN, HIGH);
-      lastInfo8 = now;
+      lastInfo8 = now8;
       vTaskDelay(20);
       CheckStatus();
       digitalWrite(LED_GREEN, LOW);
     } 
     client.loop();
     vTaskDelay(100);
-    now = millis();
-    if (((now - lastInfo9 > timer9) && PowerOn == HIGH) || (PowerOn == LOW && (now - lastInfo9 > timer9*TimersFactorOff*10))) {    //120000
+    long now9 = millis();
+    if (((now9 - lastInfo9 > timer9) && PowerOn == HIGH) || (PowerOn == LOW && (now9 - lastInfo9 > timer9*TimersFactorOff*10))) {    //120000
       digitalWrite(LED_GREEN, HIGH);
-      lastInfo9 = now;
+      lastInfo9 = now9;
       vTaskDelay(20);
       CheckEnergy();
       digitalWrite(LED_GREEN, LOW);
     }
-    now = millis();
-    if ((now - lastInfo10 > timer10) || (debug.length() > 190)) {   //2000
+    long now10 = millis();
+    if ((now10 - lastInfo10 > timer10) || (debug.length() > 190)) {   //2000
       String debugWhole = debug;
       digitalWrite(LED_GREEN, HIGH);
       while(debugWhole.length() > 195){
@@ -3606,15 +3610,15 @@ void loop() {
         debugWhole.remove(0, 195);
         SendDebugF2();
       }
-      lastInfo10 = now;
+      lastInfo10 = now10;
       vTaskDelay(20);
       SendDebugF2();
       digitalWrite(LED_GREEN, LOW);
     }
-    now = millis();
-    if (now - lastInfo12 > timer12) {   //100000
+    long now12 = millis();
+    if (now12 - lastInfo12 > timer12) {   //100000
       digitalWrite(LED_GREEN, HIGH);
-      lastInfo12 = now;
+      lastInfo12 = now12;
       vTaskDelay(20);
       SENDSyncClock();
       digitalWrite(LED_GREEN, LOW);
@@ -4225,7 +4229,7 @@ void SENDFWversion(){
     TempValue = "";
     TempValue += FW_versionStr;
     TempValue += " ";
-    TempValue += "HW2";
+    TempValue += "Posta";
     TempValueChar = TempValue.c_str();
     client.publish(topica, TempValueChar);
 //    delay(20);
@@ -7063,11 +7067,11 @@ void CatchStateChange(){
 }
 
 void WiFiReconnect(){
-  long now = millis();
+  now11 = millis();
   // if WiFi is down, try reconnecting every CHECK_WIFI_TIME seconds
 //  Serial.println("WiFi reconnect was called");
   int ssidlength = ssid.length();
-  if ((WiFi.status() != WL_CONNECTED) && (now - lastInfo11 >= timer11) && (networkFound == true || networkFound1 == true)) {
+  if ((WiFi.status() != WL_CONNECTED) && (now11 - lastInfo11 >= timer11) && (networkFound == true || networkFound1 == true)) {
     int ssidlength = ssid.length();
     if(debug6 == 1){
       Serial.println("reconnect timer");
@@ -7089,7 +7093,7 @@ void WiFiReconnect(){
     }else if((networkFound == true || networkFound1 == true) && wifi_reconnects > 10000){
       ESP.restart();
     }
-    lastInfo11 = now;
+    lastInfo11 = now11;
   }else if(WiFi.status() == WL_CONNECTED){
     int ssidlength = ssid.length();
     if((networkFound == true || networkFound1 == true) && r >= 100 && !client.connected()){
