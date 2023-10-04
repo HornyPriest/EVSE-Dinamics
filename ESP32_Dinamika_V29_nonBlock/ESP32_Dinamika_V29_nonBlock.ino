@@ -4007,6 +4007,8 @@ void EraseLCDText(){
           topica = fullTopic.c_str();
           TempValue = "";
           TempValue += t1;
+          TempValue += " + ";
+          TempValue += LastCom;
           TempValueChar = TempValue.c_str();
           client.publish(topica, TempValueChar);
   //        delay(20);
@@ -4758,7 +4760,6 @@ void ConnectionAlert(){
 
 void CheckState(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
     ResponseStatusCheckState = LOW;
     debuglog += "$";
     debuglog += "Checking State RAPI = G0";
@@ -4770,6 +4771,7 @@ void CheckState(){
     Serial2.println(G0);
     LastCom = "CheckState($G0)";
 
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -4919,6 +4921,10 @@ void ResponseHandleCheckState(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "CheckState";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -5096,7 +5102,6 @@ void ResponseHandleCheckState(){
 
 void CheckStatus(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
     ResponseStatusCheckStatus = LOW;
     debuglog += "$";
     debuglog += "Checking Status RAPI = GS";
@@ -5108,6 +5113,7 @@ void CheckStatus(){
     Serial2.println(GS);
     LastCom = "CheckStatus($GS)";
 
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -5254,6 +5260,10 @@ void ResponseHandleCheckStatus(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "CheckStatus";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -5407,7 +5417,6 @@ void ResponseHandleCheckStatus(){
 
 void CheckSetAmps(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
     ResponseStatusCheckSetAmps = LOW;
     debuglog += "$";
     debuglog += "Checking Set AMPS RAPI = GC";
@@ -5419,6 +5428,7 @@ void CheckSetAmps(){
     Serial2.println(GC);
     LastCom = "CheckSetAmps($GC)";
 
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -5541,6 +5551,10 @@ void ResponseHandleCheckSetAmps(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "CheckSetAmps";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -5684,8 +5698,6 @@ void ResponseHandleCheckSetAmps(){
 
 void CheckCharge(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
-    ResponseStatusCheckCharge = LOW;
     debuglog += "$";
     debuglog += "Checking Charge RAPI = GG";
     debuglog += "$";
@@ -5696,6 +5708,8 @@ void CheckCharge(){
     Serial2.println(GG);
     LastCom = "CheckCharge($GG)";
 
+    ResponseStatusCheckCharge = LOW;
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -5865,6 +5879,10 @@ void ResponseHandleCheckCharge(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "CheckCharge";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -6031,7 +6049,6 @@ void ResponseHandleCheckCharge(){
 
 void CheckEnergy(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
     ResponseStatusCheckEnergy = LOW;
     debuglog += "$";
     debuglog += "Checking Energy RAPI = GU";
@@ -6043,6 +6060,7 @@ void CheckEnergy(){
     Serial2.println(GU);
     LastCom = "CheckEnergy($GU)";
 
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -6168,6 +6186,10 @@ void ResponseHandleCheckEnergy(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "CheckEnergy";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -6312,7 +6334,6 @@ void ResponseHandleCheckEnergy(){
 
 void TurnOn(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
     ResponseStatusTurnOn = LOW;
     debuglog += "$";
     debuglog += "Setting enable --> PowerOn ";
@@ -6334,6 +6355,7 @@ void TurnOn(){
     LastCom = "Enable($FE)";
     SaveLastCurrents();
 
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -6496,6 +6518,10 @@ void ResponseHandleTurnOn(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "TurnOn";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -6699,7 +6725,6 @@ void ResponseHandleTurnOn(){
 
 void TurnOff(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
     ResponseStatusTurnOff = LOW;
     debuglog += "$";
     debuglog += "Setting enable --> PowerOff ";
@@ -6713,6 +6738,7 @@ void TurnOff(){
     Serial2.println(FD);
     LastCom = "Disable($FD)";
 
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -6863,6 +6889,10 @@ void ResponseHandleTurnOff(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "TurnOff";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -7048,7 +7078,6 @@ void ResponseHandleTurnOff(){
 
 void TurnSleep(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
-    COMused = HIGH;
     ResponseStatusTurnSleep = LOW;
     debuglog += "$";
     debuglog += "Setting enable --> Sleep ";
@@ -7058,10 +7087,10 @@ void TurnSleep(){
       CatchStateChange();
     }
     ResponseMessage = "";
-    tmp = 3;
     Serial2.println(FS);
     LastCom = "Sleep($FS)";
 
+    COMused = HIGH;
     Requestmillis = millis();   
   }
 }
@@ -7071,6 +7100,7 @@ void ResponseHandleTurnSleep(){
   if(ResponseStatusTurnSleep == LOW && millis()-Requestmillis < timer13){
           if(Serial2.available()){
             ResponseStatusTurnSleep = HIGH;
+            tmp = 3;
             ResponseMessageTemp = Serial2.readString();
             int startIndex = -1;
             String ResponseMid1 = "";
@@ -7220,6 +7250,10 @@ void ResponseHandleTurnSleep(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "TurnSleep";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -7449,7 +7483,6 @@ void SetMQTTCurrent(){
         debuglog += "Set new charging current received from MQTT : ";
         debuglog += MQTTmax_current;
         debuglog += "$";
-        COMused = HIGH;
         ResponseStatusSetMQTTCurrent = LOW;
         if(Serial2.available() > 0){
           CatchStateChange();
@@ -7463,7 +7496,8 @@ void SetMQTTCurrent(){
           LastCom = "SetCurrentMQTT(";
           LastCom += TempValue;
           LastCom += ")";
-          
+
+          COMused = HIGH;
           Requestmillis = millis();
         }
     }   
@@ -7620,6 +7654,10 @@ void ResponseHandleSetMQTTCurrent(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "SetMQTTCurrent";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -7806,7 +7844,6 @@ void SetCurrent(){
       debuglog += max_current;
       debuglog += "$";
       ResponseStatusSetCurrent = LOW;
-      COMused = HIGH;
       c5 = 0;
       if(Serial2.available() > 0){
         CatchStateChange();
@@ -7823,7 +7860,8 @@ void SetCurrent(){
           LastCom = "SetCurrent(";
           LastCom += TempValue;
           LastCom += ")";
-          
+
+          COMused = HIGH;
           Requestmillis = millis();
        }
     }   
@@ -8002,6 +8040,10 @@ void ResponseHandleSetCurrent(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "SetCurrent";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -8340,11 +8382,14 @@ void ResponseHandleSetTimer(){
               dynamicTopic += idTopic;
       //        dynamicTopic += "/";
       //        dynamicTopic += epochtimeTopic;
-              fullTopic = dynamicTopic;
               fullTopic += TimeoutTopic;
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "SetTimer";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -8637,6 +8682,10 @@ void ResponseHandleSetLimit(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "SetLimit";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -8677,7 +8726,6 @@ void ResponseHandleSetLimit(){
 void AskRAPIF(){
   if(ConnectionTimeoutFlag == LOW && COMused == LOW){
     if(AskRAPI == HIGH){
-        COMused = HIGH;
         if(debug6 == 1){
           Serial.println("asking RAPI");
         }
@@ -8699,6 +8747,7 @@ void AskRAPIF(){
         LastCom += TempValue;
         LastCom += ")";
 
+        COMused = HIGH;
         Requestmillis = millis();
     }    
   }
@@ -8811,6 +8860,10 @@ void ResponseHandleRAPIF(){
               topica = fullTopic.c_str();
               TempValue = "";
               TempValue += timer13;
+              TempValue += " + ";
+              TempValue += LastCom;
+              TempValue += " + ";
+              TempValue += "AskRAPI";
               TempValueChar = TempValue.c_str();
               client.publish(topica, TempValueChar);
     //          delay(20);
@@ -9093,7 +9146,7 @@ void CatchStateChange(){
   if (ResponseMessageAsync == "" && Serial2.available() && COMused == LOW) {
     ResponseMessageAsync = Serial2.readString();
   }
-  if(ResponseMessageAsync != ""){
+  if(ResponseMessageAsync != "" && COMused == LOW){
     ATMessage = ResponseMessageAsync;
     int index = ATMessage.indexOf("$AT ");
     if(index >= 0){
@@ -9266,7 +9319,14 @@ void WiFiReconnect(){
       debuglog += "$";
       WiFiConnect();
     }else if((networkFound == true || networkFound1 == true) && wifi_reconnects > 10000){
-      ESP.restart();
+      if(debug6 == 1){
+        Serial.println("Reconnecting to user WiFi...");
+      }
+      debuglog += "$";
+      debuglog += "Reconnecting to user WiFi...";
+      debuglog += "$";
+      WiFiConnect();
+//      ESP.restart();
     }
     lastInfo11 = now;
   }else if(WiFi.status() == WL_CONNECTED){
@@ -9282,7 +9342,7 @@ void WiFiConnect(){
   Serial.println("Try reconnect");
   if(networkFound == true || networkFound1 == true){
     WiFi.disconnect();
-    delay(500);
+    delay(2000);
     WiFi.mode(WIFI_STA);
     if(networkFound == true){
       WiFi.begin(ssid.c_str(), pass.c_str());
@@ -9376,6 +9436,6 @@ void Task1code( void * pvParameters ){
           break;
       }
     }
-    vTaskDelay(500);
+    vTaskDelay(250);
   } 
 }
