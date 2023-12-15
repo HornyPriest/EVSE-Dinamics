@@ -17,7 +17,6 @@
 #include "ESP32-targz.h" // http://github.com/tobozo/ESP32-targz
 
 
-
 #define RXD2 17
 #define TXD2 16
 
@@ -141,7 +140,7 @@ const char *pass1 = "AdminSettings";
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-String FW_versionStr = "0.2.8";
+String FW_versionStr = "0.2.9";
 
 #define FOTA_URL "http://lockit.pro/ota/HP/CR/CR.json"
 const char *firmware_name = "CR";
@@ -1392,11 +1391,14 @@ void GetRuntimeSettings(){
   preferences.begin("RuntimeSets", true);
   PowerOn = preferences.getBool("poweron", LOW);
   preferences.end();
+  debug += "PowerON: ";
+  debug += PowerOn;
   if(PowerOn == HIGH){
     tmp=2;
   }else{
     tmp=3;
   }
+  SendDebugF();
 }
 
 void SetRuntimeSettings(){
@@ -3546,7 +3548,7 @@ void loop() {
   NegativeAmperageSet();
   vTaskDelay(5);
   EraseLCDText();
-  PACChargeCheck();
+//  PACChargeCheck();
   
 
   CatchStateChange();
@@ -5557,7 +5559,9 @@ void TurnOn(){
         lastInfo7 = lastInfo7 - timer7;
         EnableState = 2;
         c6 = 0;
-        PowerOn = HIGH;
+        if(PAndC == LOW){
+          PowerOn = HIGH;
+        }
     }
     t1 = 0;
     
@@ -5750,6 +5754,175 @@ void TurnOff(){
     }*/
   }
 }
+
+void TurnSleepStayPowerOn(){
+  if(ConnectionTimeoutFlag == LOW){
+    debug += "$";
+    debug += "Setting enable --> Sleep ";
+    debug += "$";
+    ChargeSetState = LOW;
+    ResponseStatus = LOW;
+    if(Serial2.available() > 0){
+      CatchStateChange();
+    }
+    ResponseMessage = "";
+    tmp = 3;
+    Serial2.println(FS);
+    LastCom = "Sleep($FS)";
+    t1 = 0;
+    while(ResponseStatus == LOW && t1 < timer13){
+      if(Serial2.available()){
+            ResponseStatus = HIGH;
+            ResponseMessageTemp = Serial2.readString();
+            int startIndex = -1;
+            String ResponseMid1 = "";
+            String ResponseMid2 = "";
+            for (int i = 0; i < ResponseMessageTemp.length(); i++) {
+              if (ResponseMessageTemp.charAt(i) == '$') {
+                if (startIndex >= 0) {
+                  ResponseMid1 = ResponseMessageTemp.substring(startIndex, i);
+                  if (ResponseMid1.startsWith("$AT")) {
+                    ResponseMessageAsync = ResponseMid1;
+                    CatchStateChange();
+                  } else if (ResponseMid1.startsWith("$OK") || ResponseMid1.startsWith("$NK")) {
+                    ResponseMessage = ResponseMid1;
+                    ATMessage = ResponseMessage;
+                    // do something with the message
+                  }
+                  // do something with the single message
+                }
+                startIndex = i;
+              }
+            }
+            if (startIndex >= 0 && startIndex < ResponseMessageTemp.length() - 1) {
+              ResponseMid2 = ResponseMessageTemp.substring(startIndex);
+              if (ResponseMid2.startsWith("$AT")) {
+                    ResponseMessageAsync = ResponseMid2;
+                    CatchStateChange();
+                  } else if (ResponseMid2.startsWith("$OK") || ResponseMid2.startsWith("$NK")) {
+                    ResponseMessage = ResponseMid2;
+                    ATMessage = ResponseMessage;
+                    // do something with the message
+                }
+                // do something with the last single message
+              }
+            }
+      t1 = t1 + 1;
+      delayMicroseconds(50);
+    }
+    if(t1 > timer13/2){
+      if(debug1_MQTT == 1){
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+  //        epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+  //        dynamicTopic += "/";
+  //        dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += TimeoutTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue += t1;
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar);
+  //        delay(20);
+        }
+      }
+    }
+    if(t1 > timer13 - 1){
+      if(LoRaCERetryCount == LoRaCERetries){
+        if(debug1 == 1){
+          Serial.print("timeout flag ON, t1 = ");
+          Serial.println(t1);
+        }
+        ConnectionTimeoutFlag = HIGH;
+      }else{
+        LoRaCERetries = LoRaCERetries + 1;
+      }
+    }else{
+        LoRaCERetries = 0;
+        if(debug1 == 1){
+              Serial.print("timeout flag OFF, t1 = ");
+              Serial.println(t1);
+        }
+        ConnectionTimeoutFlag = LOW;
+        t1 = 0;
+        tmp = 3;
+        if (client.connected()){
+          topica = "";
+          dynamicTopic = "";
+      //    epochtimeTopic = getTime();
+          dynamicTopic += prefix;
+          dynamicTopic += idTopic;
+      //    dynamicTopic += "/";
+      //    dynamicTopic += epochtimeTopic;
+          fullTopic = dynamicTopic;
+          fullTopic += EnableTopic;
+          topica = fullTopic.c_str();
+          TempValue = "";
+          TempValue = "3";
+          TempValueChar = TempValue.c_str();
+          client.publish(topica, TempValueChar, true);
+//          delay(20);
+        }
+        active_phases = 0;
+        if(debug2_MQTT == 1){
+          if (client.connected()){
+            topica = "";
+            dynamicTopic = "";
+        //    epochtimeTopic = getTime();
+            dynamicTopic += prefix;
+            dynamicTopic += idTopic;
+        //    dynamicTopic += "/";
+        //    dynamicTopic += epochtimeTopic;
+            fullTopic = dynamicTopic;
+            fullTopic += ResponseFSTopic;
+            topica = fullTopic.c_str();
+            TempValue = "";
+            TempValue += ResponseMessage;
+            TempValueChar = TempValue.c_str();
+            client.publish(topica, TempValueChar);
+      //      delay(20);
+          }
+        }
+        lastInfo7 = lastInfo7 + 200;
+        lastInfo7 = lastInfo7 - timer7;
+        EnableState = 3;
+    }
+    t1 = 0;
+
+/*    int index = ATMessage.indexOf("$AT");
+    if(index > 1){
+      ATMessage.remove(0, index);
+      ResponseMessage.remove(index);
+    }*/
+    
+ /*   if(index > 1){
+      if (client.connected()){
+        topica = "";
+        dynamicTopic = "";
+    //    epochtimeTopic = getTime();
+        dynamicTopic += prefix;
+        dynamicTopic += idTopic;
+    //    dynamicTopic += "/";
+    //    dynamicTopic += epochtimeTopic;
+        fullTopic = dynamicTopic;
+        fullTopic += StateChangeTopic;
+        topica = fullTopic.c_str();
+        TempValue = "";
+        TempValue += ATMessage;
+        TempValueChar = TempValue.c_str();
+        client.publish(topica, TempValueChar);
+  //      delay(20);
+      }
+    }*/
+  }
+}
+
+
+
 void TurnSleep(){
   if(ConnectionTimeoutFlag == LOW){
     debug += "$";
@@ -6801,7 +6974,7 @@ void PACChargeCheck(){
 void StopCharge(){
   if(ConnectionTimeoutFlag == LOW){
     if((ChargeSetState == HIGH || PowerOn == HIGH) && PAndC == LOW){
-      if((State != 0) && (State != 2)){
+      if((State != 0)/* && (State != 2)*/){
         c6 = 0;
       }else{
         c6 = c6 + 1;
@@ -6863,7 +7036,7 @@ void StopCharge(){
           debug += "$";
           debug += "Izklop, ni na voljo dovolj toka";
           debug += "$";
-          TurnSleep();
+          TurnSleepStayPowerOn();
         }
       }
     }
@@ -6884,7 +7057,10 @@ void StopCharge(){
         Serial.println("vklapljam polnilnico, dovolj toka + P&C ali PowerOn");
       }
       debug += "$";
-      debug += "Vklop, dovolj toka + P&C ali PowerOn";
+      debug += "Vklop, dovolj toka + P&C: ";
+      debug += PAndC;
+      debug += " ali PowerOn: ";
+      debug += PowerOn;
       debug += "$";
       TurnOn();
     }
@@ -7077,22 +7253,22 @@ void WiFiReconnect(){
       Serial.println("reconnect timer");
       Serial.println(wifi_reconnects);
     }
-    if((wifi_reconnects > 25 && wifi_reconnects < 10000) && (networkFound == true || networkFound1 == true)){
+    if(/*(wifi_reconnects > 25 && wifi_reconnects < 10000) && */(networkFound == true || networkFound1 == true)){
 //      initWiFi();
       Serial.println("First reconnect function");
       WiFiConnect();
       wifi_reconnects = wifi_reconnects*1.2;
-    }else if(ssidlength > 2 && wifi_reconnects < 25){
-      if(debug6 == 1){
-        Serial.println("Reconnecting to user WiFi...");
-      }
-      debug += "$";
-      debug += "Reconnecting to user WiFi...";
-      debug += "$";
-      WiFiConnect();
-    }else if((networkFound == true || networkFound1 == true) && wifi_reconnects > 10000){
+//    }else if(ssidlength > 2 && wifi_reconnects < 25){
+//      if(debug6 == 1){
+//        Serial.println("Reconnecting to user WiFi...");
+//      }
+//      debug += "$";
+//      debug += "Reconnecting to user WiFi...";
+//      debug += "$";
+//      WiFiConnect();
+    }/*else if((networkFound == true || networkFound1 == true) && wifi_reconnects > 10000){
       ESP.restart();
-    }
+    }*/
     lastInfo11 = now11;
   }else if(WiFi.status() == WL_CONNECTED){
     int ssidlength = ssid.length();
