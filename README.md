@@ -47,19 +47,20 @@ If either is found it connects to it, if none found charging station makes unpro
 
 At first start some settings have to be set over MQTT in order for Dinamics to work as supposed.
 
-Mandatory check and set settings:
+!!!Mandatory check and set settings!!!:
 - set_breaker (default 16A)
 - set_calibration (default 277 - CT=50A)
 - set_c_limit (max current; default 16A)
 - set_plugandcharge (default 1 = ON)
 - set_cte (default 0 - no CT sensors)
 - set_dinamics (default 0 - disabled dynamic power management)
+- rapi_request = SL 2 
 
 Optional settings:
 - set_update (if running FW version is not the last available)
 - delete_settings (if running FW version is not last available. Restores settings to default)
 - set_lora (default 0 = cable connection active)
-- rapi_request = SL 2 (if maximum current limit "set_c_limit" is over 16A)
+
 
 
 (look in [Settings](#setting) for details)

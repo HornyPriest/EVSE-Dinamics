@@ -140,7 +140,7 @@ const char *pass1 = "AdminSettings";
 // esp32fota esp32fota("<Type of Firme for this device>", <this version>);
 esp32FOTA esp32FOTA;
 
-String FW_versionStr = "0.2.9";
+String FW_versionStr = "0.3.1";
 
 #define FOTA_URL "http://lockit.pro/ota/HP/CR/CR.json"
 const char *firmware_name = "CR";
