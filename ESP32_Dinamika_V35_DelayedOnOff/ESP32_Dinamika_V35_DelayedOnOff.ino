@@ -219,6 +219,10 @@ const char * charStatus;
 String sub_StatusTopic;
 const char * charEnable;
 String sub_EnableTopic;
+const char * charEnableOnDelayed;
+String sub_EnableOnDelayedTopic;
+const char * charEnableOffDelayed;
+String sub_EnableOffDelayedTopic;
 const char * charChargeTimer;
 String sub_ChargeTimerTopic;
 const char * charEnergyLimit;
@@ -364,6 +368,8 @@ String debuglog;
 String RAPI;
 int CTEnable;
 uint16_t EnableState;
+long DelayEnableOn;
+long DelayEnableOff;
 
 
 const char* GC = "$GC";
@@ -428,6 +434,8 @@ bool LCDEraseFlag;
 bool DinamicsActive;
 bool ResponseAsyncFlag;
 bool LoRa;
+bool DelayEnableOnFlag = LOW;
+bool DelayEnableOffFlag = LOW;
 bool ResponseStatusRAPIF = HIGH;
 bool ResponseStatusSetLimit = HIGH;
 bool ResponseStatusCheckState = HIGH;
@@ -819,14 +827,24 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   vTaskDelay(10);
 
-  if (String(topic) == sub_RAPITopic) {
+  if (String(topic) == sub_EnableOnDelayedTopic) {
     if(debug3 == 1){
-      Serial.print("RAPI command received ");
-      Serial.println(messageTemp);
+        Serial.print("Enable On delayed value received ");
+        Serial.println(messageTemp);
     }
-    RAPI = messageTemp;
-    AskRAPI = HIGH;
-    AskRAPIF(); 
+    temp_message = messageTemp;
+    EnableOnDelay = temp_message.toInt();
+  }
+
+  vTaskDelay(10);
+
+  if (String(topic) == sub_EnableOffDelayedTopic) {
+    if(debug3 == 1){
+        Serial.print("Enable Off delayed value received ");
+        Serial.println(messageTemp);
+    }
+    temp_message = messageTemp;
+    EnableOffDelay = temp_message.toInt();
   }
 
   vTaskDelay(10);
@@ -1291,6 +1309,8 @@ void reconnect() {
       client.subscribe(charEnable);
       client.subscribe(charChargeTimer);
       client.subscribe(charEnergyLimit);
+      client.subscribe(charEnableOnDelayed);
+      client.subscribe(charEnableOffDelayed);
       vTaskDelay(10);
       client.subscribe(charCurrentLimit);
       client.subscribe(charCurrentMinLimit);
@@ -2232,6 +2252,14 @@ void setup() {
   sub_CurrentCalibrationTopic += idTopic;
   sub_CurrentCalibrationTopic += "/set_calibration";
   charCurrentCalibration = sub_CurrentCalibrationTopic.c_str();
+  sub_EnableOnDelayedTopic += prefixTopic;
+  sub_EnableOnDelayedTopic += idTopic;
+  sub_EnableOnDelayedTopic += "/set_enable_on_delayed";
+  charEnableOnDelayed = sub_EnableOnDelayedTopic.c_str();
+  sub_EnableOffDelayedTopic += prefixTopic;
+  sub_EnableOffDelayedTopic += idTopic;
+  sub_EnableOffDelayedTopic += "/set_enable_off_delayed";
+  charEnableOffDelayed = sub_EnableOffDelayedTopic.c_str();
 
   vTaskDelay(20);
   
