@@ -61,43 +61,43 @@ unsigned long previousMillis = 0;
 const long interval = 10000;  // interval to wait for Wi-Fi connection (milliseconds)
 
 
-long lastInfo5 = 0;
-long lastInfo6 = 0;
-long lastInfo7 = 0;
-long lastInfo8 = 0;
-long lastInfo9 = 0;
-long lastInfo10 = 0;
-long lastInfo11 = 0;
-long lastInfo12 = 0;
+unsigned long lastInfo5 = 0;
+unsigned long lastInfo6 = 0;
+unsigned long lastInfo7 = 0;
+unsigned long lastInfo8 = 0;
+unsigned long lastInfo9 = 0;
+unsigned long lastInfo10 = 0;
+unsigned long lastInfo11 = 0;
+unsigned long lastInfo12 = 0;
 
-long timer;
-long timer1;
-long timer2;
-long timer3;
-long timer4;
-long timer5;
-long timer6;
-long timer7;
-long timer8;
-long timer9;
-long timer10;
-long timer11;
-long timer12;
-long timer13;
-long timer14;
+unsigned long timer;
+unsigned long timer1;
+unsigned long timer2;
+unsigned long timer3;
+unsigned long timer4;
+unsigned long timer5;
+unsigned long timer6;
+unsigned long timer7;
+unsigned long timer8;
+unsigned long timer9;
+unsigned long timer10;
+unsigned long timer11;
+unsigned long timer12;
+unsigned long timer13;
+unsigned long timer14;
 
 uint8_t TimersFactorOff;
 uint8_t LoRaCERetries;
 uint8_t LoRaCERetryCount = 3;
-long Requestmillis;
-long TimeoutTimeCurrent;
+unsigned long Requestmillis;
+unsigned long TimeoutTimeCurrent;
 
-long NegAmpTime;
-long nowNegAmp;
+unsigned long NegAmpTime;
+unsigned long nowNegAmp;
 
-long now11;
+unsigned long now11;
 
-long TimeoutTime;
+unsigned long TimeoutTime;
 bool TimeoutTimeSet = LOW;
 bool COMused = LOW;
 
@@ -109,9 +109,9 @@ uint16_t r = 0;
 // Second Core Settings//
 TaskHandle_t Task1;
 
-long lastInfo = 0;
-long lastInfo1 = 0;
-long lastInfo2 = 0;
+unsigned long lastInfo = 0;
+unsigned long lastInfo1 = 0;
+unsigned long lastInfo2 = 0;
 
 // Change to your WiFi credentials
 const char *ssid1 = "Implera";
@@ -1470,21 +1470,21 @@ void GetSettings(){
     preferences.begin("Settings", true);
     breaker = preferences.getInt("breaker", 16);
     calibration = preferences.getFloat("calibration", 27.7);
-    timer = preferences.getLong("timer", 2000);
-    timer1 = preferences.getLong("timer1", 1000);
-    timer2 = preferences.getLong("timer2", 1000);
-    timer3 = preferences.getLong("timer3", 10000);
-    timer4 = preferences.getLong("timer4", 100);
-    timer5 = preferences.getLong("timer5", 200000);
-    timer6 = preferences.getLong("timer6", 30000);
-    timer7 = preferences.getLong("timer7", 30000);
-    timer8 = preferences.getLong("timer8", 200000);
-    timer9 = preferences.getLong("timer9", 120000);
-    timer10 = preferences.getLong("timer10", 5000);
-    timer11 = preferences.getLong("timer11", 300000);
-    timer12 = preferences.getLong("timer12", 100000);
-    timer13 = preferences.getLong("timer13", 8000);
-    timer14 = preferences.getLong("timer14", 10000);
+    timer = preferences.getULong("timer", 2000);
+    timer1 = preferences.getULong("timer1", 1000);
+    timer2 = preferences.getULong("timer2", 1000);
+    timer3 = preferences.getULong("timer3", 10000);
+    timer4 = preferences.getULong("timer4", 100);
+    timer5 = preferences.getULong("timer5", 200000);
+    timer6 = preferences.getULong("timer6", 30000);
+    timer7 = preferences.getULong("timer7", 30000);
+    timer8 = preferences.getULong("timer8", 200000);
+    timer9 = preferences.getULong("timer9", 120000);
+    timer10 = preferences.getULong("timer10", 5000);
+    timer11 = preferences.getULong("timer11", 300000);
+    timer12 = preferences.getULong("timer12", 100000);
+    timer13 = preferences.getULong("timer13", 8000);
+    timer14 = preferences.getULong("timer14", 10000);
     TimersFactorOff = preferences.getInt("TFO", 30);
     PAndC = preferences.getBool("pac", HIGH);
     NoWANPandC = preferences.getBool("nwpc", HIGH);
@@ -1512,21 +1512,21 @@ void SetCalibration(){
 
 void SetTimers(){
   preferences.begin("Settings", false);
-  preferences.putLong("timer", timer);
-  preferences.putLong("timer1", timer1);
-  preferences.putLong("timer2", timer2);
-  preferences.putLong("timer3", timer3);
-  preferences.putLong("timer4", timer4);
-  preferences.putLong("timer5", timer5);
-  preferences.putLong("timer6", timer6);
-  preferences.putLong("timer7", timer7);
-  preferences.putLong("timer8", timer8);
-  preferences.putLong("timer9", timer9);
-  preferences.putLong("timer10", timer10);
-  preferences.putLong("timer11", timer11);
-  preferences.putLong("timer12", timer12);
-  preferences.putLong("timer13", timer13);
-  preferences.putLong("timer14", timer14);
+  preferences.putULong("timer", timer);
+  preferences.putULong("timer1", timer1);
+  preferences.putULong("timer2", timer2);
+  preferences.putULong("timer3", timer3);
+  preferences.putULong("timer4", timer4);
+  preferences.putULong("timer5", timer5);
+  preferences.putULong("timer6", timer6);
+  preferences.putULong("timer7", timer7);
+  preferences.putULong("timer8", timer8);
+  preferences.putULong("timer9", timer9);
+  preferences.putULong("timer10", timer10);
+  preferences.putULong("timer11", timer11);
+  preferences.putULong("timer12", timer12);
+  preferences.putULong("timer13", timer13);
+  preferences.putULong("timer14", timer14);
   preferences.end();
   debuglog += "$saving timers to preferences$";
 }
@@ -3329,7 +3329,7 @@ void loop() {
     TimeoutTimeSet = HIGH;
     vTaskDelay(20);
   }
-  long TimeoutTimeCurrent = millis();
+  unsigned long TimeoutTimeCurrent = millis();
   if(TimeoutTimeSet == HIGH && TimeoutTimeCurrent-TimeoutTime > timer14){
     TimeoutTimeSet = LOW;
     ConnectionTimeoutFlag = LOW;
@@ -3497,7 +3497,7 @@ void loop() {
   ResponseHandleSetCurrent();
   ResponseHandleSetTimer();
   
-    long now = millis();
+    unsigned long now = millis();
     if (now - lastInfo > timer) {   //2000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo = now;
@@ -3505,7 +3505,7 @@ void loop() {
       SENDCurrents();
       digitalWrite(LED_GREEN, LOW);
     }
-    long now5 = millis();
+    unsigned long now5 = millis();
     if (((now5 - lastInfo5 > timer5) && PowerOn == HIGH) || (PowerOn == LOW && (now5 - lastInfo5 > timer5*TimersFactorOff*10))) {    // 200000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo5 = now5;
@@ -3513,7 +3513,7 @@ void loop() {
       CheckSetAmps();
       digitalWrite(LED_GREEN, LOW);
     }
-    long now6 = millis();
+    unsigned long now6 = millis();
     if (((now6 - lastInfo6 > timer6) && PowerOn == LOW) || (PowerOn == HIGH && (now6 - lastInfo6 > timer6*TimersFactorOff))) {     //30000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo6 = now6;
@@ -3521,7 +3521,7 @@ void loop() {
       CheckState();
       digitalWrite(LED_GREEN, LOW);
     } 
-    long now7 = millis();
+    unsigned long now7 = millis();
     if (((now7 - lastInfo7 > timer7) && PowerOn == HIGH) || (PowerOn == LOW && (now7 - lastInfo7 > timer7*TimersFactorOff*10))) {      //30000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo7 = now7;
@@ -3529,7 +3529,7 @@ void loop() {
       CheckCharge();
       digitalWrite(LED_GREEN, LOW);
     }
-    long now8 = millis();
+    unsigned long now8 = millis();
     if (((now8 - lastInfo8 > timer8) && PowerOn == HIGH) || (PowerOn == LOW && (now8 - lastInfo8 > timer8*TimersFactorOff*10))) {     //200000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo8 = now8;
@@ -3539,7 +3539,7 @@ void loop() {
     } 
     client.loop();
     vTaskDelay(100);
-    long now9 = millis();
+    unsigned long now9 = millis();
     if (((now9 - lastInfo9 > timer9) && PowerOn == HIGH) || (PowerOn == LOW && (now9 - lastInfo9 > timer9*TimersFactorOff*10))) {    //120000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo9 = now9;
@@ -3547,7 +3547,7 @@ void loop() {
       CheckEnergy();
       digitalWrite(LED_GREEN, LOW);
     }
-    long now10 = millis();
+    unsigned long now10 = millis();
     if ((now10 - lastInfo10 > timer10) || (debuglog.length() > 190)) {   //2000
       String debugWhole = debuglog;
       digitalWrite(LED_GREEN, HIGH);
@@ -3561,7 +3561,7 @@ void loop() {
       SendDebugF2();
       digitalWrite(LED_GREEN, LOW);
     }
-    long now12 = millis();
+    unsigned long now12 = millis();
     if (now12 - lastInfo12 > timer12) {   //100000
       digitalWrite(LED_GREEN, HIGH);
       lastInfo12 = now12;
@@ -3570,7 +3570,7 @@ void loop() {
       digitalWrite(LED_GREEN, LOW);
     } 
  client.loop();
- vTaskDelay(500);
+ vTaskDelay(50);
  delay(10);
 
 }
@@ -5663,7 +5663,7 @@ void TurnOn(){
     debuglog += "Setting enable --> PowerOn ";
     debuglog += "$";
     ChargeSetState = HIGH;
-    long now = millis();
+    unsigned long now = millis();
     lastInfo5 = now;
     lastInfo7 = now;
     lastInfo8 = now;
@@ -6505,7 +6505,6 @@ void SetMQTTCurrent(){
         debuglog += "Set new charging current received from MQTT : ";
         debuglog += MQTTmax_current;
         debuglog += "$";
-        ResponseStatusSetMQTTCurrent = LOW;
         if(Serial2.available() > 0){
           CatchStateChange();
         }
@@ -6519,6 +6518,7 @@ void SetMQTTCurrent(){
           LastCom += TempValue;
           LastCom += ")";
 
+          ResponseStatusSetMQTTCurrent = LOW;
           COMused = HIGH;
           Requestmillis = millis();
         }
@@ -6710,7 +6710,6 @@ void SetCurrent(){
       debuglog += "Set new charging current : ";
       debuglog += max_current;
       debuglog += "$";
-      ResponseStatusSetCurrent = LOW;
       c5 = 0;
       if(Serial2.available() > 0){
         CatchStateChange();
@@ -6728,6 +6727,7 @@ void SetCurrent(){
           LastCom += TempValue;
           LastCom += ")";
 
+          ResponseStatusSetCurrent = LOW;
           COMused = HIGH;
           Requestmillis = millis();
        }
@@ -6810,6 +6810,7 @@ void ResponseHandleSetCurrent(){
                     }*/
                     
                     set_current = max_current;
+                    ResponseStatusSetCurrent == HIGH;
                     SetCurrentFlag = LOW;
                     COMused = LOW;
                     // do something with the message
@@ -6884,7 +6885,10 @@ void ResponseHandleSetCurrent(){
                     
                     set_current = max_current;
                     SetCurrentFlag = LOW;
+                    ResponseStatusSetCurrent == HIGH;
                     COMused = LOW;
+                    charge_current = set_current;
+                    lastInfo7 = millis() - 20000;
                     // do something with the message
                 }
                 // do something with the last single message

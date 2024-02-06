@@ -17,6 +17,7 @@ The Dinamics uses an **ESP32** which communicates with the OpenEVSE controller v
 - [Settings](#settings)
 - [MessagesAndResponses](#messagesandresponses)
 - [ResponseDataFormat](#responsedataformat)
+- [ATmessagesDecypher](#atmessagesdecypher)
 - [Issues](#issues)
 - [Features](#features)
 - [Requirements](#requirements)
@@ -249,6 +250,41 @@ Glossary of JSON variables:
 | CTE | which CTs are enabled |
 | DA | dynamic or static power mode |
 | L | Lora on or off |
+
+
+## ATmessagesDecypher
+
+EVSE state transition: sent whenever EVSE state changes
+MESSAGE FORM:  "$AT EVSE_STATE EVSE_STATE c_limit vflags"
+
+ evsestate(hex): EVSE_STATE_xxx
+ pilotstate(hex): EVSE_STATE_xxx
+ currentcapacity(decimal): amps
+ vflags(hex): m_wVFlags bits
+
+EVSE_STATE dictionary:
+
+| Value | Description |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| 01 | vehicle state A 12V - not connected |
+| 02 | vehicle state B 9V - connected, ready |
+| 03 | vehicle state C 6V - charging |
+| 04 | vehicle state D 3V - vent required |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| -- | FATAL FAULTS |
+| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| 05 | diode check failed |
+| 06 | GFCI fault |
+| 07 | bad ground |
+| 08 | stuck relay |
+| 09 | GFI self-test failure |
+| 10 | over temperature error shutdown |
+| 11 | over current error shutdown |
+| 12 | pilot self test error |
+| 13 | temp sensor dead |
+| 14 | EVSE relay closure fault |
+| 254 | waiting for timer |
+| 255 | disabled |
 
 
 ## Issues
