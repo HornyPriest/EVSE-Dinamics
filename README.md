@@ -255,11 +255,15 @@ Glossary of JSON variables:
 ## ATmessagesDecypher
 
 EVSE state transition: sent whenever EVSE state changes
+
 MESSAGE FORM:  "$AT EVSE_STATE EVSE_STATE c_limit vflags"
 
  evsestate(hex): EVSE_STATE_xxx
+
  pilotstate(hex): EVSE_STATE_xxx
+
  currentcapacity(decimal): amps
+
  vflags(hex): m_wVFlags bits
 
 EVSE_STATE dictionary:
