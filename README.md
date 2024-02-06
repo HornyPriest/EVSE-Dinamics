@@ -256,15 +256,17 @@ Glossary of JSON variables:
 
 EVSE state transition: sent whenever EVSE state changes
 
-MESSAGE FORM:  "$AT EVSE_STATE EVSE_STATE c_limit vflags"
+MESSAGE FORM: 
 
- evsestate(hex): EVSE_STATE_xxx
+"$AT
 
- pilotstate(hex): EVSE_STATE_xxx
+EVSE_STATE 
 
- currentcapacity(decimal): amps
+EVSE_STATE 
 
- vflags(hex): m_wVFlags bits
+c_limit 
+
+vflags"
 
 EVSE_STATE dictionary:
 
