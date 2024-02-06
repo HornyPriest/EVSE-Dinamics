@@ -270,9 +270,7 @@ EVSE_STATE dictionary:
 | 02 | vehicle state B 9V - connected, ready |
 | 03 | vehicle state C 6V - charging |
 | 04 | vehicle state D 3V - vent required |
-| ----------- | ---------------------------------------------------------------------------------------------------------- |
-| -- | FATAL FAULTS |
-| ----------- | ---------------------------------------------------------------------------------------------------------- |
+| FAULTS |  FAULTS |
 | 05 | diode check failed |
 | 06 | GFCI fault |
 | 07 | bad ground |
