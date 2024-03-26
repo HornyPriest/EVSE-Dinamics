@@ -1,0 +1,28 @@
+Nastavitve:
+Adress in channel izbereš za vsak par isto, ostalo nastavi kot kaže spodaj.
+Air rate manjši kot je, daljši domet ima LoRa. Nastavljali smo nekoč 19200 zdaj dajem 2400. Lahko se da tudi kaj druga.
+
+UartRate: 115200
+Parity: 8N1
+AirRate: 2400
+Power: Max dB
+FEC: Enable
+Fixed mode: Disable
+WOR timing: 250ms
+IO mode: PushPull
+Address: 6
+Channel: 6
+
+
+
+
+UartRate: 115200
+Parity: 8N1
+AirRate: 2400
+Power: 20dBm
+FEC: Enable
+Fixed mode: Disable
+WOR timing: 250ms
+IO mode: PushPull
+Address: 6
+Channel: 6
